@@ -60,6 +60,9 @@ hl.bind("SHIFT + Print",       hl.dsp.exec_cmd(ombu .. "/bin/shot.sh quick"))
 hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd(ombu .. "/bin/shot.sh full"))
 hl.bind("CONTROL + Print",     hl.dsp.exec_cmd(ombu .. "/bin/shot.sh ocr"))
 
+-- Zed: ventana opaca (la opacidad global de las ventanas es 95 % / 85 %)
+hl.window_rule({ match = { class = "^(dev\\.zed\\.Zed)$" }, opacity = "1.0 override" })
+
 -- Editor de capturas (satty): ventana flotante al centro
 hl.window_rule({ match = { class = "^(com\\.gabm\\.satty)$" }, float = true, center = true, opacity = "1.0 override", size = { "monitor_w*0.70", "monitor_h*0.75" } })
 

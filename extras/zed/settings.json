@@ -1,0 +1,25 @@
+// Zed con el estilo de ombu
+{
+  "theme": "Ombu",
+  "ui_font_family": "Noto Sans",
+  "ui_font_size": 15,
+  "buffer_font_family": "CaskaydiaCove Nerd Font Mono",
+  "buffer_font_size": 15,
+  // Sin ligaduras: en C, "->" tiene que verse como se escribe
+  "buffer_font_features": { "calt": false },
+  "cursor_shape": "bar",
+  "scrollbar": { "show": "auto" },
+  "minimap": { "show": "never" },
+  "toolbar": { "quick_actions": false },
+  "tab_bar": { "show_nav_history_buttons": false },
+  "tabs": { "file_icons": true, "git_status": true },
+  "terminal": { "font_family": "CaskaydiaCove Nerd Font Mono", "font_size": 14 },
+  // Sin telemetría; Zed se actualiza con pacman
+  "telemetry": { "diagnostics": false, "metrics": false },
+  "auto_update": false,
+  // C: clangd del sistema
+  "languages": { "C": { "tab_size": 4, "hard_tabs": false } },
+  "lsp": {
+    "clangd": { "binary": { "path": "/usr/bin/clangd", "arguments": ["--background-index", "--clang-tidy"] } }
+  }
+}
