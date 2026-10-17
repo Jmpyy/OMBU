@@ -1,0 +1,179 @@
+# ombu
+
+Un escritorio propio para **Hyprland**, hecho con [Quickshell](https://quickshell.org) (QML): barra superior, menús, notificaciones, launcher, bloqueo de pantalla, pantalla de inicio de sesión y una bienvenida. Todo en un solo repositorio, con un mismo diseño.
+
+La idea: la integración con el borde del monitor que da Caelestia Shell (las barras y los menús *nacen* de la pantalla), el estilo de macOS, los atajos de Omarchy y la barra de tareas de Windows para saber siempre qué tenés abierto. Menús **sólidos** (sin transparencias) y minimalismo.
+
+> *English, in one line:* a self-contained Hyprland desktop shell written in Quickshell/QML (bar, menus, notifications, launcher, lock screen, greetd greeter). The UI is in Spanish; see [Personalizar](#personalizar) to change it.
+
+<p align="center">
+  <img src="docs/screenshots/welcome.png" width="640" alt="Bienvenida al iniciar sesión">
+</p>
+
+## Qué incluye
+
+**Barra superior** integrada al borde del monitor, con esquinas cóncavas. Los menús crecen desde el botón que los abre.
+
+| | |
+|---|---|
+| **Escritorios** | Los 5 escritorios con el ícono de la app de cada uno; el activo se ensancha con su número. |
+| **Reloj y calendario** | Fecha y hora; al pasar el mouse la fecha se completa. Clic abre el calendario. |
+| **Volumen y mezcladora** | Dispositivo de salida y de entrada, y un volumen por cada app. Rueda cambia el volumen, clic del medio silencia. |
+| **Notificaciones** | Servidor propio (reemplaza a swaync, mako o dunst): tarjetas animadas, historial, *No molestar*, acciones. |
+| **Dispositivos** | Discos y unidades conectadas con el espacio libre; monta y expulsa pendrives. |
+| **Bandeja del sistema** | Los íconos de las apps (Discord, Steam...) con un menú propio al hacer clic derecho. |
+| **Apps abiertas** | Ventanas, las minimizadas y las que siguen corriendo sin ventana. |
+
+**Y además:**
+
+- **Launcher** de aplicaciones (`Super+Espacio`).
+- **Menú de energía** al centro: Bloquear, Reposo, Cerrar sesión, Reiniciar y Apagar (las dos últimas piden un segundo toque).
+- **Indicador de volumen** (OSD) discreto.
+- **Bloqueo de pantalla** real (`ext-session-lock`): reloj, avatar, contraseña con PAM, música en reproducción, notificaciones y aviso de Bloq Mayús.
+- **Salvapantallas ASCII**: tras 5 minutos sin actividad se bloquea la sesión con una lluvia de código que descifra el logo; a los 30 se apagan los monitores.
+- **Pantalla de inicio de sesión** para [greetd](https://sr.ht/~kennylevinsen/greetd/), con el mismo diseño que el bloqueo.
+- **Bienvenida** al iniciar sesión: lluvia de código, el logo que se descifra y la barra que baja desde el borde.
+- Capturas de pantalla, historial del portapapeles y un explorador de archivos que se abre donde está tu terminal.
+
+<p align="center">
+  <img src="docs/screenshots/lock.png" width="360" alt="Pantalla de bloqueo">
+  <img src="docs/screenshots/launcher.png" width="360" alt="Launcher">
+</p>
+<p align="center">
+  <img src="docs/screenshots/calendar.png" width="230" alt="Calendario">
+  <img src="docs/screenshots/tray-menu.png" width="230" alt="Menú de un ícono de la bandeja">
+</p>
+
+## Requisitos
+
+Hecho y probado en **CachyOS** con **Hyprland 0.56** (configuración en Lua) y **Quickshell 0.3.2**. Debería andar en cualquier Arch con lo mismo.
+
+```sh
+sudo pacman -S quickshell hyprland ttf-material-symbols-variable \
+    pipewire wireplumber playerctl brightnessctl \
+    cliphist wl-clipboard rofi grim slurp libnotify \
+    udisks2 papirus-icon-theme python
+```
+
+- `ttf-material-symbols-variable`: la fuente de los íconos (Material Symbols Rounded).
+- `papirus-icon-theme`: ombu usa sus íconos para Discord y Minecraft (ver `Icons.qml`).
+- `cliphist`, `wl-clipboard` y `rofi`: historial del portapapeles (`Super+V`). `grim` y `slurp`: capturas.
+- `udisks2`: montar y expulsar unidades desde el menú de dispositivos.
+- Opcional: `greetd` para la pantalla de inicio de sesión.
+
+> ombu **es** el servidor de notificaciones. Detené cualquier otro (`swaync`, `mako`, `dunst`, el de Caelestia...) o los dos pelearán por `org.freedesktop.Notifications`.
+
+## Instalación
+
+La carpeta **tiene que llamarse `ombu`** y estar en `~/.config/quickshell/` (los atajos usan `quickshell -c ombu`).
+
+```sh
+git clone https://github.com/Jmpyy/OMBU ~/.config/quickshell/ombu
+```
+
+Después sumá una línea a tu `~/.config/hypr/hyprland.lua`:
+
+```lua
+dofile(os.getenv("HOME") .. "/.config/quickshell/ombu/hypr/ombu.lua")
+```
+
+Ese archivo ([`hypr/ombu.lua`](hypr/ombu.lua)) arranca el shell, agrega los atajos y las reglas que hacen falta. Léelo antes: si ya usás alguno de esos atajos, cambialo ahí. Recargá Hyprland y listo. Para probarlo sin tocar tu configuración: `quickshell -c ombu`.
+
+### Atajos
+
+| Atajo | Qué hace |
+|---|---|
+| `Super + Espacio` | Launcher de aplicaciones |
+| `Super + Esc` / `Super + X` | Menú de energía |
+| `Super + Ctrl + L` | Bloquear la sesión |
+| `Super + B` | Mostrar u ocultar la barra |
+| `Super + V` | Historial del portapapeles |
+| `Print` / `Super + Print` | Captura de una región / del monitor con foco |
+| `Super + Shift + E` | Explorador de archivos en la carpeta de la terminal |
+| `Super + ,` | Cerrar la última notificación |
+| `Super + Shift + ,` | Cerrar todas |
+| `Super + Ctrl + ,` | No molestar (activar o desactivar) |
+| `Super + Alt + ,` | Ejecutar la acción de la última notificación |
+| `Super + Shift + Alt + ,` | Historial de notificaciones |
+| `Super + N` / `Super + Shift + N` | Minimizar la ventana / ver las minimizadas |
+| `Super + O` | Ventana flotante fija (Picture-in-Picture) |
+| `Super + R` | Modo redimensionar con las flechas (`Esc` sale) |
+
+### Control desde la terminal (IPC)
+
+```sh
+qs -c ombu ipc call bar toggle        # mostrar u ocultar la barra
+qs -c ombu ipc call bar mixer         # también: calendar, apps, devices, tray
+qs -c ombu ipc call launcher toggle   # o: search "texto", close
+qs -c ombu ipc call notif dnd         # también: dismiss, dismissAll, invoke, history
+qs -c ombu ipc call lock lock         # bloqueo real
+qs -c ombu ipc call lock preview      # vista previa (ventana común, Esc la cierra)
+qs -c ombu ipc call lock saver        # vista previa con el salvapantallas
+qs -c ombu ipc call idle test 10      # simula la inactividad con 10 s (idle reset vuelve)
+qs -c ombu ipc call welcome play      # repite la bienvenida
+qs -c ombu ipc call power toggle      # menú de energía
+```
+
+## Pantalla de inicio de sesión (greetd)
+
+Reemplaza al greeter que uses hoy. Es opcional y cambia archivos del sistema, así que leé antes qué hace:
+
+```sh
+sudo bash ~/.config/quickshell/ombu/greeter/install.sh
+```
+
+- Copia el greeter a `/usr/share/ombu-greeter` y un script de sesión a `/usr/local/bin`.
+- Genera una configuración mínima de Hyprland para el greeter con **tu** teclado y monitor principal, y la **valida antes de tocar nada**.
+- Guarda `/etc/greetd/config.toml.noctalia-backup` y cambia solo el comando del greeter.
+- **No reinicia greetd**: tu sesión actual sigue intacta; el cambio se ve en el próximo inicio de sesión.
+- **Respaldo:** si el greeter de ombu no arranca bien, cae solo a otro (por defecto `noctalia-greeter-session`; se cambia con `OMBU_GREETER_FALLBACK`). Si no tenés ninguno, el instalador se detiene y te avisa.
+- Para deshacerlo: `sudo bash ~/.config/quickshell/ombu/greeter/uninstall.sh`. Si no ves la pantalla de ingreso, `Ctrl+Alt+F2` te da una consola.
+
+Cada vez que cambies algo del diseño que usa el greeter (colores, bloqueo), volvé a correr el instalador para actualizar la copia del sistema.
+
+## Personalizar
+
+Todo el aspecto sale de [`Theme.qml`](Theme.qml): colores, radios, tamaños de la barra, tiempos de inactividad y del salvapantallas.
+
+- **Fondo de pantalla:** `Theme.wallpaper` apunta a un fondo de CachyOS; cambialo por el tuyo.
+- **Inactividad:** `idleLockSeconds` (bloqueo, 5 min) e `idleScreenOffSeconds` (monitores, 30 min).
+- **Idioma:** los textos están en español y la fecha usa `es_AR` (`Chrono.qml`).
+- **Íconos de apps:** si una app trae un ícono que no te gusta, agregala a [`Icons.qml`](Icons.qml).
+- **Escritorios:** son 5; el número está en `WorkspaceStrip.qml`.
+
+Quickshell recarga solo al guardar un archivo `.qml`.
+
+## Extras (opcionales)
+
+Nada de esto hace falta para usar ombu; sirve para que el explorador de archivos (Dolphin) y otras apps de Qt combinen con el resto.
+
+- [`extras/qt6ct/`](extras/qt6ct): paleta y estilo de ombu para `qt6ct` (botones y pestañas redondeados, barras finas). Copiá `ombu.qss` a `~/.config/qt6ct/qss/` y `colors/ombu.conf` a `~/.config/qt6ct/colors/`, y en `qt6ct.conf` poné `color_scheme_path=` con esa ruta y `stylesheets=` con la del `.qss`. Después lanzá la app con `QT_QPA_PLATFORMTHEME=qt6ct` (conviene hacerlo solo para las apps que quieras, no para todo el sistema).
+- [`extras/icons/make-ombu-icons.py`](extras/icons/make-ombu-icons.py): crea el tema de iconos *Ombu*, que es Papirus-Dark con las carpetas en violeta.
+
+## Cosas a tener en cuenta
+
+- **Un solo usuario.** El greeter y el bloqueo están pensados para una PC personal.
+- **NVIDIA y suspender:** en la RTX 2060 de quien lo escribió el suspend real cuelga la GPU al despertar, así que ombu no tiene "Suspender": tiene **Reposo**, que bloquea y deja el salvapantallas a la vista. Si tu equipo suspende bien, podés cambiar esa acción en `PowerMenu.qml`.
+- **Contraseña:** el bloqueo usa PAM con la configuración de [`pam.d/unlock`](pam.d/unlock) (solo `pam_unix`, sin `faillock`), así no se bloquea la cuenta por errores de tipeo. Si preferís `faillock`, agregalo ahí.
+- **Si el bloqueo se cuelga:** la regla `allow_session_lock_restore` permite lanzar otro desde una TTY con `quickshell -c ombu -d`.
+
+## Estructura
+
+```
+shell.qml          punto de entrada: ventanas por monitor y comandos IPC
+Theme.qml          colores, tamaños y tiempos
+TopBar.qml         la barra (y WorkspaceStrip, TrayStrip, BarButton...)
+*Menu.qml          los menús que cuelgan de la barra (mezcladora, calendario, dispositivos...)
+Notifs*.qml        servidor de notificaciones y sus tarjetas
+Lock*.qml  Auth    pantalla de bloqueo y autenticación
+Saver*.qml Idle    salvapantallas ASCII y detección de inactividad
+Welcome*.qml       la bienvenida
+greeter/           pantalla de inicio de sesión para greetd (+ instalador)
+hypr/ombu.lua      configuración de Hyprland: arranque, reglas y atajos
+bin/               scripts: capturas, portapapeles, explorador, montar unidades
+extras/            tema para apps Qt y tema de iconos
+```
+
+## Agradecimientos
+
+Inspirado en [Caelestia Shell](https://github.com/caelestia-dots/shell) y [Omarchy](https://omarchy.org), y construido sobre [Quickshell](https://quickshell.org) y [Hyprland](https://hypr.land).

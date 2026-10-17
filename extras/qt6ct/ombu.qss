@@ -1,0 +1,147 @@
+/* Estilo de ombu para las apps Qt que usan qt6ct (hoy, Dolphin): bordes redondeados,
+   sin líneas duras y la misma paleta del shell. */
+
+/* Barra lateral de lugares */
+KFilePlacesView, QListView#placesView {
+    background: #14131a;
+    border: none;
+    padding: 6px 4px;
+}
+KFilePlacesView::item {
+    padding: 7px 10px;
+    margin: 1px 6px;
+    border-radius: 10px;
+    border: none;
+}
+KFilePlacesView::item:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+KFilePlacesView::item:selected {
+    background: #a78bfa;
+    color: #14131a;
+}
+
+/* Barra de herramientas y botones */
+QToolBar {
+    background: #14131a;
+    border: none;
+    padding: 4px 8px;
+    spacing: 4px;
+}
+QToolButton {
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    padding: 5px 8px;
+}
+QToolButton:hover {
+    background: rgba(255, 255, 255, 0.09);
+}
+QToolButton:pressed, QToolButton:checked {
+    background: rgba(167, 139, 250, 0.28);
+}
+
+/* Campos de texto y ruta */
+QLineEdit {
+    background: #1d1c26;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 5px 10px;
+    selection-background-color: #a78bfa;
+    selection-color: #14131a;
+}
+QLineEdit:focus {
+    border: 1px solid #a78bfa;
+}
+
+/* Pestañas */
+QTabBar::tab {
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    padding: 5px 12px;
+    margin: 4px 2px;
+}
+QTabBar::tab:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+QTabBar::tab:selected {
+    background: #1d1c26;
+}
+
+/* Barras de desplazamiento finas */
+QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 2px;
+}
+QScrollBar::handle:vertical {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 3px;
+    min-height: 30px;
+}
+QScrollBar::handle:vertical:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+QScrollBar:horizontal {
+    background: transparent;
+    height: 10px;
+    margin: 2px;
+}
+QScrollBar::handle:horizontal {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 3px;
+    min-width: 30px;
+}
+QScrollBar::add-line, QScrollBar::sub-line, QScrollBar::add-page, QScrollBar::sub-page {
+    background: none;
+    border: none;
+    width: 0;
+    height: 0;
+}
+
+/* Separadores sutiles */
+QSplitter::handle {
+    background: transparent;
+}
+QStatusBar {
+    background: #14131a;
+    border: none;
+}
+
+/* Botones, casillas y botones de opción */
+QPushButton {
+    background: #2b2a38;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 16px;
+}
+QPushButton:hover {
+    background: #3a3950;
+}
+QPushButton:pressed, QPushButton:checked {
+    background: #a78bfa;
+    color: #14131a;
+}
+QPushButton:disabled {
+    color: #8a8a9c;
+}
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: #1d1c26;
+}
+QCheckBox::indicator {
+    border-radius: 5px;
+}
+QRadioButton::indicator {
+    border-radius: 9px;
+}
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    background: #a78bfa;
+    border-color: #a78bfa;
+}
+QTabWidget::pane {
+    border: none;
+}

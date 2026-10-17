@@ -41,6 +41,16 @@ for cmd in quickshell Hyprland start-hyprland python3; do
 done
 [ -f "$GREETD_CONF" ] || { echo "No encuentro $GREETD_CONF" >&2; exit 1; }
 
+# Si el greeter de ombu no arranca, ombu-greeter-session cae a este otro. Sin él no habría
+# pantalla de ingreso: avisa y se detiene salvo que lo confirmes con OMBU_NO_FALLBACK=1.
+FALLBACK="${OMBU_GREETER_FALLBACK:-/usr/bin/noctalia-greeter-session}"
+if [ ! -x "$FALLBACK" ] && [ "${OMBU_NO_FALLBACK:-0}" != "1" ]; then
+    echo "No encuentro el greeter de respaldo ($FALLBACK)." >&2
+    echo "Si el greeter de ombu fallara, no tendrías pantalla de ingreso (solo la consola, Ctrl+Alt+F2)." >&2
+    echo "Instalá uno de respaldo, indicá otro con OMBU_GREETER_FALLBACK=/ruta, o seguí igual con OMBU_NO_FALLBACK=1." >&2
+    exit 1
+fi
+
 echo "Usuario: $USERNAME | configuración de greetd: $GREETD_CONF"
 
 # --- 1. armar y configurar ----------------------------------------------------------------
