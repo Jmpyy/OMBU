@@ -10,8 +10,8 @@ PanelWindow {
 
     required property var modelData
 
-    // 0 = escondida arriba del borde, 1 = completamente visible
-    property real reveal: Ui.barShown ? 1 : 0
+    // 0 = escondida arriba del borde, 1 = completamente visible (durante la bienvenida baja al final)
+    property real reveal: Ui.barShown && !Welcome.playing ? 1 : 0
     // Evitan que el clic que cierra un menú lo vuelva a abrir
     property double dismissedMixer: 0
     property double dismissedApps: 0

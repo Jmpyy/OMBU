@@ -340,87 +340,9 @@ Item {
 
     // Salvapantallas: lluvia de código con el logo. Tapa todo mientras está activo y se
     // desvanece al tocar una tecla o mover el mouse, dejando ver la pantalla de bloqueo.
-    Item {
-        id: saverLayer
-
-        // Cuántas celdas de texto caben en esta pantalla
-        readonly property real cw: fm.advanceWidth("M")
-        readonly property real lh: fm.lineSpacing
-        readonly property int cols: Math.floor(width / cw)
-        readonly property int rows: Math.floor(height / lh)
-
+    SaverView {
         anchors.fill: parent
-        clip: true
-        opacity: Saver.fade
-        visible: Saver.fade > 0.01
-        onColsChanged: Saver.configure(cols, rows)
-        onRowsChanged: Saver.configure(cols, rows)
-
-        FontMetrics {
-            id: fm
-
-            font.family: "monospace"
-            font.pixelSize: Theme.saverFontSize
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            color: "#08070d"
-        }
-
-        SaverLayer {
-            cellWidth: saverLayer.cw
-            cellHeight: saverLayer.lh
-            gridCols: saverLayer.cols
-            gridRows: saverLayer.rows
-            text: Saver.dim
-            color: "#2b2350"
-        }
-
-        SaverLayer {
-            cellWidth: saverLayer.cw
-            cellHeight: saverLayer.lh
-            gridCols: saverLayer.cols
-            gridRows: saverLayer.rows
-            text: Saver.mid
-            color: "#5b49a8"
-        }
-
-        SaverLayer {
-            cellWidth: saverLayer.cw
-            cellHeight: saverLayer.lh
-            gridCols: saverLayer.cols
-            gridRows: saverLayer.rows
-            text: Saver.bright
-            color: "#9b87f5"
-        }
-
-        SaverLayer {
-            cellWidth: saverLayer.cw
-            cellHeight: saverLayer.lh
-            gridCols: saverLayer.cols
-            gridRows: saverLayer.rows
-            text: Saver.head
-            color: "#f1edff"
-        }
-
-        SaverLayer {
-            cellWidth: saverLayer.cw
-            cellHeight: saverLayer.lh
-            gridCols: saverLayer.cols
-            gridRows: saverLayer.rows
-            text: Saver.logo
-            color: "#b6a4ff"
-        }
-
-        SaverLayer {
-            cellWidth: saverLayer.cw
-            cellHeight: saverLayer.lh
-            gridCols: saverLayer.cols
-            gridRows: saverLayer.rows
-            text: Saver.logoHi
-            color: "#ffffff"
-        }
+        amount: Saver.fade
     }
 
     // Cualquier actividad en la pantalla de bloqueo despierta el salvapantallas

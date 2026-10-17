@@ -37,6 +37,12 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
+        WelcomeWindow {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+
         VolumeOsd {}
     }
 
@@ -207,6 +213,15 @@ ShellRoot {
         }
 
         target: "idle"
+    }
+
+    // qs -c ombu ipc call welcome play  -> repite la bienvenida del inicio de sesión
+    IpcHandler {
+        function play(): void {
+            Welcome.play();
+        }
+
+        target: "welcome"
     }
 
     // qs -c ombu ipc call power toggle

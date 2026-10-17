@@ -43,12 +43,19 @@ Singleton {
 
     readonly property string glyphs: "0123456789ABCDEF<>{}[]()/\\|=+-*#$%&@;:^~?!"
 
+    // Modo bienvenida (ver Welcome): el mismo efecto, pero el logo se descifra enseguida,
+    // se queda y no se disuelve
+    property bool welcome: false
+    // Fila de la grilla donde queda la frase debajo del logo
+    property int tagRow: 0
+    readonly property string tagline: welcome ? "B I E N V E N I D O" : "S E S I Ó N   B L O Q U E A D A"
+
     // Ciclo, en segundos: lluvia sola -> el logo se descifra -> brilla -> se disuelve
-    readonly property real decryptStart: 2.5
-    readonly property real decryptEnd: 5.3
-    readonly property real dissolveStart: 18
-    readonly property real dissolveEnd: 20.5
-    readonly property real cycleLength: 24
+    readonly property real decryptStart: welcome ? 0.3 : 2.5
+    readonly property real decryptEnd: welcome ? 1.4 : 5.3
+    readonly property real dissolveStart: welcome ? 1000 : 18
+    readonly property real dissolveEnd: welcome ? 1001 : 20.5
+    readonly property real cycleLength: welcome ? 2000 : 24
 
     // Estado interno de la animación
     property var _inten: null
@@ -140,8 +147,8 @@ Singleton {
         }
 
         // Frase debajo del logo, letra por letra
-        const tag = "S E S I Ó N   B L O Q U E A D A";
-        const tagRow = top + totalRows + 3;
+        const tag = tagline;
+        tagRow = top + totalRows + 3;
         const tagLeft = Math.floor((C - tag.length) / 2);
         for (let i = 0; i < tag.length; i++) {
             if (tag[i] === " ")
@@ -167,6 +174,31 @@ Singleton {
                 }
             }
         }
+    }
+
+    // La bienvenida: la lluvia arranca desde arriba, escalonada, y el logo se descifra enseguida
+    function beginWelcome(): void {
+        welcome = true;
+        _cycleT = 0;
+        _last = Date.now();
+        if (cols > 0) {
+            for (let x = 0; x < cols; x++)
+                _heads[x] = -Math.random() * 6;
+            _inten.fill(0);
+            layoutLogo();
+            shuffle();
+        }
+        animating = true;
+    }
+
+    function endWelcome(): void {
+        welcome = false;
+        if (cols > 0) {
+            layoutLogo();
+            shuffle();
+        }
+        if (!active)
+            animating = false;
     }
 
     // Reparte al azar cuándo se descifra y cuándo se disuelve cada carácter del logo
@@ -409,7 +441,7 @@ Singleton {
     Timer {
         interval: 1000 / Theme.saverFps
         repeat: true
-        running: root.animating && Ui.locked
+        running: root.animating && (Ui.locked || root.welcome)
         onTriggered: {
             const now = Date.now();
             const dt = Math.min(0.1, (now - root._last) / 1000);
