@@ -51,8 +51,8 @@ Singleton {
     readonly property string tagline: welcome ? "B I E N V E N I D O" : "S E S I Ó N   B L O Q U E A D A"
 
     // Ciclo, en segundos: lluvia sola -> el logo se descifra -> brilla -> se disuelve
-    readonly property real decryptStart: welcome ? 0.3 : 2.5
-    readonly property real decryptEnd: welcome ? 1.4 : 5.3
+    readonly property real decryptStart: welcome ? 0.5 : 2.5
+    readonly property real decryptEnd: welcome ? 2.2 : 5.3
     readonly property real dissolveStart: welcome ? 1000 : 18
     readonly property real dissolveEnd: welcome ? 1001 : 20.5
     readonly property real cycleLength: welcome ? 2000 : 24
@@ -76,7 +76,7 @@ Singleton {
     readonly property real clock: _cycleT
     // La bienvenida ya mostró todo lo que tenía que mostrar
     signal welcomeDone
-    readonly property real welcomeLength: 3.4
+    readonly property real welcomeLength: 5
     property double _last: 0
 
     // La pantalla de bloqueo informa de cuántas columnas y filas de texto le caben

@@ -22,7 +22,7 @@ Singleton {
     // Línea que se escribe y cuántos caracteres van
     property string line: ""
     // Cuántos caracteres van escritos: sigue el reloj de la animación, no el del sistema
-    readonly property int typed: Saver.welcome ? Math.min(line.length, Math.max(0, Math.floor((Saver.clock - 1.4) / 0.03))) : 0
+    readonly property int typed: Saver.welcome ? Math.min(line.length, Math.max(0, Math.floor((Saver.clock - 2.4) / 0.04))) : 0
 
     function play(): void {
         if (shown || Ui.locked)
