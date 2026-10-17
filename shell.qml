@@ -74,6 +74,12 @@ ShellRoot {
         LauncherMenu {}
     }
 
+    Variants {
+        model: Quickshell.screens
+
+        ClipMenu {}
+    }
+
     // qs -c ombu ipc call bar toggle  -> mostrar/ocultar la barra
     // qs -c ombu ipc call bar mixer   -> abrir/cerrar la mezcladora (monitor con foco)
     // qs -c ombu ipc call bar apps    -> abrir/cerrar las apps abiertas (monitor con foco)
@@ -138,6 +144,22 @@ ShellRoot {
         }
 
         target: "launcher"
+    }
+
+    // qs -c ombu ipc call clip toggle  -> abrir o cerrar el historial del portapapeles
+    IpcHandler {
+        function toggle(): void {
+            Ui.powerOpen = false;
+            Ui.launcherOpen = false;
+            Ui.popup = "";
+            Ui.clipOpen = !Ui.clipOpen;
+        }
+
+        function close(): void {
+            Ui.clipOpen = false;
+        }
+
+        target: "clip"
     }
 
     // qs -c ombu ipc call notif dismiss     -> cerrar la última notificación

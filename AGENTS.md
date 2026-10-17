@@ -32,6 +32,7 @@ Saver*.qml Idle    salvapantallas ASCII e inactividad (bloqueo a 5 min, monitore
 Welcome*.qml       bienvenida al iniciar sesión (una vez por sesión)
 greeter/           pantalla de login para greetd; install.sh toca el sistema
 hypr/ombu.lua      configuración de Hyprland para compartir (copia de lo que usa la persona)
+Clip*.qml          historial del portapapeles (cliphist); bin/clip*.sh lo guardan y pegan
 bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explorador, avisos de agentes
 ```
 
@@ -39,7 +40,7 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 
 - Arranca con `quickshell -c ombu -n -d` (lo hace Hyprland). **Recarga solo** al guardar un `.qml`.
 - Log: `qs -c ombu log`. Instancias vivas: `qs list --all` (**tiene que haber una sola**; dos copias pelean por D-Bus y duplican barras).
-- Comandos IPC para probar sin teclado: `qs -c ombu ipc call bar devices|mixer|calendar|apps|tray`, `power toggle`, `launcher toggle`, `lock preview` (vista previa inofensiva, Esc la cierra), `lock saver`, `welcome play`, `notif ...`. Ver `shell.qml`.
+- Comandos IPC para probar sin teclado: `qs -c ombu ipc call bar devices|mixer|calendar|apps|tray`, `power toggle`, `launcher toggle`, `lock preview` (vista previa inofensiva, Esc la cierra), `lock saver`, `welcome play`, `clip toggle`, `notif ...`. Ver `shell.qml`.
 - **`lock lock` es un bloqueo real**: solo se abre con la contraseña. No lo uses para probar; usá `lock preview`.
 - Validar Hyprland: `Hyprland --verify-config` (o `-c archivo.lua`).
 

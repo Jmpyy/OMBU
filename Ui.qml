@@ -12,6 +12,8 @@ Singleton {
     property bool locked: false
     property bool lockPreview: false
     property bool launcherOpen: false
+    // Historial del portapapeles abierto
+    property bool clipOpen: false
     // Texto con el que se abre el launcher (para atajos que lo precargan)
     property string launcherPrefill: ""
     // Menú desplegado de la barra, con formato "tipo@monitor" (ej. "mixer@HDMI-A-1"); "" = ninguno

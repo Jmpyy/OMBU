@@ -35,7 +35,8 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 - **Bienvenida** al iniciar sesión: lluvia de código, el logo que se descifra y la barra que baja desde el borde.
 - **Capturas** con editor para anotar y recortar, miniatura en el aviso (clic para editarla, botón para borrarla) y OCR para copiar texto de la pantalla.
 - Avisos cuando Claude Code o Antigravity terminan una tarea larga (y no los muestra si ya tenés la terminal a la vista).
-- Historial del portapapeles y un explorador de archivos que se abre donde está tu terminal.
+- **Historial del portapapeles** con búsqueda, miniaturas de imágenes, textos fijados y pegado automático en la ventana donde estabas. No guarda lo que las apps marcan como sensible (gestores de contraseñas), se puede pausar y se vacía en cada sesión nueva.
+- Un explorador de archivos que se abre donde está tu terminal.
 
 <p align="center">
   <img src="docs/screenshots/lock.png" width="360" alt="Pantalla de bloqueo">
@@ -60,14 +61,14 @@ Hecho y probado en **CachyOS** con **Hyprland 0.56** (configuración en Lua) y *
 ```sh
 sudo pacman -S quickshell hyprland ttf-material-symbols-variable \
     pipewire wireplumber playerctl brightnessctl \
-    cliphist wl-clipboard rofi grim slurp libnotify satty \
+    cliphist wl-clipboard grim slurp libnotify satty \
     tesseract tesseract-data-spa tesseract-data-eng \
     udisks2 papirus-icon-theme python
 ```
 
 - `ttf-material-symbols-variable`: la fuente de los íconos (Material Symbols Rounded).
 - `papirus-icon-theme`: ombu usa sus íconos para Discord y Minecraft (ver `Icons.qml`).
-- `cliphist`, `wl-clipboard` y `rofi`: historial del portapapeles (`Super+V`). `grim` y `slurp`: capturas.
+- `cliphist` y `wl-clipboard`: historial del portapapeles (`Super+V`). `grim` y `slurp`: capturas.
 - `satty`: el editor de capturas (anotar y recortar). `tesseract` y sus datos de idioma: copiar texto de una imagen. Sin ellos las capturas siguen funcionando, solo que sin editor ni OCR.
 - `udisks2`: montar y expulsar unidades desde el menú de dispositivos.
 - Opcional: `greetd` para la pantalla de inicio de sesión.
@@ -98,7 +99,7 @@ Ese archivo ([`hypr/ombu.lua`](hypr/ombu.lua)) arranca el shell, agrega los ataj
 | `Super + Esc` / `Super + X` | Menú de energía |
 | `Super + Ctrl + L` | Bloquear la sesión |
 | `Super + B` | Mostrar u ocultar la barra |
-| `Super + V` | Historial del portapapeles |
+| `Super + V` | Historial del portapapeles (`Enter` pega, `Shift+Enter` copia, `Ctrl+P` fija) |
 | `Print` | Captura de una región con editor (anotar y recortar); `Enter` copia y guarda |
 | `Shift + Print` | Captura de una región, directo |
 | `Super + Print` | Captura del monitor con foco |
@@ -119,6 +120,7 @@ Ese archivo ([`hypr/ombu.lua`](hypr/ombu.lua)) arranca el shell, agrega los ataj
 qs -c ombu ipc call bar toggle        # mostrar u ocultar la barra
 qs -c ombu ipc call bar mixer         # también: calendar, apps, devices, tray
 qs -c ombu ipc call launcher toggle   # o: search "texto", close
+qs -c ombu ipc call clip toggle       # historial del portapapeles
 qs -c ombu ipc call notif dnd         # también: dismiss, dismissAll, invoke, history
 qs -c ombu ipc call lock lock         # bloqueo real
 qs -c ombu ipc call lock preview      # vista previa (ventana común, Esc la cierra)
