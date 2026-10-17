@@ -23,6 +23,12 @@ Singleton {
             hideWhenVisible: "kitty"
         },
         {
+            // Aviso de kitty cuando termina un comando largo (notify_on_cmd_finish en kitty.conf).
+            // No se descarta nunca: kitty ya lo manda solo si esa terminal no está a la vista.
+            match: n => n.appName.toLowerCase() === "kitty" && /^Command .+ finished with status/.test(n.body),
+            translate: [[/^kitty$/, "Comando terminado"], [/^Command (.+) finished with status: 0\.?\s*$/, "«$1» terminó bien"], [/^Command (.+) finished with status: (\d+)\.?\s*$/, "«$1» terminó con error (código $2)"]]
+        },
+        {
             // "Terminó" de Claude Code y Antigravity (los manda bin/agent-notify.sh)
             match: n => ["claude code", "antigravity"].includes(n.appName.toLowerCase()),
             hideWhenVisible: "kitty"

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "file",
+    "source": "~/.config/fastfetch/ombu.txt",
+    "color": { "1": "38;2;167;139;250" },
+    "padding": { "top": 1, "left": 2, "right": 4 }
+  },
+  "display": {
+    "separator": "  ",
+    "color": {
+      "keys": "38;2;167;139;250",
+      "title": "38;2;167;139;250",
+      "separator": "38;2;74;73;96"
+    }
+  },
+  "modules": [
+    "title",
+    { "type": "os", "key": "Sistema " },
+    { "type": "kernel", "key": "Kernel  " },
+    { "type": "wm", "key": "Entorno " },
+    { "type": "shell", "key": "Shell   " },
+    { "type": "uptime", "key": "Activo  ", "format": "{?days}{days} d {?}{hours} h {minutes} min" },
+    { "type": "memory", "key": "Memoria ", "format": "{used} / {total}" }
+  ]
+}
