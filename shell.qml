@@ -91,6 +91,11 @@ ShellRoot {
             Ui.popup = Ui.popup === key ? "" : key;
         }
 
+        function devices(): void {
+            const key = "devices@" + (Hyprland.focusedMonitor?.name ?? "");
+            Ui.popup = Ui.popup === key ? "" : key;
+        }
+
         function apps(): void {
             const key = "apps@" + (Hyprland.focusedMonitor?.name ?? "");
             Ui.popup = Ui.popup === key ? "" : key;

@@ -15,6 +15,7 @@ PanelWindow {
     // Evitan que el clic que cierra un menú lo vuelva a abrir
     property double dismissedMixer: 0
     property double dismissedApps: 0
+    property double dismissedDevices: 0
     property double dismissedCalendar: 0
     property double dismissedNotifs: 0
 
@@ -379,6 +380,23 @@ PanelWindow {
                             }
                         }
 
+                        // Dispositivos: discos del equipo y unidades conectadas
+                        BarButton {
+                            id: devicesButton
+
+                            readonly property bool isOpen: Ui.popup === win.popupKey("devices")
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            active: isOpen
+                            icon: Disks.removable.length > 0 ? "usb" : "hard_drive"
+                            label: Disks.removable.length > 0 ? String(Disks.removable.length) : ""
+                            labelColor: Theme.accent
+                            onClicked: {
+                                if (Date.now() - win.dismissedDevices > 300)
+                                    win.togglePopup("devices");
+                            }
+                        }
+
                         Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 1
@@ -445,6 +463,18 @@ PanelWindow {
         onDismissed: {
             win.dismissedNotifs = Date.now();
             if (bellButton.isOpen)
+                Ui.popup = "";
+        }
+    }
+
+    DevicesMenu {
+        barWindow: win
+        anchorItem: devicesButton
+        open: devicesButton.isOpen
+
+        onDismissed: {
+            win.dismissedDevices = Date.now();
+            if (devicesButton.isOpen)
                 Ui.popup = "";
         }
     }
