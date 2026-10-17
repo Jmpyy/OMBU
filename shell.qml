@@ -143,6 +143,11 @@ ShellRoot {
             Ui.launcherOpen = false;
         }
 
+        // Abre o enfoca una app por su id (ej. "org.kde.dolphin")
+        function run(id: string): void {
+            Launch.open(DesktopEntries.applications.values.find(e => e.id === id), false);
+        }
+
         target: "launcher"
     }
 

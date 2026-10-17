@@ -13,7 +13,9 @@ Row {
 
     // Escritorios que pertenecen a este monitor, en orden. Mostrar los de otro monitor haría que un
     // clic mande el foco y el puntero a una pantalla que quizá está apagada.
-    readonly property var spaces: Hyprland.workspaces.values.filter(w => w.id > 0 && w.monitor?.name === screenName).sort((a, b) => a.id - b.id)
+    // El escritorio "gaming" (donde Hyprland manda los juegos y el Minecraft Launcher) solo aparece si
+    // tiene ventanas o si estás en él; así no queda escondido.
+    readonly property var spaces: Hyprland.workspaces.values.filter(w => w.monitor?.name === screenName && (w.id > 0 || (w.name === "gaming" && (w.id === activeId || windowsOf(w.id).length > 0)))).sort((a, b) => (a.id > 0 ? a.id : 1000) - (b.id > 0 ? b.id : 1000))
     // Escritorio que se está viendo en este monitor
     readonly property int activeId: Hyprland.monitors.values.find(m => m.name === screenName)?.activeWorkspace?.id ?? -1
 
@@ -24,7 +26,7 @@ Row {
     }
 
     function iconOf(toplevel: var): string {
-        const appId = toplevel?.wayland?.appId ?? "";
+        const appId = toplevel?.wayland?.appId || toplevel?.lastIpcObject?.class || "";
         const entry = appId ? DesktopEntries.heuristicLookup(appId) : null;
         return Icons.forApp(appId, entry ? entry.icon : "");
     }
@@ -78,18 +80,36 @@ Row {
                 spacing: 5
                 visible: ws.active || ws.occupied
 
+                MIcon {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: ws.active && ws.wsId < 0
+                    name: "sports_esports"
+                    color: "#14131a"
+                    font.pixelSize: 15
+                }
+
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: ws.active
+                    visible: ws.active && ws.wsId > 0
                     text: ws.wsId
                     color: "#14131a"
                     font.pixelSize: 12
                     font.weight: Font.Bold
                 }
 
-                Image {
+                MIcon {
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: ws.occupied
+                    visible: ws.occupied && appIcon.source == ""
+                    name: "apps"
+                    color: ws.active ? "#14131a" : Theme.textDim
+                    font.pixelSize: 15
+                }
+
+                Image {
+                    id: appIcon
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: ws.occupied && source != ""
                     width: 15
                     height: 15
                     source: ws.occupied ? root.iconOf(ws.windows[0]) : ""
@@ -107,7 +127,7 @@ Row {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 // Hyprland 0.56 con config Lua: el dispatch es código Lua
-                onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = \"" + ws.wsId + "\" })")
+                onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = \"" + (ws.wsId > 0 ? ws.wsId : "name:" + ws.modelData.name) + "\" })")
             }
         }
     }

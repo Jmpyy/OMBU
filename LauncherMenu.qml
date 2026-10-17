@@ -6,7 +6,7 @@ import Quickshell.Wayland
 
 // Launcher estilo Spotlight: una barra de búsqueda. Vacía muestra tus apps de siempre (favoritas
 // y las más usadas); al escribir aparecen los resultados. Aparece en el monitor con foco.
-//   Enter abre · flechas mueven · Ctrl+P fija o suelta una favorita · Esc cierra
+//   Enter abre o enfoca · Shift+Enter ventana nueva · flechas mueven · Ctrl+P fija o suelta · Esc cierra
 PanelWindow {
     id: win
 
@@ -78,15 +78,8 @@ PanelWindow {
         return icon.startsWith("/") ? "file://" + icon : Quickshell.iconPath(icon, true);
     }
 
-    function launch(entry): void {
-        if (!entry)
-            return;
-        Launch.record(entry.id);
-        if (entry.runInTerminal)
-            Quickshell.execDetached(["kitty", "-e"].concat(entry.command));
-        else
-            entry.execute();
-        Ui.launcherOpen = false;
+    function launch(entry, forceNew: bool): void {
+        Launch.open(entry, forceNew);
     }
 
     onQueryChanged: {
@@ -209,9 +202,17 @@ PanelWindow {
                     clip: true
                     focus: true
 
-                    onAccepted: win.launch(win.current)
 
                     Keys.onEscapePressed: Ui.launcherOpen = false
+                    // Enter abre o enfoca la app; Shift+Enter abre una ventana nueva
+                    Keys.onReturnPressed: event => {
+                        win.launch(win.current, !!(event.modifiers & Qt.ShiftModifier));
+                        event.accepted = true;
+                    }
+                    Keys.onEnterPressed: event => {
+                        win.launch(win.current, !!(event.modifiers & Qt.ShiftModifier));
+                        event.accepted = true;
+                    }
                     Keys.onUpPressed: {
                         if (win.searching)
                             list.currentIndex = Math.max(0, list.currentIndex - 1);
@@ -349,7 +350,7 @@ PanelWindow {
                         id: tileHover
                     }
                     TapHandler {
-                        onTapped: win.launch(tile.modelData)
+                        onTapped: win.launch(tile.modelData, false)
                     }
                 }
             }
@@ -461,7 +462,7 @@ PanelWindow {
                         id: itemHover
                     }
                     TapHandler {
-                        onTapped: win.launch(item.modelData)
+                        onTapped: win.launch(item.modelData, false)
                     }
                 }
             }
@@ -472,7 +473,7 @@ PanelWindow {
                 Layout.leftMargin: 10
                 Layout.topMargin: 2
                 Layout.bottomMargin: 4
-                text: win.searching ? "Enter abre  ·  Ctrl+P fija o suelta una favorita" : "Enter abre  ·  flechas para moverte  ·  Ctrl+P fija o suelta una favorita  ·  escribí para buscar"
+                text: win.searching ? "Enter abre o enfoca  ·  Shift+Enter ventana nueva  ·  Ctrl+P fija o suelta" : "Enter abre o enfoca  ·  Shift+Enter ventana nueva  ·  Ctrl+P fija o suelta"
                 color: Theme.textDim
                 font.pixelSize: 11
             }

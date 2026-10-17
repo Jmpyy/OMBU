@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 
 // Qué muestra el launcher: tus apps favoritas y las que más usás (aprende solo), y qué se
@@ -59,6 +60,44 @@ Singleton {
             out.push(a);
         }
         return out;
+    }
+
+    // Las ventanas abiertas de una app (se compara por id, clase de ventana o nombre)
+    function windowsOf(entry: var): var {
+        const id = entry.id.toLowerCase();
+        const cls = (entry.startupClass ?? "").toLowerCase();
+        const name = entry.name.toLowerCase();
+        return Hyprland.toplevels.values.filter(t => {
+            const app = (t.wayland?.appId ?? "").toLowerCase();
+            return app !== "" && (app === id || app === cls || app === name || DesktopEntries.heuristicLookup(app)?.id === entry.id);
+        });
+    }
+
+    // Abre la app; si ya tiene una ventana abierta, la enfoca (forceNew abre una nueva)
+    function open(entry: var, forceNew: bool): void {
+        if (!entry)
+            return;
+        record(entry.id);
+        Ui.launcherOpen = false;
+        const wins = forceNew ? [] : windowsOf(entry);
+        if (wins.length > 0) {
+            const t = wins[0];
+            const address = "address:0x" + t.address;
+            if (t.workspace?.name === "special:minimized") {
+                // Minimizada: se trae al escritorio actual
+                let here = Hyprland.focusedWorkspace?.id ?? 1;
+                if (here < 1)
+                    here = 1;
+                Hyprland.dispatch("function() hl.dispatch(hl.dsp.focus({ window = \"" + address + "\" })); hl.dispatch(hl.dsp.window.move({ workspace = \"" + here + "\" })) end");
+            } else {
+                Hyprland.dispatch("hl.dsp.focus({ window = \"" + address + "\" })");
+            }
+            return;
+        }
+        if (entry.runInTerminal)
+            Quickshell.execDetached(["kitty", "-e"].concat(entry.command));
+        else
+            entry.execute();
     }
 
     function record(id: string): void {

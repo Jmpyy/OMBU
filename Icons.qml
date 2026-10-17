@@ -29,6 +29,9 @@ Singleton {
         if (own)
             return own;
         const icon = themeIcon || (id ?? "").toLowerCase();
-        return icon.startsWith("/") ? "file://" + icon : Quickshell.iconPath(icon, "application-x-executable");
+        if (!icon)
+            return "";
+        // Con "true" devuelve vacío si el tema no tiene el ícono (en vez del cuadro magenta de error)
+        return icon.startsWith("/") ? "file://" + icon : Quickshell.iconPath(icon, true);
     }
 }
