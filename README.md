@@ -140,6 +140,7 @@ Todo el aspecto sale de [`Theme.qml`](Theme.qml): colores, radios, tamaños de l
 - **Idioma:** los textos están en español y la fecha usa `es_AR` (`Chrono.qml`).
 - **Íconos de apps:** si una app trae un ícono que no te gusta, agregala a [`Icons.qml`](Icons.qml).
 - **Escritorios:** son 5; el número está en `WorkspaceStrip.qml`.
+- **Notificaciones:** [`NotifRules.qml`](NotifRules.qml) permite pasar a español los avisos de ciertas apps y descartar los de algo que ya tenés a la vista (viene una regla para Claude Code en kitty).
 
 Quickshell recarga solo al guardar un archivo `.qml`.
 
@@ -173,6 +174,10 @@ hypr/ombu.lua      configuración de Hyprland: arranque, reglas y atajos
 bin/               scripts: capturas, portapapeles, explorador, montar unidades
 extras/            tema para apps Qt y tema de iconos
 ```
+
+## Licencia
+
+[MIT](LICENSE). Usalo, cambialo y compartilo como quieras.
 
 ## Agradecimientos
 

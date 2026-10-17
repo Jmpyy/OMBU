@@ -101,12 +101,20 @@ Singleton {
     function add(n): void {
         // Hay que marcarla como "tracked" para que el servidor no la descarte
         n.tracked = true;
+        // Avisos de algo que ya tenés a la vista (ver NotifRules): se descartan sin mostrar
+        if (NotifRules.shouldDrop(n)) {
+            n.dismiss();
+            return;
+        }
         for (const old of history.filter(e => e.n && e.n.id === n.id))
             remove(old);
 
         const entry = entryComponent.createObject(root, {
             n: n
         });
+        // Pasa el texto a español si hay una regla para esta app
+        entry.summary = NotifRules.translate(n, entry.summary);
+        entry.body = NotifRules.translate(n, entry.body);
         history = [entry, ...history];
         n.closed.connect(() => root.remove(entry));
         received(entry);
