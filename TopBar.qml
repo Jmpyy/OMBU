@@ -16,6 +16,7 @@ PanelWindow {
     property double dismissedMixer: 0
     property double dismissedApps: 0
     property double dismissedCalendar: 0
+    property double dismissedNotifs: 0
 
     readonly property real fullHeight: Theme.barHeight + Theme.fillet
     readonly property real sideMargin: Theme.margin + Theme.fillet / 2
@@ -235,6 +236,77 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
 
+                // Aviso mientras un modo de atajos está activo (ej. redimensionar con flechas)
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: Submap.active
+                    width: submapText.implicitWidth + 22
+                    height: 24
+                    radius: 12
+                    color: Theme.accent
+
+                    Text {
+                        id: submapText
+
+                        anchors.centerIn: parent
+                        text: Submap.label + "  ·  Esc para salir"
+                        color: "#14131a"
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                    }
+                }
+
+                // Notificaciones: campana con la cantidad; clic abre el historial
+                Rectangle {
+                    id: bellButton
+
+                    readonly property bool isOpen: Ui.popup === win.popupKey("notifs")
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: bellRow.implicitWidth + 18
+                    height: 24
+                    radius: 8
+                    color: bellArea.containsMouse || isOpen ? Theme.hover : "transparent"
+
+                    Row {
+                        id: bellRow
+
+                        anchors.centerIn: parent
+                        spacing: 4
+
+                        MIcon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            name: Notifs.dnd ? "notifications_off" : (Notifs.count > 0 ? "notifications_unread" : "notifications")
+                            font.pixelSize: 17
+                            color: Notifs.dnd ? Theme.textDim : Theme.text
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: Notifs.count > 0
+                            text: Notifs.count
+                            color: Theme.accent
+                            font.pixelSize: 12
+                            font.weight: Font.DemiBold
+                        }
+                    }
+
+                    MouseArea {
+                        id: bellArea
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                        onClicked: mouse => {
+                            if (mouse.button === Qt.MiddleButton)
+                                Notifs.dnd = !Notifs.dnd;
+                            else if (Date.now() - win.dismissedNotifs > 300)
+                                win.togglePopup("notifs");
+                        }
+                    }
+                }
+
                 // Layout de teclado: clic para alternar (igual que Alt+Shift)
                 Rectangle {
                     id: keyboardButton
@@ -404,6 +476,18 @@ PanelWindow {
         onDismissed: {
             win.dismissedMixer = Date.now();
             if (mixerButton.isOpen)
+                Ui.popup = "";
+        }
+    }
+
+    NotifMenu {
+        barWindow: win
+        anchorItem: bellButton
+        open: bellButton.isOpen
+
+        onDismissed: {
+            win.dismissedNotifs = Date.now();
+            if (bellButton.isOpen)
                 Ui.popup = "";
         }
     }

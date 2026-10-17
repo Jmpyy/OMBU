@@ -12,6 +12,12 @@ ShellRoot {
 
     Component.onCompleted: Hyprland.refreshToplevels()
 
+    // Historial del portapapeles (lo usa Super+V, ver bin/clip.sh)
+    Process {
+        running: true
+        command: [Quickshell.shellPath("bin/clipwatch.sh")]
+    }
+
     Variants {
         model: Quickshell.screens
 
@@ -28,6 +34,12 @@ ShellRoot {
         model: Quickshell.screens
 
         VolumeOsd {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        NotifToasts {}
     }
 
     Variants {
@@ -103,6 +115,36 @@ ShellRoot {
         target: "launcher"
     }
 
+    // qs -c nuestro ipc call notif dismiss     -> cerrar la última notificación
+    // qs -c nuestro ipc call notif dismissAll  -> cerrar todas
+    // qs -c nuestro ipc call notif invoke      -> ejecutar la acción de la última
+    // qs -c nuestro ipc call notif dnd         -> activar o desactivar No molestar
+    // qs -c nuestro ipc call notif history     -> abrir o cerrar el historial
+    IpcHandler {
+        function dismiss(): void {
+            Notifs.dismissLatest();
+        }
+
+        function dismissAll(): void {
+            Notifs.dismissAll();
+        }
+
+        function invoke(): void {
+            Notifs.invokeLatest();
+        }
+
+        function dnd(): void {
+            Notifs.dnd = !Notifs.dnd;
+        }
+
+        function history(): void {
+            const key = "notifs@" + (Hyprland.focusedMonitor?.name ?? "");
+            Ui.popup = Ui.popup === key ? "" : key;
+        }
+
+        target: "notif"
+    }
+
     // qs -c nuestro ipc call lock lock     -> bloqueo REAL de la sesión
     // qs -c nuestro ipc call lock preview  -> vista previa (ventana común, Esc la cierra)
     // No existe un comando para desbloquear a propósito: cualquier proceso del usuario
@@ -119,6 +161,12 @@ ShellRoot {
                 return;
             Ui.lockPreview = true;
             Ui.locked = true;
+        }
+
+        // Solo cierra la vista previa; jamás un bloqueo real
+        function closePreview(): void {
+            if (Ui.lockPreview)
+                Ui.locked = false;
         }
 
         target: "lock"

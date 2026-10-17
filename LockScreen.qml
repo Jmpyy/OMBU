@@ -211,6 +211,13 @@ Item {
         }
     }
 
+    // Notificaciones pendientes (solo app y título)
+    LockNotifs {
+        anchors.right: parent.right
+        anchors.rightMargin: 56
+        anchors.verticalCenter: parent.verticalCenter
+    }
+
     // Layout de teclado: importa al escribir una contraseña con símbolos
     Row {
         anchors.horizontalCenter: parent.horizontalCenter

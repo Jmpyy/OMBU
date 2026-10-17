@@ -42,6 +42,11 @@ Singleton {
             scan.running = true;
     }
 
+    // Para refrescar la lista poco después de una acción (minimizar, cerrar...)
+    function refreshSoon(): void {
+        recheck.restart();
+    }
+
     // Lanzar una app que ya está corriendo suele traer su ventana al frente
     function open(app): void {
         const entry = DesktopEntries.heuristicLookup(app.id) ?? DesktopEntries.heuristicLookup(app.name);

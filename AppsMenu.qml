@@ -13,7 +13,12 @@ DropPopup {
     readonly property int maxRows: 7
     readonly property var windows: {
         const list = Array.from(Hyprland.toplevels.values);
-        list.sort((a, b) => (a.workspace?.id ?? 0) - (b.workspace?.id ?? 0));
+        // Los workspaces especiales (minimizadas, scratchpad) tienen id negativo: van al final
+        const rank = t => {
+            const id = t.workspace?.id ?? 0;
+            return id < 0 ? 1000 - id : id;
+        };
+        list.sort((a, b) => rank(a) - rank(b));
         return list;
     }
     readonly property int trayCount: SystemTray.items.values.length
@@ -22,9 +27,37 @@ DropPopup {
         return appId ? DesktopEntries.heuristicLookup(appId) : null;
     }
 
+    function isMinimized(t): bool {
+        return t.workspace?.name === "special:minimized";
+    }
+
+    function placeLabel(t): string {
+        const ws = t.workspace;
+        if (!ws)
+            return "?";
+        if (ws.name === "special:minimized")
+            return "Minimizada";
+        return ws.id < 0 ? "Scratchpad" : "Workspace " + ws.id;
+    }
+
+    // Ir a una ventana; si estaba minimizada, además la trae al workspace actual
     function focusWindow(t): void {
-        Hyprland.dispatch("hl.dsp.focus({ window = \"address:0x" + t.address + "\" })");
+        const address = "address:0x" + t.address;
+        if (isMinimized(t)) {
+            let here = Hyprland.focusedWorkspace?.id ?? 1;
+            if (here < 1)
+                here = 1;
+            Hyprland.dispatch("function() hl.dispatch(hl.dsp.focus({ window = \"" + address + "\" })); hl.dispatch(hl.dsp.window.move({ workspace = \"" + here + "\" })) end");
+        } else {
+            Hyprland.dispatch("hl.dsp.focus({ window = \"" + address + "\" })");
+        }
         dismissed();
+    }
+
+    // Hyprland no minimiza: la ventana se manda sin enfocarla a un workspace especial oculto
+    function minimizeWindow(t): void {
+        Hyprland.dispatch("hl.dsp.window.move({ workspace = \"special:minimized\", follow = false, window = \"address:0x" + t.address + "\" })");
+        Apps.refreshSoon();
     }
 
     // PID de la app en segundo plano esperando confirmación para cerrarse (-1 = ninguna)
@@ -107,6 +140,8 @@ DropPopup {
                         required property var modelData
                         readonly property string appId: modelData.wayland?.appId ?? ""
                         readonly property var entry: root.entryFor(appId)
+                        readonly property bool minimized: root.isMinimized(modelData)
+                        readonly property bool regular: (modelData.workspace?.id ?? 0) > 0
 
                         width: windowList.width
                         height: root.rowHeight
@@ -135,16 +170,39 @@ DropPopup {
                                     Layout.fillWidth: true
                                     text: row.modelData.title
                                     elide: Text.ElideRight
-                                    color: Theme.text
+                                    color: row.minimized ? Theme.textDim : Theme.text
                                     font.pixelSize: Theme.fontSize
                                 }
 
                                 Text {
                                     Layout.fillWidth: true
-                                    text: (row.entry ? row.entry.name : row.appId) + "  ·  Workspace " + (row.modelData.workspace?.id ?? "?")
+                                    text: (row.entry ? row.entry.name : row.appId) + "  ·  " + root.placeLabel(row.modelData)
                                     elide: Text.ElideRight
-                                    color: Theme.textDim
+                                    color: row.minimized ? Theme.accent : Theme.textDim
                                     font.pixelSize: 11
+                                }
+                            }
+
+                            // Minimizar (solo ventanas de un workspace normal)
+                            Rectangle {
+                                Layout.preferredWidth: 28
+                                Layout.preferredHeight: 28
+                                radius: 14
+                                visible: rowHover.hovered && row.regular
+                                color: minHover.hovered ? Theme.hover : Theme.surface
+
+                                MIcon {
+                                    anchors.centerIn: parent
+                                    name: "minimize"
+                                    font.pixelSize: 16
+                                    color: minHover.hovered ? Theme.text : Theme.textDim
+                                }
+
+                                HoverHandler {
+                                    id: minHover
+                                }
+                                TapHandler {
+                                    onTapped: root.minimizeWindow(row.modelData)
                                 }
                             }
 
@@ -176,7 +234,7 @@ DropPopup {
                         }
                         TapHandler {
                             onTapped: {
-                                if (!closeHover.hovered)
+                                if (!closeHover.hovered && !minHover.hovered)
                                     root.focusWindow(row.modelData);
                             }
                         }
