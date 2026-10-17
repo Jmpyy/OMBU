@@ -132,7 +132,9 @@ DropPopup {
                 width: parent.width
 
                 Repeater {
-                    model: root.windows
+                    model: ScriptModel {
+                        values: root.windows
+                    }
 
                     Rectangle {
                         id: row
@@ -280,7 +282,11 @@ DropPopup {
             }
 
             Repeater {
-                model: Apps.background
+                model: ScriptModel {
+                    // Los datos vienen de un script (objetos nuevos en cada lectura): se identifican por id
+                    objectProp: "id"
+                    values: Apps.background
+                }
 
                 Rectangle {
                     id: bgRow

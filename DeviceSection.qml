@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import QtQuick.Layouts
 
 // Bloque de un dispositivo principal (salida o entrada) con su volumen,
@@ -128,7 +129,9 @@ ColumnLayout {
         visible: root.expanded
 
         Repeater {
-            model: root.devices
+            model: ScriptModel {
+                values: root.devices
+            }
 
             Rectangle {
                 id: item

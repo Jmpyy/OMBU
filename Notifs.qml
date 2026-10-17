@@ -20,6 +20,9 @@ Singleton {
     readonly property int count: history.length
     readonly property var latest: history.length > 0 ? history[0] : null
 
+    // Llegó una notificación nueva (la campana de la barra reacciona)
+    signal received(var entry)
+
     // Un aviso: la notificación más su estado de aviso emergente.
     // La Notification se destruye apenas se cierra, pero la tarjeta sigue en pantalla
     // mientras se desvanece: por eso se guarda una copia de lo que se muestra.
@@ -30,6 +33,10 @@ Singleton {
         property date time: new Date()
         property bool shown: false
         property bool hovered: false
+        // Se cerró deslizándola hacia la derecha: sale con ese movimiento
+        property bool swiped: false
+        // Tiempo que le queda al aviso, de 1 (recién llegó) a 0 (se va)
+        property real remaining: 1
 
         // Copia de los datos que dibuja la tarjeta
         property string appName: ""
@@ -63,10 +70,19 @@ Singleton {
         }
 
         // Segundos que indica la app; sin indicación, 6. Las críticas no se van solas.
-        readonly property Timer expiry: Timer {
-            interval: entry.expireSeconds > 0 ? entry.expireSeconds * 1000 : 6000
-            running: entry.shown && !entry.hovered && (entry.expireSeconds > 0 || !entry.critical)
-            onTriggered: entry.hide()
+        readonly property bool hasTimer: expireSeconds > 0 || !critical
+
+        // La cuenta regresiva es una animación: se pausa con el mouse encima y la barra
+        // de progreso de la tarjeta la sigue sin desfasarse.
+        readonly property NumberAnimation countdown: NumberAnimation {
+            target: entry
+            property: "remaining"
+            from: 1
+            to: 0
+            duration: entry.expireSeconds > 0 ? entry.expireSeconds * 1000 : 6000
+            running: entry.shown && entry.hasTimer
+            paused: entry.hovered
+            onFinished: entry.hide()
         }
 
         // Deja terminar la animación de salida antes de sacarlo de la lista
@@ -93,10 +109,14 @@ Singleton {
         });
         history = [entry, ...history];
         n.closed.connect(() => root.remove(entry));
+        received(entry);
 
         if (!dnd || entry.critical) {
             toasts = [entry, ...toasts];
             entry.shown = true;
+            // Máximo 5 avisos a la vez; los más viejos se van (siguen en el historial)
+            for (const old of toasts.slice(5))
+                old.hide();
         }
     }
 

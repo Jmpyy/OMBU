@@ -131,7 +131,7 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 30
                     height: 24
-                    radius: 8
+                    radius: 12
                     color: logoArea.containsMouse || Ui.powerOpen ? Theme.hover : "transparent"
 
                     Image {
@@ -195,46 +195,29 @@ PanelWindow {
             }
 
             // Centro: reloj (abre el calendario)
-            Rectangle {
+            BarButton {
                 id: clockButton
 
                 readonly property bool isOpen: Ui.popup === win.popupKey("calendar")
 
                 anchors.centerIn: parent
-                width: clockText.implicitWidth + 22
-                height: 24
-                radius: 8
-                color: clockArea.containsMouse || isOpen ? Theme.hover : "transparent"
-
-                Text {
-                    id: clockText
-
-                    anchors.centerIn: parent
-                    text: Chrono.date.toLocaleString(Chrono.locale, "ddd d MMM  HH:mm").replace(/\./g, "")
-                    color: Theme.text
-                    font.pixelSize: Theme.fontSize
-                    font.weight: Font.Medium
-                }
-
-                MouseArea {
-                    id: clockArea
-
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (Date.now() - win.dismissedCalendar > 300)
-                            win.togglePopup("calendar");
-                    }
+                implicitHeight: 24
+                active: isOpen
+                label: Chrono.date.toLocaleString(Chrono.locale, "ddd d MMM  HH:mm").replace(/\./g, "")
+                labelSize: Theme.fontSize
+                labelWeight: Font.Medium
+                onClicked: {
+                    if (Date.now() - win.dismissedCalendar > 300)
+                        win.togglePopup("calendar");
                 }
             }
 
-            // Derecha: volumen + apps abiertas
+            // Derecha: aviso de modo + una cápsula con los indicadores del sistema
             Row {
                 anchors.right: parent.right
                 anchors.rightMargin: win.sideMargin
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 6
+                spacing: 8
 
                 // Aviso mientras un modo de atajos está activo (ej. redimensionar con flechas)
                 Rectangle {
@@ -256,211 +239,180 @@ PanelWindow {
                     }
                 }
 
-                // Notificaciones: campana con la cantidad; clic abre el historial
                 Rectangle {
-                    id: bellButton
-
-                    readonly property bool isOpen: Ui.popup === win.popupKey("notifs")
-
                     anchors.verticalCenter: parent.verticalCenter
-                    width: bellRow.implicitWidth + 18
-                    height: 24
-                    radius: 8
-                    color: bellArea.containsMouse || isOpen ? Theme.hover : "transparent"
+                    width: cluster.implicitWidth + 6
+                    height: 28
+                    radius: 14
+                    color: Theme.surface
 
                     Row {
-                        id: bellRow
-
-                        anchors.centerIn: parent
-                        spacing: 4
-
-                        MIcon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            name: Notifs.dnd ? "notifications_off" : (Notifs.count > 0 ? "notifications_unread" : "notifications")
-                            font.pixelSize: 17
-                            color: Notifs.dnd ? Theme.textDim : Theme.text
-                        }
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: Notifs.count > 0
-                            text: Notifs.count
-                            color: Theme.accent
-                            font.pixelSize: 12
-                            font.weight: Font.DemiBold
-                        }
-                    }
-
-                    MouseArea {
-                        id: bellArea
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-                        onClicked: mouse => {
-                            if (mouse.button === Qt.MiddleButton)
-                                Notifs.dnd = !Notifs.dnd;
-                            else if (Date.now() - win.dismissedNotifs > 300)
-                                win.togglePopup("notifs");
-                        }
-                    }
-                }
-
-                // Layout de teclado: clic para alternar (igual que Alt+Shift)
-                Rectangle {
-                    id: keyboardButton
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: keyboardRow.implicitWidth + 18
-                    height: 24
-                    radius: 8
-                    color: keyboardArea.containsMouse ? Theme.hover : "transparent"
-
-                    Row {
-                        id: keyboardRow
-
-                        anchors.centerIn: parent
-                        spacing: 5
-
-                        MIcon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            name: "keyboard"
-                            font.pixelSize: 17
-                        }
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: Keyboard.code
-                            color: Theme.text
-                            font.pixelSize: 12
-                            font.weight: Font.DemiBold
-                        }
-                    }
-
-                    MouseArea {
-                        id: keyboardArea
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: Keyboard.toggle()
-                    }
-                }
-
-                Rectangle {
-                    id: mixerButton
-
-                    readonly property bool isOpen: Ui.popup === win.popupKey("mixer")
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: mixerRow.implicitWidth + 18
-                    height: 24
-                    radius: 8
-                    color: mixerArea.containsMouse || isOpen ? Theme.hover : "transparent"
-
-                    Row {
-                        id: mixerRow
-
-                        anchors.centerIn: parent
-                        spacing: 5
-
-                        MIcon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            name: win.volumeIcon
-                            font.pixelSize: 17
-                            color: win.muted ? Theme.danger : Theme.text
-                        }
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: Math.round(win.volume * 100) + "%"
-                            color: win.muted ? Theme.textDim : Theme.text
-                            font.pixelSize: 12
-                            font.weight: Font.Medium
-                        }
-                    }
-
-                    MouseArea {
-                        id: mixerArea
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-                        onClicked: mouse => {
-                            if (mouse.button === Qt.MiddleButton) {
-                                if (win.sink?.audio)
-                                    win.sink.audio.muted = !win.sink.audio.muted;
-                            } else if (Date.now() - win.dismissedMixer > 300) {
-                                win.togglePopup("mixer");
-                            }
-                        }
-                        onWheel: wheel => {
-                            if (win.sink?.audio)
-                                win.sink.audio.volume = Math.max(0, Math.min(1, win.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05)));
-                        }
-                    }
-                }
-
-                Rectangle {
-                    id: appsButton
-
-                    readonly property bool isOpen: Ui.popup === win.popupKey("apps")
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: appsRow.implicitWidth + 16
-                    height: 24
-                    radius: 8
-                    color: appsArea.containsMouse || isOpen ? Theme.hover : "transparent"
-
-                    Row {
-                        id: appsRow
+                        id: cluster
 
                         anchors.centerIn: parent
                         spacing: 2
 
-                        MIcon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            name: "expand_more"
-                            rotation: appsButton.isOpen ? 180 : 0
+                        // Layout de teclado: clic para alternar (igual que Alt+Shift)
+                        BarButton {
+                            id: keyboardButton
 
-                            Behavior on rotation {
+                            anchors.verticalCenter: parent.verticalCenter
+                            icon: "keyboard"
+                            label: Keyboard.code
+                            labelMinWidth: 42
+                            onClicked: Keyboard.toggle()
+                        }
+
+                        // Volumen: clic abre la mezcladora, rueda cambia el volumen, clic del medio silencia
+                        BarButton {
+                            id: mixerButton
+
+                            readonly property bool isOpen: Ui.popup === win.popupKey("mixer")
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            active: isOpen
+                            icon: win.volumeIcon
+                            iconColor: win.muted ? Theme.danger : Theme.text
+                            label: Math.round(win.volume * 100) + "%"
+                            labelColor: win.muted ? Theme.textDim : Theme.text
+                            labelMinWidth: 34
+                            onClicked: mouse => {
+                                if (mouse.button === Qt.MiddleButton) {
+                                    if (win.sink?.audio)
+                                        win.sink.audio.muted = !win.sink.audio.muted;
+                                } else if (Date.now() - win.dismissedMixer > 300) {
+                                    win.togglePopup("mixer");
+                                }
+                            }
+                            onScrolled: wheel => {
+                                if (win.sink?.audio)
+                                    win.sink.audio.volume = Math.max(0, Math.min(1, win.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05)));
+                            }
+                        }
+
+                        // Notificaciones: la campana suena cuando llega una; clic abre el historial
+                        BarButton {
+                            id: bellButton
+
+                            readonly property bool isOpen: Ui.popup === win.popupKey("notifs")
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            active: isOpen
+                            icon: Notifs.dnd ? "notifications_off" : (Notifs.count > 0 ? "notifications_unread" : "notifications")
+                            iconColor: Notifs.dnd ? Theme.textDim : Theme.text
+                            iconOrigin: Item.Top
+                            label: Notifs.count > 0 ? String(Notifs.count) : ""
+                            labelColor: Theme.accent
+                            onClicked: mouse => {
+                                if (mouse.button === Qt.MiddleButton)
+                                    Notifs.dnd = !Notifs.dnd;
+                                else if (Date.now() - win.dismissedNotifs > 300)
+                                    win.togglePopup("notifs");
+                            }
+
+                            // La campana se mece y el número "salta" al llegar una notificación
+                            SequentialAnimation {
+                                id: ring
+
+                                NumberAnimation {
+                                    target: bellButton
+                                    property: "iconRotation"
+                                    to: 20
+                                    duration: 80
+                                    easing.type: Easing.OutQuad
+                                }
+                                NumberAnimation {
+                                    target: bellButton
+                                    property: "iconRotation"
+                                    to: -16
+                                    duration: 120
+                                    easing.type: Easing.InOutQuad
+                                }
+                                NumberAnimation {
+                                    target: bellButton
+                                    property: "iconRotation"
+                                    to: 11
+                                    duration: 110
+                                    easing.type: Easing.InOutQuad
+                                }
+                                NumberAnimation {
+                                    target: bellButton
+                                    property: "iconRotation"
+                                    to: -6
+                                    duration: 100
+                                    easing.type: Easing.InOutQuad
+                                }
+                                NumberAnimation {
+                                    target: bellButton
+                                    property: "iconRotation"
+                                    to: 0
+                                    duration: 120
+                                    easing.type: Easing.OutQuad
+                                }
+                            }
+
+                            NumberAnimation {
+                                id: pop
+
+                                target: bellButton.labelItem
+                                property: "scale"
+                                from: 1.8
+                                to: 1
+                                duration: 380
+                                easing.type: Easing.OutBack
+                                easing.overshoot: 1.6
+                            }
+
+                            Connections {
+                                target: Notifs
+
+                                function onReceived(): void {
+                                    if (!Notifs.dnd)
+                                        ring.restart();
+                                    pop.restart();
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 1
+                            height: 14
+                            color: Theme.border
+                        }
+
+                        // Apps abiertas: ventanas y las que siguen corriendo sin ventana
+                        BarButton {
+                            id: appsButton
+
+                            readonly property bool isOpen: Ui.popup === win.popupKey("apps")
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            active: isOpen
+                            icon: "expand_more"
+                            iconRotation: isOpen ? 180 : 0
+                            label: String(Hyprland.toplevels.values.length)
+                            onClicked: {
+                                if (Date.now() - win.dismissedApps > 300)
+                                    win.togglePopup("apps");
+                            }
+
+                            Behavior on iconRotation {
                                 NumberAnimation {
                                     duration: Theme.popupDuration
                                     easing.type: Easing.OutCubic
                                 }
                             }
-                        }
 
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: Hyprland.toplevels.values.length
-                            color: Theme.text
-                            font.pixelSize: 12
-                            font.weight: Font.Medium
-                        }
-
-                        // Apps que siguen corriendo sin ventana
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: Apps.background.length > 0
-                            text: "+" + Apps.background.length
-                            color: Theme.accent
-                            font.pixelSize: 12
-                            font.weight: Font.Medium
-                        }
-                    }
-
-                    MouseArea {
-                        id: appsArea
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            if (Date.now() - win.dismissedApps > 300)
-                                win.togglePopup("apps");
+                            // Apps que siguen corriendo sin ventana
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: Apps.background.length > 0
+                                text: "+" + Apps.background.length
+                                color: Theme.accent
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                            }
                         }
                     }
                 }

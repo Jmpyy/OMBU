@@ -33,11 +33,20 @@ Rectangle {
         return h < 24 ? "hace " + h + " h" : "hace " + Math.floor(h / 24) + " d";
     }
 
-    implicitHeight: content.implicitHeight + 26
+    // Los avisos con cuenta regresiva llevan una barra de tiempo abajo
+    readonly property bool timed: floating && entry.hasTimer
+
+    implicitHeight: content.implicitHeight + (timed ? 34 : 26)
     radius: 18
     color: floating ? Theme.bg : Theme.surface
     border.width: floating ? 1 : 0
-    border.color: Theme.border
+    border.color: hover.hovered ? Qt.rgba(1, 1, 1, 0.24) : Theme.border
+
+    Behavior on border.color {
+        ColorAnimation {
+            duration: 160
+        }
+    }
 
     HoverHandler {
         id: hover
@@ -61,6 +70,43 @@ Rectangle {
         height: parent.height * 0.5
         radius: 2
         color: Theme.danger
+
+        // Respira para llamar la atención sin ser agresiva
+        SequentialAnimation on opacity {
+            loops: Animation.Infinite
+            running: root.entry.critical
+
+            NumberAnimation {
+                to: 0.35
+                duration: 900
+                easing.type: Easing.InOutSine
+            }
+            NumberAnimation {
+                to: 1
+                duration: 900
+                easing.type: Easing.InOutSine
+            }
+        }
+    }
+
+    // Tiempo que le queda al aviso; se detiene cuando el mouse está encima
+    Rectangle {
+        visible: root.timed
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 18
+        anchors.bottomMargin: 9
+        height: 3
+        radius: 1.5
+        width: (parent.width - 36) * root.entry.remaining
+        color: root.entry.critical ? Theme.danger : Theme.accent
+        opacity: hover.hovered ? 1 : 0.7
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 160
+            }
+        }
     }
 
     RowLayout {
@@ -69,6 +115,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenterOffset: root.timed ? -4 : 0
         anchors.leftMargin: 14
         anchors.rightMargin: 12
         spacing: 12
@@ -199,8 +246,15 @@ Rectangle {
         width: 24
         height: 24
         radius: 12
-        visible: hover.hovered
+        opacity: hover.hovered ? 1 : 0
+        visible: opacity > 0.01
         color: closeArea.containsMouse ? Theme.danger : Theme.track
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 140
+            }
+        }
 
         MIcon {
             anchors.centerIn: parent

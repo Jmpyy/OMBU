@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import QtQuick.Layouts
 
 // Historial de notificaciones, colgando de la campana de la barra.
@@ -131,7 +132,9 @@ DropPopup {
                 spacing: 8
 
                 Repeater {
-                    model: Notifs.history
+                    model: ScriptModel {
+                        values: Notifs.history
+                    }
 
                     NotifCard {
                         required property var modelData

@@ -83,7 +83,9 @@ DropPopup {
             }
 
             Repeater {
-                model: root.apps
+                model: ScriptModel {
+                    values: root.apps
+                }
 
                 RowLayout {
                     id: app

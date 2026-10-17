@@ -22,7 +22,9 @@ ColumnLayout {
     }
 
     Repeater {
-        model: Notifs.history.slice(0, root.maxItems)
+        model: ScriptModel {
+            values: Notifs.history.slice(0, root.maxItems)
+        }
 
         Rectangle {
             id: card
