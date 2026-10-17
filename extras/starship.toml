@@ -1,35 +1,89 @@
-# Prompt con el estilo de ombu: minimalista, una línea de contexto y la flecha.
-add_newline = false
+# Prompt de dos líneas con el estilo de ombu.
+#   arriba: barra con la carpeta (en un fondo violeta), rama y estado de git, y a la derecha
+#           el lenguaje del proyecto, lo que tardó el último comando y la hora
+#   abajo:  la línea para escribir
+add_newline = true
 palette = "ombu"
-format = """$directory$git_branch$git_status$cmd_duration
+
+format = """
+[](fg:accent)$directory[](fg:accent) $git_branch$git_status$fill $python$nodejs$rust$golang$cmd_duration$time
 $character"""
 
 [palettes.ombu]
 accent = "#a78bfa"
+light = "#c4b5fd"
 dim = "#8a8a9c"
+line = "#2b2a38"
 danger = "#f87171"
 warn = "#fbbf24"
+ok = "#86efac"
+dark = "#14131a"
 
+# Carpeta: píldora violeta con ícono. Las carpetas de siempre tienen el suyo.
 [directory]
-style = "bold accent"
-truncation_length = 3
-truncate_to_repo = true
+style = "bold fg:dark bg:accent"
+format = "[ $path$read_only ]($style)"
 read_only = " 󰌾"
+home_symbol = "󰋜 ~"
+truncation_length = 3
+truncation_symbol = "…/"
+truncate_to_repo = true
+
+[directory.substitutions]
+"Documentos" = "󰈙 Documentos"
+"Descargas" = "󰇚 Descargas"
+"Imágenes" = "󰋩 Imágenes"
+"Música" = "󰎄 Música"
+"Vídeos" = "󰕧 Vídeos"
+"Escritorio" = "󰍹 Escritorio"
+"Proyectos" = "󰲋 Proyectos"
+".config" = "󰒓 .config"
 
 [git_branch]
 symbol = " "
-style = "dim"
+style = "fg:light"
 format = "[$symbol$branch]($style) "
 
 [git_status]
-style = "warn"
+style = "fg:warn"
 format = '([$all_status$ahead_behind]($style) )'
 
+# Una línea tenue que une los dos lados de la barra
+[fill]
+symbol = "─"
+style = "fg:line"
+
+[nodejs]
+symbol = " "
+style = "fg:dim"
+format = "[$symbol$version]($style) "
+
+[python]
+symbol = " "
+style = "fg:dim"
+format = '[$symbol$version]($style) '
+
+[rust]
+symbol = " "
+style = "fg:dim"
+format = "[$symbol$version]($style) "
+
+[golang]
+symbol = " "
+style = "fg:dim"
+format = "[$symbol$version]($style) "
+
 [cmd_duration]
-min_time = 4000
-style = "dim"
+min_time = 3000
+style = "fg:dim"
 format = "[󰔛 $duration]($style) "
 
+[time]
+disabled = false
+time_format = "%H:%M"
+style = "fg:dim"
+format = "[󰥔 $time]($style)"
+
 [character]
-success_symbol = "[❯](bold accent)"
-error_symbol = "[❯](bold danger)"
+success_symbol = "[❯](bold fg:accent)"
+error_symbol = "[❯](bold fg:danger)"
