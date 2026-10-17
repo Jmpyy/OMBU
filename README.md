@@ -16,7 +16,7 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 
 | | |
 |---|---|
-| **Escritorios** | Los escritorios de cada monitor (cada barra muestra los suyos), con el ícono de la app de cada uno; el activo se ensancha con su número. |
+| **Escritorios** | Los escritorios de cada monitor (cada barra muestra los suyos), con el ícono de la app de cada uno; el activo se ensancha con su número. El escritorio `gaming` de Hyprland aparece cuando tiene ventanas. |
 | **Reloj y calendario** | Fecha y hora; al pasar el mouse la fecha se completa. Clic abre el calendario. |
 | **Volumen y mezcladora** | Dispositivo de salida y de entrada, y un volumen por cada app. Rueda cambia el volumen, clic del medio silencia. |
 | **Notificaciones** | Servidor propio (reemplaza a swaync, mako o dunst): tarjetas animadas, historial, *No molestar*, acciones. |
@@ -26,7 +26,7 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 
 **Y además:**
 
-- **Launcher** estilo Spotlight (`Super+Espacio`): una barra de búsqueda y, vacía, tus apps de siempre (favoritas y las que más abrís, aprende solo). Oculta los ajustes y herramientas del sistema de la lista principal, aunque los encontrás al escribir su nombre. `Ctrl+P` fija o suelta una favorita.
+- **Launcher** estilo Spotlight (`Super+Espacio`): una barra de búsqueda y, vacía, tus apps de siempre (favoritas y las que más abrís, aprende solo). Oculta los ajustes y herramientas del sistema de la lista principal, aunque los encontrás al escribir su nombre. `Enter` abre la app o, si ya está abierta, **enfoca su ventana** (no abre otra); `Shift+Enter` fuerza una ventana nueva. `Ctrl+P` fija o suelta una favorita.
 - **Menú de energía** al centro: Bloquear, Reposo, Cerrar sesión, Reiniciar y Apagar (las dos últimas piden un segundo toque).
 - **Indicador de volumen** (OSD) discreto.
 - **Bloqueo de pantalla** real (`ext-session-lock`): reloj, avatar, contraseña con PAM, música en reproducción, notificaciones y aviso de Bloq Mayús.
@@ -119,7 +119,7 @@ Ese archivo ([`hypr/ombu.lua`](hypr/ombu.lua)) arranca el shell, agrega los ataj
 ```sh
 qs -c ombu ipc call bar toggle        # mostrar u ocultar la barra
 qs -c ombu ipc call bar mixer         # también: calendar, apps, devices, tray
-qs -c ombu ipc call launcher toggle   # o: search "texto", close
+qs -c ombu ipc call launcher toggle   # o: search "texto", close, run ID (abre o enfoca una app)
 qs -c ombu ipc call clip toggle       # historial del portapapeles
 qs -c ombu ipc call notif dnd         # también: dismiss, dismissAll, invoke, history
 qs -c ombu ipc call lock lock         # bloqueo real
