@@ -6,7 +6,7 @@ add_newline = true
 palette = "ombu"
 
 format = """
-[](fg:accent)$directory[](fg:accent) $git_branch$git_status$fill $python$nodejs$rust$golang$cmd_duration$time
+[](fg:accent)$directory[](fg:accent) $git_branch$git_status$fill $c$cmake$python$nodejs$rust$golang$cmd_duration$time
 $character"""
 
 [palettes.ombu]
@@ -52,6 +52,16 @@ format = '([$all_status$ahead_behind]($style) )'
 [fill]
 symbol = "─"
 style = "fg:line"
+
+[c]
+symbol = " "
+style = "fg:dim"
+format = "[$symbol$name $version]($style) "
+
+[cmake]
+symbol = "△ "
+style = "fg:dim"
+format = "[$symbol$version]($style) "
 
 [nodejs]
 symbol = " "
