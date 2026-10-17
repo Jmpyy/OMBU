@@ -1,0 +1,31 @@
+#!/bin/sh
+# Sesión de greetd con el greeter de ombu (reemplaza a noctalia-greeter-session).
+# Si el greeter de ombu no arranca bien, cae al greeter de Noctalia para no dejarte
+# sin pantalla de inicio de sesión.
+SHARE="${OMBU_SHARE:-/usr/share/ombu-greeter}"
+FALLBACK="${OMBU_GREETER_FALLBACK:-/usr/bin/noctalia-greeter-session}"
+RT="${OMBU_GREETER_RT:-/tmp/ombu-greeter}"
+export OMBU_SHARE="$SHARE" OMBU_GREETER_RT="$RT"
+
+rm -rf "$RT"
+mkdir -p "$RT/cache" "$RT/state" "$RT/data" "$RT/config" "$RT/xdg"
+chmod 700 "$RT/xdg"
+export XDG_CACHE_HOME="$RT/cache" XDG_STATE_HOME="$RT/state" XDG_DATA_HOME="$RT/data" XDG_CONFIG_HOME="$RT/config"
+# Sin carpeta de ejecución utilizable (pam_systemd no la creó), se usa una propia
+if [ -z "${XDG_RUNTIME_DIR:-}" ] || [ ! -w "${XDG_RUNTIME_DIR:-/nonexistent}" ]; then
+    export XDG_RUNTIME_DIR="$RT/xdg"
+fi
+export XDG_SESSION_TYPE=wayland
+unset WAYLAND_DISPLAY
+
+if command -v dbus-run-session >/dev/null 2>&1; then
+    dbus-run-session -- start-hyprland -- --config "$SHARE/hyprland.lua" >"$RT/hyprland.log" 2>&1
+else
+    start-hyprland -- --config "$SHARE/hyprland.lua" >"$RT/hyprland.log" 2>&1
+fi
+
+# La interfaz escribe "done" cuando el usuario inició sesión y la interfaz se cerró bien
+[ -e "$RT/done" ] && exit 0
+
+logger -t ombu-greeter "el greeter de ombu no arrancó bien; se usa el de Noctalia" 2>/dev/null
+exec "$FALLBACK"

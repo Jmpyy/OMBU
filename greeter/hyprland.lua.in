@@ -1,0 +1,29 @@
+-- Hyprland mínimo para el greeter de ombu. Lo genera install.sh a partir de esta plantilla.
+-- Solo existe para dar un compositor a la pantalla de inicio de sesión; no tiene atajos
+-- de teclado ni nada más.
+@ENV_LINES@
+hl.config({
+    input = {
+        kb_layout = "@KB_LAYOUT@",
+        kb_options = "@KB_OPTIONS@",
+        numlock_by_default = true,
+    },
+    animations = {
+        enabled = false,
+    },
+    misc = {
+        disable_hyprland_logo = true,
+        disable_splash_rendering = true,
+        force_default_wallpaper = 0,
+    },
+    ecosystem = {
+        no_update_news = true,
+        no_donation_nag = true,
+    },
+})
+
+hl.layer_rule({ match = { namespace = "^ombu-greeter$" }, no_anim = true })
+
+hl.on("hyprland.start", function ()
+    hl.exec_cmd("@SHARE@/run-greeter.sh")
+end)
