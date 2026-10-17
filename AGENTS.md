@@ -66,6 +66,11 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 - No uses `pkill -f` con un patrón que también aparezca en tu propio comando: te matás a vos. Usá el PID o `pkill -x`.
 - No borres con `rm` y una variable que pueda estar vacía.
 
+**Ventanas y apps**
+- `Hyprland.toplevels` puede traer **ventanas fantasma** (sin escritorio): el Minecraft Launcher esconde su ventana y queda ahí. Usá siempre `Apps.windows` (las filtra) para listarlas o contarlas.
+- Hay apps que **capturan SIGTERM** (el Minecraft Launcher): cerrar un proceso en segundo plano escala a SIGKILL por PID (`Apps.close`).
+- Las reglas de ventanas de la persona mandan los juegos al escritorio con nombre `gaming` (id negativo): la barra lo muestra solo si tiene ventanas.
+
 **Pantalla y capturas**
 - Dos monitores: `HDMI-A-1` (principal) y `DP-2` (un TV, suele estar apagado). **`grim` se cuelga en DP-2**: capturá siempre con `grim -o HDMI-A-1` y con límite de tiempo.
 - La persona **usa la PC mientras trabajás**. El IPC de ombu actúa sobre el **monitor con foco**: si el foco está en otro lado, el menú aparece ahí y la captura sale vacía.

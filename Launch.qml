@@ -67,7 +67,7 @@ Singleton {
         const id = entry.id.toLowerCase();
         const cls = (entry.startupClass ?? "").toLowerCase();
         const name = entry.name.toLowerCase();
-        return Hyprland.toplevels.values.filter(t => {
+        return Apps.windows.filter(t => {
             const app = (t.wayland?.appId ?? "").toLowerCase();
             return app !== "" && (app === id || app === cls || app === name || DesktopEntries.heuristicLookup(app)?.id === entry.id);
         });

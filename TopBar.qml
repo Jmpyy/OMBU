@@ -442,7 +442,7 @@ PanelWindow {
                             active: isOpen
                             icon: "expand_more"
                             iconRotation: isOpen ? 180 : 0
-                            label: String(Hyprland.toplevels.values.length)
+                            label: String(Apps.windows.length)
                             onClicked: {
                                 if (Date.now() - win.dismissedApps > 300)
                                     win.togglePopup("apps");

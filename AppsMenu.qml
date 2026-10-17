@@ -11,7 +11,7 @@ DropPopup {
     readonly property int rowHeight: 48
     readonly property int maxRows: 7
     readonly property var windows: {
-        const list = Array.from(Hyprland.toplevels.values);
+        const list = Array.from(Apps.windows);
         // Los workspaces especiales (minimizadas, scratchpad) tienen id negativo: van al final
         const rank = t => {
             const id = t.workspace?.id ?? 0;
@@ -154,12 +154,27 @@ DropPopup {
                             anchors.rightMargin: 8
                             spacing: 12
 
-                            Image {
+                            Item {
                                 Layout.preferredWidth: 30
                                 Layout.preferredHeight: 30
-                                source: Icons.forApp(row.appId, row.entry ? row.entry.icon : "")
-                                sourceSize: Qt.size(60, 60)
-                                smooth: true
+
+                                Image {
+                                    id: rowIcon
+
+                                    anchors.fill: parent
+                                    visible: source != ""
+                                    source: Icons.forApp(row.appId, row.entry ? row.entry.icon : "")
+                                    sourceSize: Qt.size(60, 60)
+                                    smooth: true
+                                }
+
+                                MIcon {
+                                    anchors.centerIn: parent
+                                    visible: rowIcon.source == ""
+                                    name: "apps"
+                                    color: Theme.textDim
+                                    font.pixelSize: 24
+                                }
                             }
 
                             ColumnLayout {
@@ -303,14 +318,27 @@ DropPopup {
                         anchors.rightMargin: 8
                         spacing: 12
 
-                        Image {
+                        Item {
                             Layout.preferredWidth: 30
                             Layout.preferredHeight: 30
-                            source: {
-                                return Icons.forApp(bgRow.modelData.id, bgRow.modelData.icon);
+
+                            Image {
+                                id: bgIcon
+
+                                anchors.fill: parent
+                                visible: source != ""
+                                source: Icons.forApp(bgRow.modelData.id, bgRow.modelData.icon)
+                                sourceSize: Qt.size(60, 60)
+                                smooth: true
                             }
-                            sourceSize: Qt.size(60, 60)
-                            smooth: true
+
+                            MIcon {
+                                anchors.centerIn: parent
+                                visible: bgIcon.source == ""
+                                name: "apps"
+                                color: Theme.textDim
+                                font.pixelSize: 24
+                            }
                         }
 
                         ColumnLayout {
