@@ -63,9 +63,9 @@ ShellRoot {
         LauncherMenu {}
     }
 
-    // qs -c nuestro ipc call bar toggle  -> mostrar/ocultar la barra
-    // qs -c nuestro ipc call bar mixer   -> abrir/cerrar la mezcladora (monitor con foco)
-    // qs -c nuestro ipc call bar apps    -> abrir/cerrar las apps abiertas (monitor con foco)
+    // qs -c ombu ipc call bar toggle  -> mostrar/ocultar la barra
+    // qs -c ombu ipc call bar mixer   -> abrir/cerrar la mezcladora (monitor con foco)
+    // qs -c ombu ipc call bar apps    -> abrir/cerrar las apps abiertas (monitor con foco)
     IpcHandler {
         function toggle(): void {
             Ui.barShown = !Ui.barShown;
@@ -89,8 +89,8 @@ ShellRoot {
         target: "bar"
     }
 
-    // qs -c nuestro ipc call launcher toggle
-    // qs -c nuestro ipc call launcher search "texto"  -> abre con el texto ya escrito
+    // qs -c ombu ipc call launcher toggle
+    // qs -c ombu ipc call launcher search "texto"  -> abre con el texto ya escrito
     IpcHandler {
         function toggle(): void {
             Ui.powerOpen = false;
@@ -115,11 +115,11 @@ ShellRoot {
         target: "launcher"
     }
 
-    // qs -c nuestro ipc call notif dismiss     -> cerrar la última notificación
-    // qs -c nuestro ipc call notif dismissAll  -> cerrar todas
-    // qs -c nuestro ipc call notif invoke      -> ejecutar la acción de la última
-    // qs -c nuestro ipc call notif dnd         -> activar o desactivar No molestar
-    // qs -c nuestro ipc call notif history     -> abrir o cerrar el historial
+    // qs -c ombu ipc call notif dismiss     -> cerrar la última notificación
+    // qs -c ombu ipc call notif dismissAll  -> cerrar todas
+    // qs -c ombu ipc call notif invoke      -> ejecutar la acción de la última
+    // qs -c ombu ipc call notif dnd         -> activar o desactivar No molestar
+    // qs -c ombu ipc call notif history     -> abrir o cerrar el historial
     IpcHandler {
         function dismiss(): void {
             Notifs.dismissLatest();
@@ -145,8 +145,8 @@ ShellRoot {
         target: "notif"
     }
 
-    // qs -c nuestro ipc call lock lock     -> bloqueo REAL de la sesión
-    // qs -c nuestro ipc call lock preview  -> vista previa (ventana común, Esc la cierra)
+    // qs -c ombu ipc call lock lock     -> bloqueo REAL de la sesión
+    // qs -c ombu ipc call lock preview  -> vista previa (ventana común, Esc la cierra)
     // No existe un comando para desbloquear a propósito: cualquier proceso del usuario
     // podría usarlo. El bloqueo real solo se abre con la contraseña.
     IpcHandler {
@@ -172,7 +172,7 @@ ShellRoot {
         target: "lock"
     }
 
-    // qs -c nuestro ipc call power toggle
+    // qs -c ombu ipc call power toggle
     IpcHandler {
         function toggle(): void {
             Ui.powerOpen = !Ui.powerOpen;

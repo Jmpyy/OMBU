@@ -18,7 +18,7 @@ PanelWindow {
     }
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Background
-    WlrLayershell.namespace: "nuestro-wallpaper"
+    WlrLayershell.namespace: "ombu-wallpaper"
 
     Image {
         anchors.fill: parent

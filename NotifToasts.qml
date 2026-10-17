@@ -35,7 +35,7 @@ PanelWindow {
     implicitWidth: 380
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Top
-    WlrLayershell.namespace: "nuestro-notifs"
+    WlrLayershell.namespace: "ombu-notifs"
 
     // Los clics solo se capturan sobre las tarjetas
     mask: Region {

@@ -74,7 +74,7 @@ PanelWindow {
     }
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "nuestro-power"
+    WlrLayershell.namespace: "ombu-power"
     WlrLayershell.keyboardFocus: Ui.powerOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     onVisibleChanged: if (!visible)

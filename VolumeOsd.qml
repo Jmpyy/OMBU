@@ -46,7 +46,7 @@ PanelWindow {
     implicitHeight: 64
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "nuestro-osd"
+    WlrLayershell.namespace: "ombu-osd"
 
     // Región vacía: los clics lo atraviesan
     mask: Region {}

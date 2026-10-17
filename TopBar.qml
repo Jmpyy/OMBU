@@ -43,7 +43,7 @@ PanelWindow {
     }
     implicitHeight: fullHeight
     exclusiveZone: Ui.barShown ? Theme.barHeight : 0
-    WlrLayershell.namespace: "nuestro-bar"
+    WlrLayershell.namespace: "ombu-bar"
 
     // Los clics solo se capturan sobre la barra; las esquinas dejan pasar
     mask: Region {
