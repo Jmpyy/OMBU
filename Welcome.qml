@@ -89,7 +89,8 @@ Singleton {
     }
 
     Component.onCompleted: {
-        if (marker.loaded)
+        // text() lee el archivo en el momento; "loaded" todavía no es fiable a esta altura
+        if (marker.text().trim() !== "")
             return;
         Quickshell.execDetached(["sh", "-c", "echo 1 > \"$1\"", "sh", marker.path]);
         play();
