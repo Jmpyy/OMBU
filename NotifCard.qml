@@ -18,19 +18,37 @@ Rectangle {
     readonly property string previewSource: {
         if (entry.appName !== "Capturas")
             return "";
-        const path = entry.image || entry.appIcon;
+        let path = entry.image || entry.appIcon;
         if (!path)
             return "";
-        return path.startsWith("/") ? "file://" + path : path;
+        // Quickshell entrega el ícono de la app como image://icon/LO-QUE-PIDIÓ-LA-APP
+        if (path.startsWith("image://icon/"))
+            path = path.slice("image://icon/".length);
+        // Solo archivos de imagen: un nombre de ícono del tema no es una captura
+        if (path.startsWith("file://"))
+            return path;
+        return path.startsWith("/") ? "file://" + path : "";
+    }
+
+    // Los íconos de tema llegan como image://icon/NOMBRE: si el tema no tiene ese ícono, Qt dibuja un
+    // cuadro magenta de error en su lugar. Se resuelve por nombre y, si falta, no se muestra nada.
+    function resolveIcon(src: string): string {
+        if (!src.startsWith("image://icon/"))
+            return src;
+        const name = src.slice("image://icon/".length);
+        return name.startsWith("/") ? "file://" + name : Quickshell.iconPath(name, true);
     }
 
     readonly property string iconSource: {
         if (previewSource !== "")
             return "";
         if (entry.image)
-            return entry.image;
-        if (entry.appIcon)
-            return entry.appIcon.startsWith("/") ? "file://" + entry.appIcon : Quickshell.iconPath(entry.appIcon, "");
+            return resolveIcon(entry.image);
+        if (entry.appIcon) {
+            if (entry.appIcon.startsWith("/"))
+                return "file://" + entry.appIcon;
+            return resolveIcon(entry.appIcon.startsWith("image://") ? entry.appIcon : "image://icon/" + entry.appIcon);
+        }
         const e = DesktopEntries.heuristicLookup(entry.desktopEntry || entry.appName);
         return e ? Quickshell.iconPath(e.icon, "") : "";
     }
@@ -156,7 +174,7 @@ Rectangle {
             MIcon {
                 anchors.centerIn: parent
                 visible: !icon.visible
-                name: root.previewSource !== "" ? "photo_camera" : "notifications"
+                name: root.entry.appName === "Capturas" ? "photo_camera" : "notifications"
                 color: Theme.textDim
             }
         }
@@ -212,7 +230,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.topMargin: 6
                 Layout.preferredHeight: 120
-                visible: root.previewSource !== ""
+                visible: root.previewSource !== "" && preview.status !== Image.Error
 
                 Rectangle {
                     id: previewMask
@@ -224,6 +242,8 @@ Rectangle {
                 }
 
                 Image {
+                    id: preview
+
                     anchors.fill: parent
                     source: root.previewSource
                     fillMode: Image.PreserveAspectCrop

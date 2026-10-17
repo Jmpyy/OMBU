@@ -100,7 +100,7 @@ ocr)
     fi
     printf '%s' "$text" | wl-copy
     preview=$(printf '%s' "$text" | tr '\n' ' ' | cut -c1-110)
-    say -i edit-copy "Texto copiado" "$preview"
+    say "Texto copiado" "$preview"
     ;;
 *)
     echo "uso: shot.sh edit|quick|full|ocr" >&2
