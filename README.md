@@ -43,6 +43,13 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
   <img src="docs/screenshots/calendar.png" width="230" alt="Calendario">
   <img src="docs/screenshots/tray-menu.png" width="230" alt="Menú de un ícono de la bandeja">
 </p>
+<p align="center">
+  <img src="docs/screenshots/devices-menu.png" width="300" alt="Centro de dispositivos">
+  <img src="docs/screenshots/mixer-menu.png" width="300" alt="Mezcladora de audio">
+</p>
+<p align="center">
+  <img src="docs/screenshots/power-menu.png" width="560" alt="Menú de energía">
+</p>
 
 ## Requisitos
 
