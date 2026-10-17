@@ -10,6 +10,8 @@ Singleton {
     id: root
 
     property string layoutName: ""
+    // Bloq Mayús activado en el teclado principal
+    property bool caps: false
     readonly property string code: shortCode(layoutName)
 
     function shortCode(name: string): string {
@@ -27,8 +29,23 @@ Singleton {
         Quickshell.execDetached(["hyprctl", "switchxkblayout", "all", "next"]);
     }
 
-    // Estado inicial: el layout del teclado principal
+    // Hyprland no avisa los cambios de Bloq Mayús: se vuelve a leer cuando hace falta
+    function refreshLeds(): void {
+        ledTimer.restart();
+    }
+
+    Timer {
+        id: ledTimer
+
+        // El estado cambia un instante después de apretar la tecla
+        interval: 80
+        onTriggered: leds.running = true
+    }
+
+    // Estado inicial: el layout del teclado principal y el Bloq Mayús
     Process {
+        id: leds
+
         running: true
         command: ["hyprctl", "devices", "-j"]
 
@@ -37,12 +54,24 @@ Singleton {
                 try {
                     const keyboards = JSON.parse(text).keyboards;
                     const main = keyboards.find(k => k.main) ?? keyboards[0];
-                    if (main)
+                    if (main) {
                         root.layoutName = main.active_keymap;
+                        root.caps = main.capsLock === true;
+                    }
                 } catch (e) {
                     console.warn("No pude leer el layout de teclado:", e);
                 }
             }
+        }
+    }
+
+    // Al bloquear, el Bloq Mayús pudo haber quedado activado
+    Connections {
+        target: Ui
+
+        function onLockedChanged(): void {
+            if (Ui.locked)
+                root.refreshLeds();
         }
     }
 

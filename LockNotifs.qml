@@ -37,12 +37,37 @@ ColumnLayout {
                 return e ? Quickshell.iconPath(e.icon, "") : "";
             }
 
+            required property int index
+
             Layout.fillWidth: true
             Layout.preferredHeight: 58
             radius: 16
             color: Theme.bg
             border.width: 1
             border.color: Theme.border
+
+            // Entrada escalonada: cada tarjeta llega un poco después de la anterior
+            opacity: 0
+            transform: Translate {
+                x: (1 - card.opacity) * 40
+            }
+
+            Component.onCompleted: enter.start()
+
+            SequentialAnimation {
+                id: enter
+
+                PauseAnimation {
+                    duration: 120 + card.index * 90
+                }
+                NumberAnimation {
+                    target: card
+                    property: "opacity"
+                    to: 1
+                    duration: 420
+                    easing.type: Easing.OutCubic
+                }
+            }
 
             RowLayout {
                 anchors.fill: parent

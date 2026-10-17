@@ -10,7 +10,11 @@ ShellRoot {
         objects: Pipewire.nodes.values
     }
 
-    Component.onCompleted: Hyprland.refreshToplevels()
+    Component.onCompleted: {
+        Hyprland.refreshToplevels();
+        // Nombrarlo crea el detector de inactividad (bloqueo a los 5 min, monitores a los 30)
+        Idle.start();
+    }
 
     // Historial del portapapeles (lo usa Super+V, ver bin/clip.sh)
     Process {
@@ -169,7 +173,40 @@ ShellRoot {
                 Ui.locked = false;
         }
 
+        // Vista previa con el salvapantallas ya a la vista (inofensiva: Esc la cierra)
+        function saver(): void {
+            if (Ui.locked && !Ui.lockPreview)
+                return;
+            if (Ui.locked) {
+                Saver.active = true;
+                return;
+            }
+            Idle.lockedByIdle = true;
+            Ui.lockPreview = true;
+            Ui.locked = true;
+        }
+
         target: "lock"
+    }
+
+    // qs -c ombu ipc call idle test 10  -> simula la inactividad con 10 s: abre la vista previa
+    //                                      en vez de bloquear y no apaga los monitores
+    // qs -c ombu ipc call idle reset    -> vuelve a los tiempos normales
+    IpcHandler {
+        function test(seconds: int): void {
+            Idle.testMode = true;
+            Idle.lockSeconds = seconds;
+            Idle.rearm();
+        }
+
+        function reset(): void {
+            Idle.testMode = false;
+            Idle.lockSeconds = Theme.idleLockSeconds;
+            Idle.screenOffSeconds = Theme.idleScreenOffSeconds;
+            Idle.rearm();
+        }
+
+        target: "idle"
     }
 
     // qs -c ombu ipc call power toggle

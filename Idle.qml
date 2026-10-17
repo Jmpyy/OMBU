@@ -1,0 +1,88 @@
+pragma Singleton
+
+import QtQuick
+import Quickshell
+import Quickshell.Wayland
+
+// Inactividad: a los idleLockSeconds se bloquea la sesión (con el salvapantallas a la
+// vista) y a los idleScreenOffSeconds se apagan los monitores. IdleMonitor respeta las
+// pausas que piden los reproductores de video, así que no bloquea mientras mirás uno.
+Singleton {
+    id: root
+
+    property int lockSeconds: Theme.idleLockSeconds
+    property int screenOffSeconds: Theme.idleScreenOffSeconds
+
+    // Modo de prueba: en lugar de bloquear de verdad abre la vista previa (se cierra sola
+    // con Esc) y no apaga los monitores, solo lo anota en el log.
+    property bool testMode: false
+    // El bloqueo actual lo causó la inactividad (el salvapantallas arranca a la vista)
+    property bool lockedByIdle: false
+    property bool screensOff: false
+
+    // Los detectores no se vuelven a armar si se les cambia el tiempo estando activos: hay que
+    // apagarlos y encenderlos (rearm). Solo hace falta al cambiar los tiempos en marcha (pruebas).
+    property bool monitorsOn: true
+
+    // Basta con nombrarlo desde shell.qml para que exista
+    function start(): void {
+    }
+
+    function rearm(): void {
+        monitorsOn = false;
+        Qt.callLater(() => root.monitorsOn = true);
+    }
+
+    function lockNow(): void {
+        if (Ui.locked)
+            return;
+        console.log("ombu: inactividad, bloqueando" + (testMode ? " (prueba, vista previa)" : ""));
+        lockedByIdle = true;
+        Ui.lockPreview = testMode;
+        Ui.locked = true;
+    }
+
+    function setScreens(on: bool): void {
+        if (testMode) {
+            console.log("ombu: (prueba) monitores " + (on ? "encendidos" : "apagados"));
+            return;
+        }
+        // Nunca se apagan los monitores de una sesión que no esté bloqueada
+        if (!on && !Ui.locked)
+            return;
+        if (on && !screensOff)
+            return;
+        screensOff = !on;
+        console.log("ombu: monitores " + (on ? "encendidos" : "apagados"));
+        // El formato con tabla es obligatorio: dpms("on") alterna en vez de encender
+        Quickshell.execDetached(["hyprctl", "dispatch", 'hl.dsp.dpms({ action = "' + (on ? "on" : "off") + '" })']);
+    }
+
+    IdleMonitor {
+        enabled: root.monitorsOn
+        timeout: root.lockSeconds
+        // En uso normal respeta los pedidos de "no bloquear" de los reproductores de video;
+        // el modo de prueba los ignora para poder verificar la detección
+        respectInhibitors: !root.testMode
+        onIsIdleChanged: {
+            if (isIdle)
+                root.lockNow();
+        }
+    }
+
+    IdleMonitor {
+        enabled: root.monitorsOn
+        timeout: root.screenOffSeconds
+        respectInhibitors: !root.testMode
+        onIsIdleChanged: root.setScreens(!isIdle)
+    }
+
+    Connections {
+        target: Ui
+
+        function onLockedChanged(): void {
+            if (!Ui.locked)
+                root.lockedByIdle = false;
+        }
+    }
+}

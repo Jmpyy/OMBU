@@ -20,12 +20,24 @@ Singleton {
     readonly property color textDim: "#8a8a9c"
     readonly property color accent: "#a78bfa"
     readonly property color danger: "#f87171"
+    readonly property color warn: "#fbbf24"
     readonly property color hover: Qt.rgba(1, 1, 1, 0.09)
     readonly property color border: Qt.rgba(1, 1, 1, 0.08)
     readonly property color scrim: Qt.rgba(0, 0, 0, 0.55)
 
     // Fondo de pantalla (el mismo que usaba Caelestia; archivo del sistema de CachyOS)
     readonly property string wallpaper: "/usr/share/wallpapers/cachyos-wallpapers/Cachy_Topography.jpg"
+
+    // Bloqueo por inactividad: a los idleLockSeconds se bloquea la sesión mostrando el
+    // salvapantallas ASCII; a los idleScreenOffSeconds se apagan los monitores (siguen
+    // bloqueados). Cualquier tecla o movimiento del mouse los despierta.
+    readonly property int idleLockSeconds: 300
+    readonly property int idleScreenOffSeconds: 1800
+    // Cuadros por segundo del salvapantallas y segundos sin actividad en la pantalla de
+    // bloqueo antes de que el salvapantallas vuelva solo
+    readonly property int saverFps: 12
+    readonly property int saverFontSize: 16
+    readonly property int saverRewakeSeconds: 20
 
     // Tipografía
     readonly property int fontSize: 13
