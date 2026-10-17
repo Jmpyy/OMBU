@@ -1,0 +1,16 @@
+# Editor de capturas (satty): anotar, recortar y copiar. Lo abre ~/.config/quickshell/ombu/bin/shot.sh
+[general]
+fullscreen = false
+early-exit = true
+initial-tool = "arrow"
+copy-command = "wl-copy"
+annotation-size-factor = 2
+save-after-copy = true
+# Enter copia (y guarda); Esc cierra sin guardar. ombu muestra su propio aviso.
+actions-on-enter = ["save-to-clipboard"]
+actions-on-escape = ["exit"]
+disable-notifications = true
+corner-roundness = 12
+
+[color-palette]
+palette = ["#a78bfa", "#f87171", "#fbbf24", "#86efac", "#60a5fa", "#ffffff"]

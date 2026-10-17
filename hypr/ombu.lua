@@ -61,7 +61,7 @@ hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd(ombu .. "/bin/shot.sh full"))
 hl.bind("CONTROL + Print",     hl.dsp.exec_cmd(ombu .. "/bin/shot.sh ocr"))
 
 -- Editor de capturas (satty): ventana flotante al centro
-hl.window_rule({ match = { class = "^(com\\.gabm\\.satty)$" }, float = true, center = true, size = { "monitor_w*0.70", "monitor_h*0.75" } })
+hl.window_rule({ match = { class = "^(com\\.gabm\\.satty)$" }, float = true, center = true, opacity = "1.0 override", size = { "monitor_w*0.70", "monitor_h*0.75" } })
 
 -- Historial del portapapeles
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd(ipc .. "clip toggle"))
