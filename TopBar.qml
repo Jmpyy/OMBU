@@ -189,6 +189,7 @@ PanelWindow {
 
                 WorkspaceStrip {
                     anchors.verticalCenter: parent.verticalCenter
+                    screenName: win.screen.name
                 }
             }
 

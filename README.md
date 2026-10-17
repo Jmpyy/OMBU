@@ -16,7 +16,7 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 
 | | |
 |---|---|
-| **Escritorios** | Los 5 escritorios con el ícono de la app de cada uno; el activo se ensancha con su número. |
+| **Escritorios** | Los escritorios de cada monitor (cada barra muestra los suyos), con el ícono de la app de cada uno; el activo se ensancha con su número. |
 | **Reloj y calendario** | Fecha y hora; al pasar el mouse la fecha se completa. Clic abre el calendario. |
 | **Volumen y mezcladora** | Dispositivo de salida y de entrada, y un volumen por cada app. Rueda cambia el volumen, clic del medio silencia. |
 | **Notificaciones** | Servidor propio (reemplaza a swaync, mako o dunst): tarjetas animadas, historial, *No molestar*, acciones. |
@@ -153,7 +153,7 @@ Todo el aspecto sale de [`Theme.qml`](Theme.qml): colores, radios, tamaños de l
 - **Inactividad:** `idleLockSeconds` (bloqueo, 5 min) e `idleScreenOffSeconds` (monitores, 30 min).
 - **Idioma:** los textos están en español y la fecha usa `es_AR` (`Chrono.qml`).
 - **Íconos de apps:** si una app trae un ícono que no te gusta, agregala a [`Icons.qml`](Icons.qml).
-- **Escritorios:** son 5; el número está en `WorkspaceStrip.qml`.
+- **Escritorios:** cada barra muestra los escritorios que Hyprland asigna a su monitor (reglas `hl.workspace_rule`, ver `hypr/ombu.lua` y tu `workspaces.lua`).
 - **Notificaciones:** [`NotifRules.qml`](NotifRules.qml) permite pasar a español los avisos de ciertas apps y descartar los de algo que ya tenés a la vista (viene una regla para Claude Code en kitty).
 
 Quickshell recarga solo al guardar un archivo `.qml`.

@@ -2,10 +2,20 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 
-// Los 5 escritorios de la barra. El activo se ensancha y muestra su número y el ícono de la
-// app que tiene; los que tienen ventanas muestran el ícono de su app; los vacíos son un punto.
+// Los escritorios del monitor de esta barra (cada monitor tiene los suyos: ver workspaces.lua).
+// El activo se ensancha y muestra su número y el ícono de la app que tiene; los que tienen
+// ventanas muestran el ícono de su app; los vacíos son un punto.
 Row {
     id: root
+
+    // Nombre del monitor de esta barra (ej. "HDMI-A-1")
+    required property string screenName
+
+    // Escritorios que pertenecen a este monitor, en orden. Mostrar los de otro monitor haría que un
+    // clic mande el foco y el puntero a una pantalla que quizá está apagada.
+    readonly property var spaces: Hyprland.workspaces.values.filter(w => w.id > 0 && w.monitor?.name === screenName).sort((a, b) => a.id - b.id)
+    // Escritorio que se está viendo en este monitor
+    readonly property int activeId: Hyprland.monitors.values.find(m => m.name === screenName)?.activeWorkspace?.id ?? -1
 
     spacing: 4
 
@@ -20,14 +30,14 @@ Row {
     }
 
     Repeater {
-        model: 5
+        model: root.spaces
 
         Rectangle {
             id: ws
 
-            required property int index
-            readonly property int wsId: index + 1
-            readonly property bool active: Hyprland.focusedWorkspace?.id === wsId
+            required property var modelData
+            readonly property int wsId: modelData.id
+            readonly property bool active: root.activeId === wsId
             readonly property var windows: root.windowsOf(wsId)
             readonly property bool occupied: windows.length > 0
 
