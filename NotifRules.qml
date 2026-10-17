@@ -21,6 +21,11 @@ Singleton {
             match: n => n.appName.toLowerCase() === "kitty" && /claude/i.test(n.summary + " " + n.body),
             translate: [[/Claude is waiting for your input/i, "Claude te está esperando"], [/Claude needs your permission to use (.+)/i, "Claude necesita tu permiso para usar $1"], [/Claude needs your permission/i, "Claude necesita tu permiso"], [/Claude needs your attention/i, "Claude necesita tu atención"]],
             hideWhenVisible: "kitty"
+        },
+        {
+            // "Terminó" de Claude Code y Antigravity (los manda bin/agent-notify.sh)
+            match: n => ["claude code", "antigravity"].includes(n.appName.toLowerCase()),
+            hideWhenVisible: "kitty"
         }
     ]
 
