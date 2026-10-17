@@ -72,6 +72,11 @@ Singleton {
     property var _lres: []
     property var _ldis: []
     property real _cycleT: 0
+    // Segundos de animación desde que arrancó el ciclo (la bienvenida se guía por este reloj)
+    readonly property real clock: _cycleT
+    // La bienvenida ya mostró todo lo que tenía que mostrar
+    signal welcomeDone
+    readonly property real welcomeLength: 3.4
     property double _last: 0
 
     // La pantalla de bloqueo informa de cuántas columnas y filas de texto le caben
@@ -242,6 +247,8 @@ Singleton {
 
         // Ciclo del logo
         _cycleT += dt;
+        if (welcome && _cycleT >= welcomeLength)
+            welcomeDone();
         if (_cycleT > cycleLength) {
             _cycleT -= cycleLength;
             shuffle();

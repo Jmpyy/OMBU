@@ -21,19 +21,19 @@ Singleton {
     property int fadeMs: 0
     // Línea que se escribe y cuántos caracteres van
     property string line: ""
-    property int typed: 0
+    // Cuántos caracteres van escritos: sigue el reloj de la animación, no el del sistema
+    readonly property int typed: Saver.welcome ? Math.min(line.length, Math.max(0, Math.floor((Saver.clock - 1.4) / 0.03))) : 0
 
     function play(): void {
         if (shown || Ui.locked)
             return;
         Saver.beginWelcome();
         line = (Quickshell.env("USER") ?? "") + "@ombu · sesión iniciada · " + Qt.formatTime(new Date(), "HH:mm");
-        typed = 0;
         fadeMs = 0;
         fade = 1;
         shown = true;
         playing = true;
-        typing.restart();
+        // Respaldo por si la animación no llegara a avanzar
         finish.restart();
     }
 
@@ -60,27 +60,21 @@ Singleton {
 
         path: (Quickshell.env("XDG_RUNTIME_DIR") ?? "/tmp") + "/ombu-welcome-done"
         blockLoading: true
+        printErrors: false
     }
 
-    SequentialAnimation {
-        id: typing
+    Connections {
+        target: Saver
 
-        PauseAnimation {
-            duration: 1200
-        }
-        NumberAnimation {
-            target: root
-            property: "typed"
-            from: 0
-            to: root.line.length
-            duration: root.line.length * 24
+        function onWelcomeDone(): void {
+            root.finishNow();
         }
     }
 
     Timer {
         id: finish
 
-        interval: 2600
+        interval: 12000
         onTriggered: root.finishNow()
     }
 
