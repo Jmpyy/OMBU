@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Services.SystemTray
 
 // Lista de ventanas abiertas (clic para ir a ellas, ✕ para cerrarlas)
 // y, debajo, los íconos de la bandeja si hay alguno.
@@ -21,7 +20,6 @@ DropPopup {
         list.sort((a, b) => rank(a) - rank(b));
         return list;
     }
-    readonly property int trayCount: SystemTray.items.values.length
 
     function entryFor(appId: string): var {
         return appId ? DesktopEntries.heuristicLookup(appId) : null;
@@ -377,100 +375,6 @@ DropPopup {
                                 Apps.open(bgRow.modelData);
                                 root.dismissed();
                             }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Bandeja del sistema: solo aparece si hay íconos
-        ColumnLayout {
-            visible: root.trayCount > 0
-            Layout.fillWidth: true
-            spacing: 8
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Theme.border
-            }
-
-            Text {
-                text: "BANDEJA"
-                color: Theme.textDim
-                font.pixelSize: 11
-                font.weight: Font.DemiBold
-                font.letterSpacing: 0.8
-            }
-
-            Flow {
-                Layout.fillWidth: true
-                spacing: 2
-
-                Repeater {
-                    model: SystemTray.items
-
-                    Item {
-                        id: cell
-
-                        required property SystemTrayItem modelData
-
-                        width: 38
-                        height: 38
-
-                        Rectangle {
-                            anchors.fill: parent
-                            anchors.margins: 2
-                            radius: 10
-                            color: cellHover.hovered ? Theme.hover : "transparent"
-                        }
-
-                        Image {
-                            anchors.centerIn: parent
-                            width: 22
-                            height: 22
-                            source: cell.modelData.icon
-                            sourceSize: Qt.size(44, 44)
-                            smooth: true
-                        }
-
-                        QsMenuAnchor {
-                            id: menuAnchor
-
-                            menu: cell.modelData.menu
-                            anchor.window: root
-                            anchor.edges: Edges.Bottom
-                            anchor.gravity: Edges.Bottom
-                        }
-
-                        HoverHandler {
-                            id: cellHover
-                        }
-                        TapHandler {
-                            acceptedButtons: Qt.LeftButton
-                            onTapped: {
-                                if (cell.modelData.onlyMenu && cell.modelData.hasMenu) {
-                                    cell.openMenu();
-                                } else {
-                                    cell.modelData.activate();
-                                    root.dismissed();
-                                }
-                            }
-                        }
-                        TapHandler {
-                            acceptedButtons: Qt.RightButton
-                            onTapped: if (cell.modelData.hasMenu)
-                                cell.openMenu()
-                        }
-                        TapHandler {
-                            acceptedButtons: Qt.MiddleButton
-                            onTapped: cell.modelData.secondaryActivate()
-                        }
-
-                        function openMenu(): void {
-                            const pos = cell.mapToItem(root.contentItem, 0, cell.height);
-                            menuAnchor.anchor.rect = Qt.rect(pos.x, pos.y, cell.width, 1);
-                            menuAnchor.open();
                         }
                     }
                 }

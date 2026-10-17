@@ -115,6 +115,33 @@ PanelWindow {
                     y: 0
                 }
             }
+            // Filo sutil abajo, para separar la barra del escritorio
+            ShapePath {
+                fillColor: "transparent"
+                strokeColor: Theme.border
+                strokeWidth: 1
+                startX: 0
+                startY: win.fullHeight
+
+                PathArc {
+                    x: Theme.fillet
+                    y: Theme.barHeight
+                    radiusX: Theme.fillet
+                    radiusY: Theme.fillet
+                    direction: PathArc.Clockwise
+                }
+                PathLine {
+                    x: shape.width - Theme.fillet
+                    y: Theme.barHeight
+                }
+                PathArc {
+                    x: shape.width
+                    y: win.fullHeight
+                    radiusX: Theme.fillet
+                    radiusY: Theme.fillet
+                    direction: PathArc.Clockwise
+                }
+            }
         }
 
         // Área útil de la barra
@@ -160,47 +187,12 @@ PanelWindow {
                     }
                 }
 
-                Row {
+                WorkspaceStrip {
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 8
-
-                    Repeater {
-                        model: 5
-
-                        Rectangle {
-                            id: dot
-
-                            required property int index
-                            readonly property int wsId: index + 1
-                            readonly property bool active: Hyprland.focusedWorkspace?.id === wsId
-                            readonly property bool occupied: Hyprland.workspaces.values.some(w => w.id === wsId)
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: active ? 22 : 8
-                            height: 8
-                            radius: 4
-                            color: active ? Theme.accent : (occupied ? Theme.text : Theme.textDim)
-                            opacity: active || occupied ? 1 : 0.45
-
-                            Behavior on width {
-                                NumberAnimation {
-                                    duration: 200
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                anchors.margins: -5
-                                // Hyprland 0.56 con config Lua: el dispatch es código Lua
-                                onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = \"" + dot.wsId + "\" })")
-                            }
-                        }
-                    }
                 }
             }
 
-            // Centro: reloj (abre el calendario)
+            // Centro: reloj (abre el calendario). La fecha se completa al pasar el mouse.
             BarButton {
                 id: clockButton
 
@@ -209,12 +201,32 @@ PanelWindow {
                 anchors.centerIn: parent
                 implicitHeight: 24
                 active: isOpen
-                label: Chrono.date.toLocaleString(Chrono.locale, "ddd d MMM  HH:mm").replace(/\./g, "")
-                labelSize: Theme.fontSize
-                labelWeight: Font.Medium
                 onClicked: {
                     if (Date.now() - win.dismissedCalendar > 300)
                         win.togglePopup("calendar");
+                }
+
+                Behavior on implicitWidth {
+                    NumberAnimation {
+                        duration: 160
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: clockButton.hovered || clockButton.isOpen ? Chrono.date.toLocaleString(Chrono.locale, "dddd d 'de' MMMM") : Chrono.date.toLocaleString(Chrono.locale, "ddd d MMM").replace(/\./g, "")
+                    color: Theme.textDim
+                    font.pixelSize: 12
+                    font.weight: Font.Medium
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Chrono.date.toLocaleString(Chrono.locale, "HH:mm")
+                    color: Theme.text
+                    font.pixelSize: 14
+                    font.weight: Font.DemiBold
                 }
             }
 
@@ -258,6 +270,22 @@ PanelWindow {
                         anchors.centerIn: parent
                         spacing: 2
 
+                        // Bandeja del sistema (solo aparece si hay apps en ella)
+                        TrayStrip {
+                            id: tray
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            barWindow: win
+                        }
+
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: tray.count > 0
+                            width: 1
+                            height: 14
+                            color: Theme.border
+                        }
+
                         // Layout de teclado: clic para alternar (igual que Alt+Shift)
                         BarButton {
                             id: keyboardButton
@@ -279,8 +307,7 @@ PanelWindow {
                             active: isOpen
                             icon: win.volumeIcon
                             iconColor: win.muted ? Theme.danger : Theme.text
-                            label: Math.round(win.volume * 100) + "%"
-                            labelColor: win.muted ? Theme.textDim : Theme.text
+                            label: win.muted ? "" : Math.round(win.volume * 100) + "%"
                             labelMinWidth: 34
                             onClicked: mouse => {
                                 if (mouse.button === Qt.MiddleButton) {
