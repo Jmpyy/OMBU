@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Suspender, reiniciar y apagar desde la pantalla de bloqueo. Reiniciar y apagar piden un
+// Reiniciar y apagar desde la pantalla de bloqueo. Piden un
 // segundo toque para no ejecutarse por error.
 Row {
     id: root
@@ -11,12 +11,6 @@ Row {
     property int armed: -1
 
     readonly property var actions: [
-        {
-            label: "Suspender",
-            icon: "bedtime",
-            command: ["systemctl", "suspend"],
-            confirm: false
-        },
         {
             label: "Reiniciar",
             icon: "restart_alt",

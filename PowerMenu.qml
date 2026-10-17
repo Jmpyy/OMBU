@@ -22,9 +22,11 @@ PanelWindow {
             confirm: false
         },
         {
-            label: "Suspender",
+            // No suspende de verdad (la placa NVIDIA no despierta bien del suspend): bloquea
+            // y deja el salvapantallas a la vista; al tocar algo pide la contraseña
+            label: "Reposo",
             icon: "bedtime",
-            command: ["systemctl", "suspend"],
+            rest: true,
             confirm: false
         },
         {
@@ -209,7 +211,13 @@ PanelWindow {
                                     return;
                                 }
                                 Ui.powerOpen = false;
-                                if (tile.modelData.lock) {
+                                if (tile.modelData.rest) {
+                    Ui.lockPreview = false;
+                    Idle.lockedByIdle = true;
+                    Ui.locked = true;
+                    return;
+                }
+                if (tile.modelData.lock) {
                                     // Bloqueo real de la sesión (no la vista previa)
                                     Ui.lockPreview = false;
                                     Ui.locked = true;
