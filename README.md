@@ -163,6 +163,7 @@ Quickshell recarga solo al guardar un archivo `.qml`.
 Nada de esto hace falta para usar ombu; sirve para que el explorador de archivos (Dolphin) y otras apps de Qt combinen con el resto.
 
 - [`extras/qt6ct/`](extras/qt6ct): paleta y estilo de ombu para `qt6ct` (botones y pestañas redondeados, barras finas). Copiá `ombu.qss` a `~/.config/qt6ct/qss/` y `colors/ombu.conf` a `~/.config/qt6ct/colors/`, y en `qt6ct.conf` poné `color_scheme_path=` con esa ruta y `stylesheets=` con la del `.qss`. Después lanzá la app con `QT_QPA_PLATFORMTHEME=qt6ct` (conviene hacerlo solo para las apps que quieras, no para todo el sistema).
+- [`extras/kitty/`](extras/kitty) y [`extras/starship.toml`](extras/starship.toml): la terminal [kitty](https://sw.kovidgoyal.net/kitty/) con los colores de ombu (fondo sólido, fuente Nerd Font, pestañas y divisiones) y un prompt minimalista con [starship](https://starship.rs). Copiá `kitty.conf` y `themes/` a `~/.config/kitty/` y `starship.toml` a `~/.config/`; en fish agregá `starship init fish | source`. Necesita la fuente *CaskaydiaCove Nerd Font* (`ttf-cascadia-code-nerd`).
 - [`extras/icons/make-ombu-icons.py`](extras/icons/make-ombu-icons.py): crea el tema de iconos *Ombu*, que es Papirus-Dark con las carpetas en violeta.
 
 ## Cosas a tener en cuenta
