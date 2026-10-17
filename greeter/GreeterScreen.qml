@@ -23,7 +23,10 @@ Item {
             input.forceActiveFocus();
     }
 
-    Component.onCompleted: Qt.callLater(focusInput)
+    Component.onCompleted: {
+        Keyboard.watch = interactive;
+        Qt.callLater(focusInput);
+    }
 
     LockBackdrop {
         anchors.fill: parent

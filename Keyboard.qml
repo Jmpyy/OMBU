@@ -13,6 +13,8 @@ Singleton {
     // Bloq Mayús activado en el teclado principal
     property bool caps: false
     readonly property string code: shortCode(layoutName)
+    // Una pantalla que pide contraseña está a la vista (el greeter; el bloqueo ya se sabe por Ui.locked)
+    property bool watch: false
 
     function shortCode(name: string): string {
         if (!name)
@@ -39,7 +41,19 @@ Singleton {
 
         // El estado cambia un instante después de apretar la tecla
         interval: 80
-        onTriggered: leds.running = true
+        onTriggered: {
+            if (!leds.running)
+                leds.running = true;
+        }
+    }
+
+    // Hyprland no avisa del Bloq Mayús y la lectura al apretar la tecla a veces llega antes del
+    // cambio: mientras se pide contraseña se relee seguido para que el aviso nunca quede pegado
+    Timer {
+        interval: 400
+        repeat: true
+        running: Ui.locked || root.watch
+        onTriggered: root.refreshLeds()
     }
 
     // Estado inicial: el layout del teclado principal y el Bloq Mayús
