@@ -16,7 +16,7 @@ Row {
     function iconOf(toplevel: var): string {
         const appId = toplevel?.wayland?.appId ?? "";
         const entry = appId ? DesktopEntries.heuristicLookup(appId) : null;
-        return Quickshell.iconPath(entry ? entry.icon : appId.toLowerCase(), "application-x-executable");
+        return Icons.forApp(appId, entry ? entry.icon : "");
     }
 
     Repeater {

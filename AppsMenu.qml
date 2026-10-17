@@ -157,7 +157,7 @@ DropPopup {
                             Image {
                                 Layout.preferredWidth: 30
                                 Layout.preferredHeight: 30
-                                source: Quickshell.iconPath(row.entry ? row.entry.icon : row.appId.toLowerCase(), "application-x-executable")
+                                source: Icons.forApp(row.appId, row.entry ? row.entry.icon : "")
                                 sourceSize: Qt.size(60, 60)
                                 smooth: true
                             }
@@ -307,8 +307,7 @@ DropPopup {
                             Layout.preferredWidth: 30
                             Layout.preferredHeight: 30
                             source: {
-                                const icon = bgRow.modelData.icon || bgRow.modelData.id;
-                                return icon.startsWith("/") ? "file://" + icon : Quickshell.iconPath(icon, "application-x-executable");
+                                return Icons.forApp(bgRow.modelData.id, bgRow.modelData.icon);
                             }
                             sourceSize: Qt.size(60, 60)
                             smooth: true

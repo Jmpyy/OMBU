@@ -3,7 +3,8 @@ import Quickshell
 import Quickshell.Services.SystemTray
 
 // Bandeja del sistema: los íconos de las apps que viven en ella (Discord, Steam...). Clic
-// activa la app, clic derecho abre su menú, clic del medio la acción secundaria.
+// activa la app, clic derecho abre su menú (con el diseño de ombu), clic del medio la acción
+// secundaria.
 Row {
     id: root
 
@@ -21,10 +22,16 @@ Row {
 
             required property SystemTrayItem modelData
 
-            function openMenu(): void {
-                const pos = cell.mapToItem(root.barWindow.contentItem, 0, cell.height);
-                menuAnchor.anchor.rect = Qt.rect(pos.x, pos.y, cell.width, 1);
-                menuAnchor.open();
+            readonly property string key: "tray-" + modelData.id + "@" + root.barWindow.screen.name
+            readonly property bool isOpen: Ui.popup === key
+            // Evita que el clic que cierra el menú lo vuelva a abrir
+            property double dismissedAt: 0
+
+            function toggleMenu(): void {
+                if (!modelData.hasMenu)
+                    return;
+                if (Date.now() - dismissedAt > 300)
+                    Ui.popup = isOpen ? "" : key;
             }
 
             width: 24
@@ -33,25 +40,17 @@ Row {
             Rectangle {
                 anchors.fill: parent
                 radius: 11
-                color: cellHover.hovered ? Theme.hover : "transparent"
+                color: cellHover.hovered || cell.isOpen ? Theme.hover : "transparent"
             }
 
             Image {
                 anchors.centerIn: parent
-                width: 16
-                height: 16
-                source: cell.modelData.icon
-                sourceSize: Qt.size(32, 32)
+                width: 17
+                height: 17
+                // Algunas apps traen un ícono que no es el de su marca (ver Icons)
+                source: Icons.override(cell.modelData.id) || cell.modelData.icon
+                sourceSize: Qt.size(34, 34)
                 smooth: true
-            }
-
-            QsMenuAnchor {
-                id: menuAnchor
-
-                menu: cell.modelData.menu
-                anchor.window: root.barWindow
-                anchor.edges: Edges.Bottom
-                anchor.gravity: Edges.Bottom
             }
 
             HoverHandler {
@@ -64,7 +63,7 @@ Row {
                 acceptedButtons: Qt.LeftButton
                 onTapped: {
                     if (cell.modelData.onlyMenu && cell.modelData.hasMenu)
-                        cell.openMenu();
+                        cell.toggleMenu();
                     else
                         cell.modelData.activate();
                 }
@@ -72,13 +71,25 @@ Row {
 
             TapHandler {
                 acceptedButtons: Qt.RightButton
-                onTapped: if (cell.modelData.hasMenu)
-                    cell.openMenu()
+                onTapped: cell.toggleMenu()
             }
 
             TapHandler {
                 acceptedButtons: Qt.MiddleButton
                 onTapped: cell.modelData.secondaryActivate()
+            }
+
+            TrayMenu {
+                barWindow: root.barWindow
+                anchorItem: cell
+                trayItem: cell.modelData
+                open: cell.isOpen
+
+                onDismissed: {
+                    cell.dismissedAt = Date.now();
+                    if (cell.isOpen)
+                        Ui.popup = "";
+                }
             }
         }
     }

@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.Pipewire
+import Quickshell.Services.SystemTray
 
 ShellRoot {
     // Sin esto Pipewire no entrega volumen ni mute de los nodos
@@ -88,6 +89,15 @@ ShellRoot {
 
         function calendar(): void {
             const key = "calendar@" + (Hyprland.focusedMonitor?.name ?? "");
+            Ui.popup = Ui.popup === key ? "" : key;
+        }
+
+        // Abre o cierra el menú del primer ícono de la bandeja (monitor con foco)
+        function tray(): void {
+            const item = SystemTray.items.values[0];
+            if (!item)
+                return;
+            const key = "tray-" + item.id + "@" + (Hyprland.focusedMonitor?.name ?? "");
             Ui.popup = Ui.popup === key ? "" : key;
         }
 

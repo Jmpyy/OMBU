@@ -91,7 +91,7 @@ Singleton {
     Component.onCompleted: {
         if (marker.loaded)
             return;
-        Quickshell.execDetached(["touch", marker.path]);
+        Quickshell.execDetached(["sh", "-c", "echo 1 > \"$1\"", "sh", marker.path]);
         play();
     }
 }
