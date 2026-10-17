@@ -1,0 +1,24 @@
+# atuin: el historial de comandos con contexto (carpeta, si salió bien, cuándo).
+# Todo queda en esta PC: no hay sincronización con ningún servidor.
+
+# Se abre debajo del prompt, sin ocupar toda la pantalla
+style = "compact"
+inline_height = 16
+show_preview = true
+show_help = false
+
+# Búsqueda difusa: escribís trozos y ordena por lo más parecido y reciente
+search_mode = "fuzzy"
+filter_mode = "global"
+filter_mode_shell_up_key_binding = "directory"
+
+# Enter solo trae el comando al prompt (para revisarlo o editarlo); Tab o Enter ya con él en la línea
+enter_accept = false
+
+# Privacidad
+auto_sync = false
+update_check = false
+secrets_filter = true
+
+[theme]
+name = "ombu"

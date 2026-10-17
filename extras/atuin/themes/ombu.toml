@@ -1,0 +1,13 @@
+# Colores de ombu para atuin
+[theme]
+name = "ombu"
+
+[colors]
+Base = "#e8e8f0"
+Title = "#a78bfa"
+Important = "#c4b5fd"
+Guidance = "#8a8a9c"
+Annotation = "#a78bfa"
+AlertInfo = "#86efac"
+AlertWarn = "#fbbf24"
+AlertError = "#f87171"

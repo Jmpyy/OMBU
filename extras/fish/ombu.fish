@@ -1,4 +1,4 @@
-# Para tu ~/.config/fish/config.fish: prompt starship, búsqueda difusa con fzf, zoxide y los colores de ombu.
+# Para tu ~/.config/fish/config.fish: prompt starship, búsqueda difusa con fzf, atuin, zoxide y los colores de ombu.
 # Los programas se activan solo si están instalados.
 
 # Prompt de ombu (starship): solo si está instalado
@@ -13,6 +13,10 @@ if type -q fzf
     end
     fzf --fish | source
 end
+
+# atuin: Ctrl+R abre el historial con contexto (carpeta, si salió bien, cuándo); la flecha arriba queda
+# como en fish. Va después de fzf para que Ctrl+R sea de atuin (fzf conserva Ctrl+T y Alt+C).
+type -q atuin; and atuin init fish --disable-up-arrow | source
 
 # zoxide: "z carpeta" te lleva a la que más usás (solo si está instalado)
 type -q zoxide; and zoxide init fish | source
