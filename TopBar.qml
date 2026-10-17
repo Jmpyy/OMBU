@@ -45,9 +45,14 @@ PanelWindow {
     exclusiveZone: Ui.barShown ? Theme.barHeight : 0
     WlrLayershell.namespace: "ombu-bar"
 
-    // Los clics solo se capturan sobre la barra; las esquinas dejan pasar
+    // Los clics solo se capturan sobre la barra; las esquinas dejan pasar.
+    // Se calcula con reveal y no con el elemento que se desliza: si la barra arranca escondida
+    // (bienvenida), la zona quedaba fijada fuera de la pantalla y no recibía clics.
     mask: Region {
-        item: strip
+        x: 0
+        y: 0
+        width: win.width
+        height: Math.round(Theme.barHeight * win.reveal)
     }
 
     Behavior on reveal {

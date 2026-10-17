@@ -28,6 +28,13 @@ PanelWindow {
             confirm: false
         },
         {
+            label: "Cerrar sesión",
+            icon: "logout",
+            // Cierra Hyprland; greetd vuelve a mostrar el greeter
+            command: ["hyprctl", "dispatch", "hl.dsp.exit()"],
+            confirm: true
+        },
+        {
             label: "Reiniciar",
             icon: "restart_alt",
             command: ["systemctl", "reboot"],
