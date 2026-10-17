@@ -1,0 +1,5 @@
+#%PAM-1.0
+
+# Solo la contraseña del usuario. Sin pam_faillock: tres errores seguidos
+# no deben bloquear la cuenta ni el login de la TTY.
+auth    required    pam_unix.so

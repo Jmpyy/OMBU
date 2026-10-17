@@ -15,8 +15,29 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
+        Wallpaper {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+
         TopBar {}
     }
+
+    Variants {
+        model: Quickshell.screens
+
+        VolumeOsd {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        LockPreview {}
+    }
+
+    Lock {}
+
 
     Variants {
         model: Quickshell.screens
@@ -80,6 +101,27 @@ ShellRoot {
         }
 
         target: "launcher"
+    }
+
+    // qs -c nuestro ipc call lock lock     -> bloqueo REAL de la sesión
+    // qs -c nuestro ipc call lock preview  -> vista previa (ventana común, Esc la cierra)
+    // No existe un comando para desbloquear a propósito: cualquier proceso del usuario
+    // podría usarlo. El bloqueo real solo se abre con la contraseña.
+    IpcHandler {
+        function lock(): void {
+            Ui.lockPreview = false;
+            Ui.locked = true;
+        }
+
+        function preview(): void {
+            // Nunca puede tocar un bloqueo real que ya esté activo
+            if (Ui.locked && !Ui.lockPreview)
+                return;
+            Ui.lockPreview = true;
+            Ui.locked = true;
+        }
+
+        target: "lock"
     }
 
     // qs -c nuestro ipc call power toggle

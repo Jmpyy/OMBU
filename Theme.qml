@@ -24,6 +24,9 @@ Singleton {
     readonly property color border: Qt.rgba(1, 1, 1, 0.08)
     readonly property color scrim: Qt.rgba(0, 0, 0, 0.55)
 
+    // Fondo de pantalla (el mismo que usaba Caelestia; archivo del sistema de CachyOS)
+    readonly property string wallpaper: "/usr/share/wallpapers/cachyos-wallpapers/Cachy_Topography.jpg"
+
     // Tipografía
     readonly property int fontSize: 13
     readonly property string iconFont: "Material Symbols Rounded"

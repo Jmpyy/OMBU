@@ -1,0 +1,40 @@
+import QtQuick
+import Quickshell
+import Quickshell.Wayland
+
+// Fondo de pantalla: una capa Background por monitor.
+PanelWindow {
+    id: win
+
+    required property var modelData
+
+    screen: modelData
+    color: Theme.bg
+    anchors {
+        top: true
+        bottom: true
+        left: true
+        right: true
+    }
+    exclusionMode: ExclusionMode.Ignore
+    WlrLayershell.layer: WlrLayer.Background
+    WlrLayershell.namespace: "nuestro-wallpaper"
+
+    Image {
+        anchors.fill: parent
+        source: "file://" + Theme.wallpaper
+        asynchronous: true
+        smooth: true
+        // La imagen es ultrawide: se recorta para llenar el monitor sin deformarse
+        fillMode: Image.PreserveAspectCrop
+        // Se decodifica al tamaño del monitor, no al de la imagen original
+        sourceSize: Qt.size(win.modelData.width, win.modelData.height)
+        opacity: status === Image.Ready ? 1 : 0
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 300
+            }
+        }
+    }
+}

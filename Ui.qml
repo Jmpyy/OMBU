@@ -7,6 +7,10 @@ import Quickshell
 Singleton {
     property bool barShown: true
     property bool powerOpen: false
+    // Bloqueo de pantalla. En modo vista previa es una ventana común (se cierra con Esc),
+    // no un bloqueo real de la sesión.
+    property bool locked: false
+    property bool lockPreview: false
     property bool launcherOpen: false
     // Texto con el que se abre el launcher (para atajos que lo precargan)
     property string launcherPrefill: ""

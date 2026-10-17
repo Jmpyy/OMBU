@@ -16,6 +16,12 @@ PanelWindow {
 
     readonly property var actions: [
         {
+            label: "Bloquear",
+            icon: "lock",
+            lock: true,
+            confirm: false
+        },
+        {
             label: "Suspender",
             icon: "bedtime",
             command: ["systemctl", "suspend"],
@@ -195,9 +201,15 @@ PanelWindow {
                                     disarm.restart();
                                     return;
                                 }
+                                Ui.powerOpen = false;
+                                if (tile.modelData.lock) {
+                                    // Bloqueo real de la sesión (no la vista previa)
+                                    Ui.lockPreview = false;
+                                    Ui.locked = true;
+                                    return;
+                                }
                                 runner.command = tile.modelData.command;
                                 runner.running = true;
-                                Ui.powerOpen = false;
                             }
                         }
                     }
