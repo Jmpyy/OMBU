@@ -4,15 +4,24 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 
-// Launcher estilo Spotlight: busca entre las apps instaladas y las abre.
-// Aparece en el monitor con foco.
+// Launcher estilo Spotlight: una barra de búsqueda. Vacía muestra tus apps de siempre (favoritas
+// y las más usadas); al escribir aparecen los resultados. Aparece en el monitor con foco.
+//   Enter abre · flechas mueven · Ctrl+P fija o suelta una favorita · Esc cierra
 PanelWindow {
     id: win
 
     required property var modelData
 
-    readonly property int rowHeight: 54
-    readonly property int maxRows: 7
+    readonly property int columns: 6
+    readonly property int cell: 92
+    readonly property int rowHeight: 50
+    readonly property int maxRows: 6
+
+    readonly property string query: input.text.trim().toLowerCase()
+    readonly property bool searching: query !== ""
+
+    readonly property var allApps: Array.from(DesktopEntries.applications.values).filter(e => !e.noDisplay)
+    readonly property var tiles: Launch.tiles(allApps)
 
     // Puntaje de coincidencia de una app con lo escrito (0 = no coincide)
     function score(entry, q: string): int {
@@ -25,33 +34,66 @@ PanelWindow {
             return 60;
         if ((entry.genericName ?? "").toLowerCase().includes(q))
             return 40;
-        if ((entry.keywords ?? []).some(k => k.toLowerCase().includes(q)))
+        if (Array.from(entry.keywords ?? []).some(k => k.toLowerCase().includes(q)))
             return 35;
         if ((entry.comment ?? "").toLowerCase().includes(q))
             return 20;
         return 0;
     }
 
+    // Resultados: primero las apps de siempre; las del sistema ocultas solo si escribís 3 letras o más
     readonly property var results: {
-        const q = input.text.trim().toLowerCase();
-        const apps = Array.from(DesktopEntries.applications.values).filter(e => !e.noDisplay);
+        const q = query;
         if (!q)
-            return apps.sort((a, b) => a.name.localeCompare(b.name));
-        return apps.map(e => ({
-                    entry: e,
-                    score: score(e, q)
-                })).filter(x => x.score > 0).sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name)).map(x => x.entry);
+            return [];
+        const out = [];
+        for (const e of allApps) {
+            const s = score(e, q);
+            if (s <= 0)
+                continue;
+            const hidden = Launch.isHidden(e);
+            if (hidden && q.length < 3)
+                continue;
+            // Lo que más abrís sube un poco; lo oculto va al final
+            out.push({
+                entry: e,
+                rank: s + Math.min(Launch.usage[e.id] ?? 0, 20) * 0.5 + (Launch.isFavorite(e.id) ? 5 : 0) - (hidden ? 1000 : 0)
+            });
+        }
+        return out.sort((a, b) => b.rank - a.rank || a.entry.name.localeCompare(b.entry.name)).map(x => x.entry);
+    }
+
+    readonly property var current: searching ? (results[list.currentIndex] ?? null) : (tiles[grid.currentIndex] ?? null)
+
+    // Ícono de una app; "" si el tema no lo tiene (así no sale el cuadro magenta de error)
+    function iconFor(entry): string {
+        if (!entry)
+            return "";
+        const own = Icons.override(entry.id);
+        if (own)
+            return own;
+        const icon = entry.icon ?? "";
+        if (!icon)
+            return "";
+        return icon.startsWith("/") ? "file://" + icon : Quickshell.iconPath(icon, true);
     }
 
     function launch(entry): void {
         if (!entry)
             return;
+        Launch.record(entry.id);
         if (entry.runInTerminal)
             Quickshell.execDetached(["kitty", "-e"].concat(entry.command));
         else
             entry.execute();
         Ui.launcherOpen = false;
     }
+
+    onQueryChanged: {
+        list.currentIndex = 0;
+        grid.currentIndex = 0;
+    }
+    onTilesChanged: grid.currentIndex = Math.min(grid.currentIndex, Math.max(0, tiles.length - 1))
 
     property real p: Ui.launcherOpen ? 1 : 0
 
@@ -75,6 +117,7 @@ PanelWindow {
                 win.activeOnScreen = true;
             input.text = Ui.launcherPrefill;
             list.currentIndex = 0;
+            grid.currentIndex = 0;
             Qt.callLater(() => input.forceActiveFocus());
         }
 
@@ -117,15 +160,15 @@ PanelWindow {
         id: card
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: parent.height * 0.18
-        width: 640
+        y: parent.height * 0.22
+        width: win.columns * win.cell + 28
         height: column.implicitHeight + 24
         radius: Theme.cardRadius
         color: Theme.bg
         border.width: 1
         border.color: Theme.border
         opacity: win.p
-        scale: 0.90 + 0.10 * win.p
+        scale: 0.92 + 0.08 * win.p
         transformOrigin: Item.Top
 
         // Evita que un clic dentro de la tarjeta cierre el launcher
@@ -136,17 +179,17 @@ PanelWindow {
         ColumnLayout {
             id: column
 
-            x: 12
+            x: 14
             y: 12
-            width: parent.width - 24
-            spacing: 6
+            width: parent.width - 28
+            spacing: 4
 
             // Barra de búsqueda
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 48
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
+                Layout.leftMargin: 8
+                Layout.rightMargin: 8
                 spacing: 12
 
                 MIcon {
@@ -162,36 +205,169 @@ PanelWindow {
                     color: Theme.text
                     selectionColor: Theme.accent
                     selectedTextColor: "#14131a"
-                    font.pixelSize: 18
+                    font.pixelSize: 19
                     clip: true
                     focus: true
 
-                    onTextChanged: list.currentIndex = 0
-                    onAccepted: win.launch(win.results[list.currentIndex])
+                    onAccepted: win.launch(win.current)
 
                     Keys.onEscapePressed: Ui.launcherOpen = false
-                    Keys.onUpPressed: list.currentIndex = Math.max(0, list.currentIndex - 1)
-                    Keys.onDownPressed: list.currentIndex = Math.min(list.count - 1, list.currentIndex + 1)
+                    Keys.onUpPressed: {
+                        if (win.searching)
+                            list.currentIndex = Math.max(0, list.currentIndex - 1);
+                        else
+                            grid.moveCurrentIndexUp();
+                    }
+                    Keys.onDownPressed: {
+                        if (win.searching)
+                            list.currentIndex = Math.min(list.count - 1, list.currentIndex + 1);
+                        else
+                            grid.moveCurrentIndexDown();
+                    }
+                    // Con la búsqueda vacía las flechas laterales se mueven por los íconos
+                    Keys.onLeftPressed: event => {
+                        if (win.searching)
+                            event.accepted = false;
+                        else
+                            grid.moveCurrentIndexLeft();
+                    }
+                    Keys.onRightPressed: event => {
+                        if (win.searching)
+                            event.accepted = false;
+                        else
+                            grid.moveCurrentIndexRight();
+                    }
+                    Keys.onPressed: event => {
+                        if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_P && win.current) {
+                            Launch.toggleFavorite(win.current.id);
+                            event.accepted = true;
+                        }
+                    }
 
                     Text {
                         visible: input.text.length === 0
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Buscar aplicaciones…"
                         color: Theme.textDim
-                        font.pixelSize: 18
+                        font.pixelSize: 19
                     }
                 }
             }
 
             Rectangle {
-                visible: win.results.length > 0
+                visible: !win.searching ? win.tiles.length > 0 : win.results.length > 0
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
                 color: Theme.border
             }
 
+            // Vista inicial: tus apps de siempre
+            GridView {
+                id: grid
+
+                visible: !win.searching && win.tiles.length > 0
+                Layout.fillWidth: true
+                Layout.preferredHeight: Math.ceil(win.tiles.length / win.columns) * win.cell
+                Layout.topMargin: 4
+                cellWidth: width / win.columns
+                cellHeight: win.cell
+                model: win.tiles
+                interactive: false
+                currentIndex: 0
+                highlightMoveDuration: 0
+
+                delegate: Item {
+                    id: tile
+
+                    required property var modelData
+                    required property int index
+                    readonly property bool current: GridView.isCurrentItem
+                    readonly property string icon: win.iconFor(modelData)
+
+                    width: grid.cellWidth
+                    height: grid.cellHeight
+
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: 3
+                        radius: 16
+                        color: tile.current ? Theme.surface : (tileHover.hovered ? Theme.hover : "transparent")
+                    }
+
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 7
+
+                        Item {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: 46
+                            height: 46
+
+                            Image {
+                                id: tileImage
+
+                                anchors.fill: parent
+                                visible: tile.icon !== "" && status !== Image.Error
+                                source: tile.icon
+                                sourceSize: Qt.size(92, 92)
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                            }
+
+                            MIcon {
+                                anchors.centerIn: parent
+                                visible: !tileImage.visible
+                                name: "apps"
+                                color: Theme.textDim
+                                font.pixelSize: 34
+                            }
+                        }
+
+                        Text {
+                            width: grid.cellWidth - 14
+                            horizontalAlignment: Text.AlignHCenter
+                            text: tile.modelData.name
+                            elide: Text.ElideRight
+                            color: Theme.text
+                            font.pixelSize: 12
+                            font.weight: Font.Medium
+                        }
+                    }
+
+                    // Marca de favorita
+                    MIcon {
+                        visible: Launch.isFavorite(tile.modelData.id) && (tile.current || tileHover.hovered)
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.margins: 8
+                        name: "push_pin"
+                        color: Theme.accent
+                        font.pixelSize: 13
+                    }
+
+                    HoverHandler {
+                        id: tileHover
+                    }
+                    TapHandler {
+                        onTapped: win.launch(tile.modelData)
+                    }
+                }
+            }
+
             Text {
-                visible: win.results.length === 0
+                visible: !win.searching && win.tiles.length === 0
+                Layout.fillWidth: true
+                Layout.topMargin: 6
+                Layout.bottomMargin: 10
+                horizontalAlignment: Text.AlignHCenter
+                text: "Escribí para buscar una aplicación"
+                color: Theme.textDim
+                font.pixelSize: 14
+            }
+
+            // Al escribir: resultados
+            Text {
+                visible: win.searching && win.results.length === 0
                 Layout.fillWidth: true
                 Layout.topMargin: 8
                 Layout.bottomMargin: 14
@@ -204,7 +380,7 @@ PanelWindow {
             ListView {
                 id: list
 
-                visible: win.results.length > 0
+                visible: win.searching && win.results.length > 0
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.min(count, win.maxRows) * win.rowHeight
                 model: win.results
@@ -220,6 +396,7 @@ PanelWindow {
                     required property var modelData
                     required property int index
                     readonly property bool current: ListView.isCurrentItem
+                    readonly property string icon: win.iconFor(modelData)
 
                     width: ListView.view.width
                     height: win.rowHeight
@@ -228,39 +405,48 @@ PanelWindow {
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 10
+                        anchors.leftMargin: 12
                         anchors.rightMargin: 14
                         spacing: 14
 
-                        Image {
-                            Layout.preferredWidth: 36
-                            Layout.preferredHeight: 36
-                            source: item.modelData.icon.startsWith("/") ? "file://" + item.modelData.icon : Quickshell.iconPath(item.modelData.icon, "application-x-executable")
-                            sourceSize: Qt.size(72, 72)
-                            smooth: true
+                        Item {
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 32
+
+                            Image {
+                                id: rowImage
+
+                                anchors.fill: parent
+                                visible: item.icon !== "" && status !== Image.Error
+                                source: item.icon
+                                sourceSize: Qt.size(64, 64)
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                            }
+
+                            MIcon {
+                                anchors.centerIn: parent
+                                visible: !rowImage.visible
+                                name: "apps"
+                                color: Theme.textDim
+                                font.pixelSize: 24
+                            }
                         }
 
-                        ColumnLayout {
+                        Text {
                             Layout.fillWidth: true
-                            spacing: 1
+                            text: item.modelData.name
+                            elide: Text.ElideRight
+                            color: Theme.text
+                            font.pixelSize: 15
+                            font.weight: Font.Medium
+                        }
 
-                            Text {
-                                Layout.fillWidth: true
-                                text: item.modelData.name
-                                elide: Text.ElideRight
-                                color: Theme.text
-                                font.pixelSize: 15
-                                font.weight: Font.Medium
-                            }
-
-                            Text {
-                                Layout.fillWidth: true
-                                visible: text.length > 0
-                                text: item.modelData.comment || item.modelData.genericName || ""
-                                elide: Text.ElideRight
-                                color: Theme.textDim
-                                font.pixelSize: 12
-                            }
+                        MIcon {
+                            visible: Launch.isFavorite(item.modelData.id)
+                            name: "push_pin"
+                            color: Theme.accent
+                            font.pixelSize: 15
                         }
 
                         MIcon {
@@ -278,6 +464,17 @@ PanelWindow {
                         onTapped: win.launch(item.modelData)
                     }
                 }
+            }
+
+            // Ayuda de teclas
+            Text {
+                Layout.fillWidth: true
+                Layout.leftMargin: 10
+                Layout.topMargin: 2
+                Layout.bottomMargin: 4
+                text: win.searching ? "Enter abre  ·  Ctrl+P fija o suelta una favorita" : "Enter abre  ·  flechas para moverte  ·  Ctrl+P fija o suelta una favorita  ·  escribí para buscar"
+                color: Theme.textDim
+                font.pixelSize: 11
             }
         }
     }

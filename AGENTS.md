@@ -32,6 +32,7 @@ Saver*.qml Idle    salvapantallas ASCII e inactividad (bloqueo a 5 min, monitore
 Welcome*.qml       bienvenida al iniciar sesión (una vez por sesión)
 greeter/           pantalla de login para greetd; install.sh toca el sistema
 hypr/ombu.lua      configuración de Hyprland para compartir (copia de lo que usa la persona)
+Launch*.qml        launcher: favoritas, más usadas y qué se oculta (Launch.qml)
 Clip*.qml          historial del portapapeles (cliphist); bin/clip*.sh lo guardan y pegan
 bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explorador, avisos de agentes
 ```

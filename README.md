@@ -26,7 +26,7 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 
 **Y además:**
 
-- **Launcher** de aplicaciones (`Super+Espacio`).
+- **Launcher** estilo Spotlight (`Super+Espacio`): una barra de búsqueda y, vacía, tus apps de siempre (favoritas y las que más abrís, aprende solo). Oculta los ajustes y herramientas del sistema de la lista principal, aunque los encontrás al escribir su nombre. `Ctrl+P` fija o suelta una favorita.
 - **Menú de energía** al centro: Bloquear, Reposo, Cerrar sesión, Reiniciar y Apagar (las dos últimas piden un segundo toque).
 - **Indicador de volumen** (OSD) discreto.
 - **Bloqueo de pantalla** real (`ext-session-lock`): reloj, avatar, contraseña con PAM, música en reproducción, notificaciones y aviso de Bloq Mayús.
@@ -154,6 +154,7 @@ Todo el aspecto sale de [`Theme.qml`](Theme.qml): colores, radios, tamaños de l
 - **Fondo de pantalla:** `Theme.wallpaper` apunta a un fondo de CachyOS; cambialo por el tuyo.
 - **Inactividad:** `idleLockSeconds` (bloqueo, 5 min) e `idleScreenOffSeconds` (monitores, 30 min).
 - **Idioma:** los textos están en español y la fecha usa `es_AR` (`Chrono.qml`).
+- **Launcher:** las favoritas de fábrica y lo que se oculta están en [`Launch.qml`](Launch.qml); lo que abrís y fijás se guarda en `~/.local/share/ombu/launcher.json`.
 - **Íconos de apps:** si una app trae un ícono que no te gusta, agregala a [`Icons.qml`](Icons.qml).
 - **Escritorios:** cada barra muestra los escritorios que Hyprland asigna a su monitor (reglas `hl.workspace_rule`, ver `hypr/ombu.lua` y tu `workspaces.lua`).
 - **Notificaciones:** [`NotifRules.qml`](NotifRules.qml) permite pasar a español los avisos de ciertas apps y descartar los de algo que ya tenés a la vista (viene una regla para Claude Code en kitty).
