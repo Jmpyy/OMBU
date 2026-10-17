@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Notifications
@@ -13,7 +14,19 @@ Rectangle {
 
     readonly property var extraActions: entry.actionList.filter(a => a.identifier !== "default")
 
+    // Las capturas de pantalla traen su imagen: se muestra grande, como miniatura
+    readonly property string previewSource: {
+        if (entry.appName !== "Capturas")
+            return "";
+        const path = entry.image || entry.appIcon;
+        if (!path)
+            return "";
+        return path.startsWith("/") ? "file://" + path : path;
+    }
+
     readonly property string iconSource: {
+        if (previewSource !== "")
+            return "";
         if (entry.image)
             return entry.image;
         if (entry.appIcon)
@@ -143,7 +156,7 @@ Rectangle {
             MIcon {
                 anchors.centerIn: parent
                 visible: !icon.visible
-                name: "notifications"
+                name: root.previewSource !== "" ? "photo_camera" : "notifications"
                 color: Theme.textDim
             }
         }
@@ -192,6 +205,38 @@ Rectangle {
                 elide: Text.ElideRight
                 color: Qt.rgba(1, 1, 1, 0.72)
                 font.pixelSize: 13
+            }
+
+            // Miniatura (solo las capturas de pantalla)
+            Item {
+                Layout.fillWidth: true
+                Layout.topMargin: 6
+                Layout.preferredHeight: 120
+                visible: root.previewSource !== ""
+
+                Rectangle {
+                    id: previewMask
+
+                    anchors.fill: parent
+                    radius: 12
+                    visible: false
+                    layer.enabled: true
+                }
+
+                Image {
+                    anchors.fill: parent
+                    source: root.previewSource
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    smooth: true
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        maskEnabled: true
+                        maskSource: previewMask
+                        maskThresholdMin: 0.5
+                        maskSpreadAtMin: 1
+                    }
+                }
             }
 
             // Acciones adicionales que ofrece la app

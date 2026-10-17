@@ -53,9 +53,15 @@ hl.bind(mainMod .. " + SHIFT + ALT + code:59", hl.dsp.exec_cmd(ipc .. "notif his
 ---- SHELL: UTILIDADES ----
 ------------------------
 
--- Capturas: Print = elegir el área, Super+Print = el monitor con foco
-hl.bind("Print",               hl.dsp.exec_cmd(ombu .. "/bin/shot.sh region"))
+-- Capturas: Print = región y editor (satty), Shift+Print = región directo,
+-- Super+Print = el monitor con foco, Ctrl+Print = copiar el texto de una región (OCR)
+hl.bind("Print",               hl.dsp.exec_cmd(ombu .. "/bin/shot.sh edit"))
+hl.bind("SHIFT + Print",       hl.dsp.exec_cmd(ombu .. "/bin/shot.sh quick"))
 hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd(ombu .. "/bin/shot.sh full"))
+hl.bind("CONTROL + Print",     hl.dsp.exec_cmd(ombu .. "/bin/shot.sh ocr"))
+
+-- Editor de capturas (satty): ventana flotante al centro
+hl.window_rule({ match = { class = "^(com\\.gabm\\.satty)$" }, float = true, center = true, size = { "monitor_w*0.70", "monitor_h*0.75" } })
 
 -- Historial del portapapeles (cliphist + rofi)
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd(ombu .. "/bin/clip.sh"))

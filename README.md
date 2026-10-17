@@ -33,7 +33,9 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 - **Salvapantallas ASCII**: tras 5 minutos sin actividad se bloquea la sesión con una lluvia de código que descifra el logo; a los 30 se apagan los monitores.
 - **Pantalla de inicio de sesión** para [greetd](https://sr.ht/~kennylevinsen/greetd/), con el mismo diseño que el bloqueo.
 - **Bienvenida** al iniciar sesión: lluvia de código, el logo que se descifra y la barra que baja desde el borde.
-- Capturas de pantalla, historial del portapapeles y un explorador de archivos que se abre donde está tu terminal.
+- **Capturas** con editor para anotar y recortar, miniatura en el aviso (clic para editarla, botón para borrarla) y OCR para copiar texto de la pantalla.
+- Avisos cuando Claude Code o Antigravity terminan una tarea larga (y no los muestra si ya tenés la terminal a la vista).
+- Historial del portapapeles y un explorador de archivos que se abre donde está tu terminal.
 
 <p align="center">
   <img src="docs/screenshots/lock.png" width="360" alt="Pantalla de bloqueo">
@@ -58,13 +60,15 @@ Hecho y probado en **CachyOS** con **Hyprland 0.56** (configuración en Lua) y *
 ```sh
 sudo pacman -S quickshell hyprland ttf-material-symbols-variable \
     pipewire wireplumber playerctl brightnessctl \
-    cliphist wl-clipboard rofi grim slurp libnotify \
+    cliphist wl-clipboard rofi grim slurp libnotify satty \
+    tesseract tesseract-data-spa tesseract-data-eng \
     udisks2 papirus-icon-theme python
 ```
 
 - `ttf-material-symbols-variable`: la fuente de los íconos (Material Symbols Rounded).
 - `papirus-icon-theme`: ombu usa sus íconos para Discord y Minecraft (ver `Icons.qml`).
 - `cliphist`, `wl-clipboard` y `rofi`: historial del portapapeles (`Super+V`). `grim` y `slurp`: capturas.
+- `satty`: el editor de capturas (anotar y recortar). `tesseract` y sus datos de idioma: copiar texto de una imagen. Sin ellos las capturas siguen funcionando, solo que sin editor ni OCR.
 - `udisks2`: montar y expulsar unidades desde el menú de dispositivos.
 - Opcional: `greetd` para la pantalla de inicio de sesión.
 
@@ -95,7 +99,10 @@ Ese archivo ([`hypr/ombu.lua`](hypr/ombu.lua)) arranca el shell, agrega los ataj
 | `Super + Ctrl + L` | Bloquear la sesión |
 | `Super + B` | Mostrar u ocultar la barra |
 | `Super + V` | Historial del portapapeles |
-| `Print` / `Super + Print` | Captura de una región / del monitor con foco |
+| `Print` | Captura de una región con editor (anotar y recortar); `Enter` copia y guarda |
+| `Shift + Print` | Captura de una región, directo |
+| `Super + Print` | Captura del monitor con foco |
+| `Ctrl + Print` | Copiar el texto de una región de la pantalla (OCR) |
 | `Super + Shift + E` | Explorador de archivos en la carpeta de la terminal |
 | `Super + ,` | Cerrar la última notificación |
 | `Super + Shift + ,` | Cerrar todas |
