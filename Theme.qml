@@ -45,5 +45,5 @@ Singleton {
 
     // Animación
     readonly property int revealDuration: 420
-    readonly property int popupDuration: 260
+    readonly property int popupDuration: 190
 }

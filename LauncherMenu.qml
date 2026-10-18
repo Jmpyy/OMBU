@@ -293,6 +293,12 @@ PanelWindow {
                         anchors.margins: 3
                         radius: 16
                         color: tile.current ? Theme.surface : (tileHover.hovered ? Theme.hover : "transparent")
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 90
+                            }
+                        }
                     }
 
                     Column {
@@ -403,6 +409,12 @@ PanelWindow {
                     height: win.rowHeight
                     radius: 14
                     color: current ? Theme.surface : (itemHover.hovered ? Theme.hover : "transparent")
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 90
+                        }
+                    }
 
                     RowLayout {
                         anchors.fill: parent

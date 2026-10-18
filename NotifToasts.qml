@@ -72,14 +72,14 @@ PanelWindow {
 
                 Behavior on height {
                     NumberAnimation {
-                        duration: 380
+                        duration: 240
                         easing.type: Easing.OutCubic
                     }
                 }
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: slot.show ? 240 : 300
+                        duration: slot.show ? 160 : 200
                         easing.type: Easing.OutCubic
                     }
                 }
@@ -99,16 +99,16 @@ PanelWindow {
                         enabled: !drag.active
 
                         NumberAnimation {
-                            duration: slot.show ? 520 : 320
+                            duration: slot.show ? 300 : 200
                             easing.type: slot.show ? Easing.OutBack : Easing.InCubic
-                            easing.overshoot: 1.1
+                            easing.overshoot: 0.8
                         }
                     }
 
                     // Sin rebote: un rebote en la escala al salir se veía como un temblor
                     Behavior on scale {
                         NumberAnimation {
-                            duration: 360
+                            duration: 220
                             easing.type: Easing.OutCubic
                         }
                     }
