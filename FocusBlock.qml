@@ -128,7 +128,7 @@ PanelWindow {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "Volver a estudiar"
+                        text: "Cerrar y estudiar"
                         color: "#14131a"
                         font.pixelSize: 14
                         font.weight: Font.DemiBold
@@ -138,7 +138,7 @@ PanelWindow {
                         id: backHover
                     }
                     TapHandler {
-                        onTapped: Focus.noticeDismissed = true
+                        onTapped: Focus.closeBlocked()
                     }
                 }
 

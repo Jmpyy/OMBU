@@ -149,6 +149,10 @@ ShellRoot {
             Focus.next(false);
         }
 
+        function closeblocked(): void {
+            Focus.closeBlocked();
+        }
+
         function mode(name: string): void {
             Focus.setMode(name);
         }

@@ -52,8 +52,7 @@ Singleton {
     property string noticeTitle: ""
     property double noticeEndsAt: 0
     property string noticePhrase: ""
-    property bool noticeDismissed: false
-    readonly property bool noticeVisible: blocking && noticeTitle !== "" && !noticeDismissed && nowMs < noticeEndsAt + 1500
+    readonly property bool noticeVisible: blocking && noticeTitle !== "" && nowMs < noticeEndsAt + 1500
     readonly property int noticeLeft: Math.max(0, Math.ceil((noticeEndsAt - nowMs) / 1000))
     readonly property var phrases: [
         "Tu yo del futuro te lo va a agradecer.",
@@ -176,6 +175,23 @@ Singleton {
         Quickshell.execDetached(["sh", "-c", "mkdir -p \"$(dirname \"$2\")\"; printf -- '- %s %s\\n' \"$(date '+%F %H:%M')\" \"$1\" >> \"$2\"", "ideas", t, dataDir + "/ideas.md"]);
     }
 
+    // "Volver a estudiar": no espera los 15 s, cierra ahora lo que está bloqueado
+    function closeBlocked(): void {
+        if (!blocking)
+            return;
+        const past = Date.now() - warnSeconds * 1000 - 1;
+        const w = {};
+        for (const k of Object.keys(warned))
+            w[k] = {
+                since: past,
+                closedAt: warned[k].closedAt,
+                termAt: warned[k].termAt
+            };
+        warned = w;
+        noticeEndsAt = Date.now();
+        blockTimer.triggered();
+    }
+
     // Saltar el bloqueo: no es inmediato, hay que esperar
     function requestUnlock(): void {
         if (unlockLeft > 0 || !blocking)
@@ -242,6 +258,8 @@ Singleton {
     // Vigila las ventanas mientras el bloqueo está activo: avisa y, pasado el plazo, cierra la
     // ventana con un cierre normal (no mata el proceso, para no perder una partida sin guardar)
     Timer {
+        id: blockTimer
+
         interval: 2500
         repeat: true
         running: root.blocking
@@ -264,7 +282,6 @@ Singleton {
                     root.noticeTitle = root.friendlyName(cls, t.title);
                     root.noticePhrase = root.phrases[Math.floor(Math.random() * root.phrases.length)];
                     root.noticeEndsAt = now + root.warnSeconds * 1000;
-                    root.noticeDismissed = false;
                     root.chime();
                     console.log("FOCO: detectado " + cls + " (" + address + ")");
                     continue;
