@@ -29,7 +29,27 @@ DropPopup {
     readonly property var sources: allNodes.filter(n => mediaClass(n) === "Audio/Source")
     readonly property var playing: allNodes.filter(n => mediaClass(n) === "Stream/Output/Audio")
     readonly property var recording: allNodes.filter(n => mediaClass(n) === "Stream/Input/Audio")
-    readonly property var apps: playing.concat(recording)
+
+    // Una fila por aplicación: un navegador deja un stream de audio por cada video y pestaña
+    // (Instagram crea uno por cada reel, casi todos pausados), y listarlos todos llenaba el menú.
+    function groupApps(nodes: var): var {
+        const groups = [];
+        const byKey = {};
+        for (const n of nodes) {
+            const key = appName(n) + "|" + mediaClass(n);
+            if (!byKey[key]) {
+                byKey[key] = {
+                    key: key,
+                    nodes: []
+                };
+                groups.push(byKey[key]);
+            }
+            byKey[key].nodes.push(n);
+        }
+        return groups;
+    }
+
+    readonly property var apps: groupApps(playing.concat(recording))
 
     bodyWidth: 370
     bodyHeight: column.implicitHeight + 26
@@ -85,15 +105,19 @@ DropPopup {
             Repeater {
                 model: ScriptModel {
                     values: root.apps
+                    objectProp: "key"
                 }
 
                 RowLayout {
                     id: app
 
                     required property var modelData
-                    readonly property bool isMic: root.mediaClass(modelData) === "Stream/Input/Audio"
-                    readonly property real volume: modelData.audio?.volume ?? 0
-                    readonly property bool muted: modelData.audio?.muted ?? false
+                    // Los streams de la app: se muestra uno solo y el volumen se aplica a todos
+                    readonly property var nodes: modelData.nodes
+                    readonly property var node: nodes[0]
+                    readonly property bool isMic: root.mediaClass(node) === "Stream/Input/Audio"
+                    readonly property real volume: node.audio?.volume ?? 0
+                    readonly property bool muted: nodes.every(n => n.audio?.muted ?? false)
 
                     Layout.fillWidth: true
                     spacing: 10
@@ -104,7 +128,7 @@ DropPopup {
 
                         Image {
                             anchors.fill: parent
-                            source: root.appIcon(app.modelData)
+                            source: root.appIcon(app.node)
                             sourceSize: Qt.size(60, 60)
                             smooth: true
                         }
@@ -137,7 +161,7 @@ DropPopup {
 
                             Text {
                                 Layout.fillWidth: true
-                                text: root.appName(app.modelData) + (app.isMic ? " (micrófono)" : "")
+                                text: root.appName(app.node) + (app.isMic ? " (micrófono)" : "")
                                 elide: Text.ElideRight
                                 color: Theme.text
                                 font.pixelSize: 12
@@ -155,8 +179,10 @@ DropPopup {
                             value: app.volume
                             muted: app.muted
                             onMoved: v => {
-                                if (app.modelData.audio)
-                                    app.modelData.audio.volume = v;
+                                for (const n of app.nodes) {
+                                    if (n.audio)
+                                        n.audio.volume = v;
+                                }
                             }
                         }
                     }
@@ -179,8 +205,11 @@ DropPopup {
                         }
                         TapHandler {
                             onTapped: {
-                                if (app.modelData.audio)
-                                    app.modelData.audio.muted = !app.modelData.audio.muted;
+                                const mute = !app.muted;
+                                for (const n of app.nodes) {
+                                    if (n.audio)
+                                        n.audio.muted = mute;
+                                }
                             }
                         }
                     }
