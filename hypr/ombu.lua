@@ -40,8 +40,8 @@ hl.animation({ leaf = "border",              enabled = true, speed = 6,   bezier
 hl.animation({ leaf = "borderangle",         enabled = false                                                       })
 hl.animation({ leaf = "fadeShadow",          enabled = true, speed = 4,   bezier = "ombuInOut"                     })
 hl.animation({ leaf = "fadeDim",             enabled = true, speed = 4,   bezier = "ombuInOut"                     })
--- Escritorios: deslizamiento con desvanecido corto
-hl.animation({ leaf = "workspaces",          enabled = true, speed = 4.5, bezier = "ombuOut", style = "slidefade 12%" })
+-- Escritorios: cambio instantáneo, sin animación (más ágil para trabajar)
+hl.animation({ leaf = "workspaces",          enabled = false })
 hl.animation({ leaf = "specialWorkspaceIn",  enabled = true, speed = 3,   bezier = "ombuOut", style = "slidefade 10%" })
 hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.5, bezier = "ombuIn",  style = "slidefade 10%" })
 -- Capas (menús, notificaciones de otros programas)
