@@ -96,7 +96,7 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 
 - `Focus.qml` (singleton) lleva el temporizador (25 min de estudio, 5 de descanso, 15 cada 4 bloques), los tres modos y la estadística. Se guarda en `~/.local/share/ombu/focus.json`; las ideas, en `ideas.md` de esa carpeta.
 - Publica el estado en `~/.local/state/ombu/modo` (`estudio activo`, `trabajo inactivo`, `libre inactivo`...) para que otros programas, como un hook de IA, sepan si la persona está estudiando.
-- El bloqueo (solo en modo estudio, durante el bloque de estudio) **avisa y cierra a los 15 s** las ventanas de juegos. Se cierra enfocando la ventana y cerrando la activa: `hl.dsp.window.close({ window = ... })` **no cierra** en esta versión de Hyprland. No mata el proceso, para no perder una partida.
+- El bloqueo (solo en modo estudio, durante el bloque de estudio) **avisa y cierra a los 15 s** las ventanas de juegos. Se cierra enfocando la ventana y cerrando la activa: `hl.dsp.window.close({ window = ... })` **no cierra** en esta versión de Hyprland. Si la app ignora el cierre (un launcher que solo se esconde, un juego), a los 10 s se le manda SIGTERM al proceso (nunca SIGKILL). Lo que decide queda en el log con el prefijo `FOCO:` (`qs -c ombu log | grep FOCO:`).
 - Saltar el bloqueo exige esperar 60 s (fricción a propósito) y lo pausa 15 min.
 - Probar el bloqueo: `kitty --class steam_app_prueba -o confirm_os_window_close=0 -e sleep 600` (sin esa opción kitty pide confirmación y la ventana no se cierra).
 - **Cartel** (`FocusBlock.qml`): al detectar un juego durante el bloque de estudio muestra una tarjeta encima de todo, con una frase, el nombre de lo que se cierra y la cuenta regresiva de 15 s. No toma el teclado.

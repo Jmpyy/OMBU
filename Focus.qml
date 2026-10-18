@@ -41,6 +41,7 @@ Singleton {
     // Bloqueo: ventanas que no se dejan abrir mientras se estudia
     readonly property var blockedPattern: /steam_app|^steam$|gamescope|minecraft|mojang|league|riot|heroic|lutris/i
     readonly property int warnSeconds: 15
+    readonly property int terminateAfter: 10
     readonly property int unlockSeconds: 60
     readonly property int overrideMinutes: 15
     property int unlockLeft: 0
@@ -253,19 +254,43 @@ Singleton {
                 if (!root.blockedPattern.test(cls))
                     continue;
                 const address = t.address;
-                const since = root.warned[address];
-                if (since === undefined) {
-                    next[address] = now;
+                const seen = root.warned[address];
+                if (seen === undefined) {
+                    next[address] = {
+                        since: now,
+                        closedAt: 0,
+                        termAt: 0
+                    };
                     root.noticeTitle = root.friendlyName(cls, t.title);
                     root.noticePhrase = root.phrases[Math.floor(Math.random() * root.phrases.length)];
                     root.noticeEndsAt = now + root.warnSeconds * 1000;
                     root.noticeDismissed = false;
                     root.chime();
-                } else {
-                    next[address] = since;
-                    if (now - since >= root.warnSeconds * 1000) {
-                        // close({ window = ... }) no cierra en esta versión: se enfoca y se cierra la activa
-                        Hyprland.dispatch("function() hl.dispatch(hl.dsp.focus({ window = \"address:0x" + address + "\" })); hl.dispatch(hl.dsp.window.close()) end");
+                    console.log("FOCO: detectado " + cls + " (" + address + ")");
+                    continue;
+                }
+                const entry = {
+                    since: seen.since,
+                    closedAt: seen.closedAt,
+                    termAt: seen.termAt
+                };
+                next[address] = entry;
+                if (now - entry.since < root.warnSeconds * 1000)
+                    continue;
+                if (entry.termAt === 0) {
+                    // Primero un cierre normal: se enfoca la ventana y se cierra la activa
+                    // (close({ window = ... }) no cierra en esta versión de Hyprland)
+                    if (entry.closedAt === 0)
+                        console.log("FOCO: pidiendo cerrar " + cls);
+                    entry.closedAt = entry.closedAt === 0 ? now : entry.closedAt;
+                    Hyprland.dispatch("function() hl.dispatch(hl.dsp.focus({ window = \"address:0x" + address + "\" })); hl.dispatch(hl.dsp.window.close()) end");
+                    // Si la app lo ignora (un juego puede hacerlo, o un launcher que solo se
+                    // esconde), a los 10 s se le manda SIGTERM: cierre ordenado, no SIGKILL
+                    const pid = t.lastIpcObject?.pid ?? 0;
+                    if (now - entry.closedAt >= root.terminateAfter * 1000 && pid > 0) {
+                        entry.termAt = now;
+                        console.log("FOCO: " + cls + " no se cerró, SIGTERM a " + pid);
+                        Quickshell.execDetached(["kill", "-TERM", String(pid)]);
                     }
                 }
             }
