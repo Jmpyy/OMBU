@@ -291,33 +291,27 @@ DropPopup {
                         savedTimer.restart();
                     }
 
+                    // Texto de ayuda; tras guardar, confirma en violeta unos segundos
                     Text {
                         visible: idea.text === ""
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "Anotar una idea y seguir (Enter)"
-                        color: Theme.textDim
+                        text: savedNote.opacity > 0 ? "✓ Guardada en tus ideas" : "Anotar una idea y seguir (Enter)"
+                        color: savedNote.opacity > 0 ? Theme.accent : Theme.textDim
                         font.pixelSize: 13
+                        font.weight: savedNote.opacity > 0 ? Font.DemiBold : Font.Normal
                     }
                 }
 
-                Text {
+                // Solo guarda el estado de "recién guardada"; el aviso se muestra en el campo
+                Item {
                     id: savedNote
 
                     opacity: 0
-                    text: "Guardada"
-                    color: Theme.accent
-                    font.pixelSize: 12
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 200
-                        }
-                    }
 
                     Timer {
                         id: savedTimer
 
-                        interval: 1500
+                        interval: 2500
                         onTriggered: savedNote.opacity = 0
                     }
                 }

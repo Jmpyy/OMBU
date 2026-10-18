@@ -47,6 +47,22 @@ Singleton {
     property double overrideUntil: 0
     property var warned: ({})
 
+    // Cartel que aparece cuando se intenta abrir un juego: qué app, hasta cuándo y qué frase
+    property string noticeTitle: ""
+    property double noticeEndsAt: 0
+    property string noticePhrase: ""
+    property bool noticeDismissed: false
+    readonly property bool noticeVisible: blocking && noticeTitle !== "" && !noticeDismissed && nowMs < noticeEndsAt + 1500
+    readonly property int noticeLeft: Math.max(0, Math.ceil((noticeEndsAt - nowMs) / 1000))
+    readonly property var phrases: [
+        "Tu yo del futuro te lo va a agradecer.",
+        "Son 25 minutos. Después jugás tranquilo.",
+        "Esto es lo que te acerca a la carrera que querés.",
+        "Cada bloque cuenta: estás construyendo tu futuro.",
+        "Lo difícil es empezar. Ya empezaste.",
+        "Primero lo importante. El juego espera."
+    ]
+
     readonly property bool blocking: mode === "estudio" && running && phase === "estudio" && overrideUntil < nowMs
     property double nowMs: Date.now()
 
@@ -72,6 +88,17 @@ Singleton {
     function minutesText(seconds: int): string {
         const m = Math.floor(seconds / 60);
         return m >= 60 ? Math.floor(m / 60) + " h " + String(m % 60).padStart(2, "0") + " min" : m + " min";
+    }
+
+    // Nombre para el cartel: lo que dice la ventana o, si no, la clase sin prefijos técnicos
+    function friendlyName(cls: string, title: string): string {
+        if (/minecraft|mojang/i.test(cls))
+            return "Minecraft";
+        if (/league|riot/i.test(cls))
+            return "League of Legends";
+        if (/^steam_app/i.test(cls))
+            return title && title !== "" ? title : "un juego de Steam";
+        return title && title !== "" ? title : cls;
     }
 
     function notify(title: string, body: string): void {
@@ -229,7 +256,11 @@ Singleton {
                 const since = root.warned[address];
                 if (since === undefined) {
                     next[address] = now;
-                    root.notify("Modo estudio", (t.title || cls) + " se cierra en " + root.warnSeconds + " segundos. Pausá el temporizador si hace falta.");
+                    root.noticeTitle = root.friendlyName(cls, t.title);
+                    root.noticePhrase = root.phrases[Math.floor(Math.random() * root.phrases.length)];
+                    root.noticeEndsAt = now + root.warnSeconds * 1000;
+                    root.noticeDismissed = false;
+                    root.chime();
                 } else {
                     next[address] = since;
                     if (now - since >= root.warnSeconds * 1000) {

@@ -77,6 +77,12 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
+        FocusBlock {}
+    }
+
+    Variants {
+        model: Quickshell.screens
+
         ClipMenu {}
     }
 
