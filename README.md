@@ -35,7 +35,7 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 - **Bienvenida** al iniciar sesión: lluvia de código, el logo que se descifra y la barra que baja desde el borde.
 - **Capturas** con editor para anotar y recortar, miniatura en el aviso (clic para editarla, botón para borrarla) y OCR para copiar texto de la pantalla.
 - Avisos cuando Claude Code o Antigravity terminan una tarea larga (y no los muestra si ya tenés la terminal a la vista).
-- **Modo foco** en la barra: temporizador de estudio y descanso (25/5), tres modos (estudio, trabajo, libre), estadística y racha del día, un cajón para anotar ideas sin distraerte y, en modo estudio, un bloqueo de juegos que avisa antes de cerrarlos y se puede saltar esperando 60 segundos.
+- **Modo foco** en la barra: temporizador de estudio y descanso (25/5), tres modos (estudio, trabajo, libre), estadística y racha del día, un cajón para anotar ideas sin distraerte y, en modo estudio, un bloqueo de juegos y de redes sociales (Instagram, TikTok...; YouTube no) que avisa antes de cerrarlos y se puede saltar esperando 60 segundos.
 - **Historial del portapapeles** con búsqueda, miniaturas de imágenes, textos fijados y pegado automático en la ventana donde estabas. No guarda lo que las apps marcan como sensible (gestores de contraseñas), se puede pausar y se vacía en cada sesión nueva.
 - Un explorador de archivos que se abre donde está tu terminal.
 

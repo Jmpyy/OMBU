@@ -109,7 +109,7 @@ PanelWindow {
             Text {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: Focus.noticeLeft > 0 ? Focus.noticeTitle + " se cierra en " + Focus.noticeLeft + " s" : "Cerrando " + Focus.noticeTitle + "…"
+                text: Focus.noticeLeft > 0 ? Focus.noticeTitle + (Focus.noticeKind === "web" ? " se cierra en " : " se cierra en ") + Focus.noticeLeft + " s" : "Cerrando " + Focus.noticeTitle + "…"
                 wrapMode: Text.Wrap
                 color: Theme.textDim
                 font.pixelSize: 13
@@ -154,7 +154,7 @@ PanelWindow {
                         id: unlockText
 
                         anchors.centerIn: parent
-                        text: Focus.unlockLeft > 0 ? "Esperá " + Focus.unlockLeft + " s · cancelar" : "Necesito jugar"
+                        text: Focus.unlockLeft > 0 ? "Esperá " + Focus.unlockLeft + " s · cancelar" : (Focus.noticeKind === "web" ? "Necesito entrar" : "Necesito jugar")
                         color: Theme.textDim
                         font.pixelSize: 13
                     }

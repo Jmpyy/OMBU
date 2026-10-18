@@ -71,6 +71,44 @@ Singleton {
 
     readonly property string phaseName: phase === "estudio" ? "Estudio" : (phase === "largo" ? "Descanso largo" : "Descanso")
 
+    // Sitios que se bloquean en el navegador. Se reconocen por el título de la pestaña activa (el
+    // de la ventana de Zen); al vencer el plazo se cierra esa pestaña. YouTube no está: sirve para
+    // estudiar. Los patrones piden que el título empiece con el nombre o lo traiga como sello del
+    // sitio, para no cerrar una pestaña de estudio que solo nombra a Instagram.
+    readonly property var browserClasses: ["zen", "firefox"]
+    readonly property var blockedSites: [
+        {
+            name: "Instagram",
+            re: /^(\(\d+\)\s*)?Instagram|• Instagram|Instagram •/i
+        },
+        {
+            name: "TikTok",
+            re: /TikTok/i
+        },
+        {
+            name: "Facebook",
+            re: /^(\(\d+\)\s*)?Facebook|\| Facebook/i
+        },
+        {
+            name: "X",
+            re: /(\/ X|on X:)( — |$)/
+        },
+        {
+            name: "Reddit",
+            re: /^(\(\d+\)\s*)?(Reddit|r\/)|: r\/|\| Reddit/i
+        },
+        {
+            name: "Twitch",
+            re: /^(\(\d+\)\s*)?Twitch|- Twitch( — |$)/i
+        },
+        {
+            name: "Netflix",
+            re: /^(\(\d+\)\s*)?Netflix|- Netflix( — |$)/i
+        }
+    ]
+    // "game" o "web": lo que se bloqueó, para los textos del cartel
+    property string noticeKind: "game"
+
     // Procesos (nombre de 15 caracteres como máximo) que cuentan aunque todavía no tengan ventana:
     // el launcher de Minecraft tarda en mostrarla y el cartel tiene que salir antes
     readonly property var blockedProcesses: [
@@ -100,11 +138,29 @@ Singleton {
         for (const t of Apps.windows) {
             // Con "||" y no "??": un appId vacío ("") tiene que caer al nombre de clase de Hyprland
             const cls = t.wayland?.appId || t.lastIpcObject?.class || "";
+            // Navegador mostrando un sitio bloqueado: se cierra la pestaña, no la ventana
+            if (browserClasses.includes(cls.toLowerCase())) {
+                const site = blockedSites.find(b => b.re.test(t.title ?? ""));
+                if (site) {
+                    const wf = "web:" + site.name;
+                    if (!present[wf])
+                        present[wf] = {
+                            kind: "tab",
+                            cls: "web",
+                            title: site.name,
+                            windows: [],
+                            pids: []
+                        };
+                    present[wf].windows.push(t.address);
+                }
+                continue;
+            }
             if (!blockedPattern.test(cls))
                 continue;
             const f = familyOf(cls);
             if (!present[f])
                 present[f] = {
+                    kind: "game",
                     cls: cls,
                     title: t.title,
                     windows: [],
@@ -120,6 +176,7 @@ Singleton {
                 continue;
             if (!present[f])
                 present[f] = {
+                    kind: "game",
                     cls: f,
                     title: "",
                     windows: [],
@@ -136,14 +193,17 @@ Singleton {
             const entry = seen === undefined ? {
                 since: now,
                 closedAt: 0,
-                termAt: 0
+                termAt: 0,
+                lastSend: 0
             } : {
                 since: seen.since,
                 closedAt: seen.closedAt,
-                termAt: seen.termAt
+                termAt: seen.termAt,
+                lastSend: seen.lastSend ?? 0
             };
             next[f] = entry;
             if (seen === undefined) {
+                noticeKind = p.kind === "tab" ? "web" : "game";
                 noticeTitle = friendlyName(p.cls, p.title);
                 noticePhrase = phrases[Math.floor(Math.random() * phrases.length)];
                 noticeEndsAt = now + warnSeconds * 1000;
@@ -153,6 +213,21 @@ Singleton {
             }
             if (now - entry.since < warnSeconds * 1000 || entry.termAt !== 0)
                 continue;
+            if (p.kind === "tab") {
+                // Ctrl+W a la ventana del navegador, que muestra el sitio bloqueado. Se espera 3 s
+                // entre envíos: si el título tarda en actualizarse, un segundo Ctrl+W cerraría
+                // la pestaña que no era.
+                if (now - entry.lastSend >= 3000) {
+                    entry.lastSend = now;
+                    if (entry.closedAt === 0) {
+                        entry.closedAt = now;
+                        console.log("FOCO: cerrando la pestaña de " + p.title);
+                    }
+                    for (const a of p.windows)
+                        Hyprland.dispatch("hl.dsp.send_shortcut({ mods = \"CTRL\", key = \"w\", window = \"address:0x" + a + "\" })");
+                }
+                continue;
+            }
             if (p.windows.length > 0) {
                 // Primero un cierre normal: se enfoca cada ventana y se cierra la activa
                 // (close({ window = ... }) no cierra en esta versión de Hyprland)
@@ -291,7 +366,8 @@ Singleton {
             w[k] = {
                 since: past,
                 closedAt: warned[k].closedAt,
-                termAt: warned[k].termAt
+                termAt: warned[k].termAt,
+                lastSend: 0
             };
         warned = w;
         noticeEndsAt = Date.now();

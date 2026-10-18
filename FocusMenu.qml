@@ -240,7 +240,7 @@ DropPopup {
 
                 Text {
                     Layout.fillWidth: true
-                    text: Focus.blocking ? "Juegos bloqueados mientras estudiás" : "Bloqueo pausado"
+                    text: Focus.blocking ? "Juegos y redes bloqueados mientras estudiás" : "Bloqueo pausado"
                     wrapMode: Text.Wrap
                     color: Theme.text
                     font.pixelSize: 12
@@ -249,7 +249,7 @@ DropPopup {
                 Pill {
                     visible: Focus.blocking
                     implicitHeight: 28
-                    text: Focus.unlockLeft > 0 ? "Esperá " + Focus.unlockLeft + " s · cancelar" : "Necesito jugar"
+                    text: Focus.unlockLeft > 0 ? "Esperá " + Focus.unlockLeft + " s · cancelar" : "Pausar bloqueo"
                     danger: true
                     onClicked: Focus.unlockLeft > 0 ? Focus.cancelUnlock() : Focus.requestUnlock()
                 }
