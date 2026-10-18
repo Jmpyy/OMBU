@@ -29,6 +29,29 @@ hl.config({
         key_press_enables_dpms = true,
         mouse_move_enables_dpms = true,
     },
+    -- Aspecto de las ventanas: borde violeta fino, esquinas redondas, todo opaco y sombra suave
+    general = {
+        gaps_in = 6,
+        gaps_out = 12,
+        border_size = 2,
+        col = {
+            active_border = "rgba(a78bfaff)",
+            inactive_border = "rgba(ffffff14)",
+        },
+    },
+    decoration = {
+        rounding = 14,
+        active_opacity = 1.0,
+        inactive_opacity = 1.0,
+        blur = { size = 4, passes = 2 },
+        shadow = {
+            enabled = true,
+            range = 24,
+            render_power = 3,
+            color = "rgba(00000070)",
+            color_inactive = "rgba(00000030)",
+        },
+    },
 })
 
 ---------------------
