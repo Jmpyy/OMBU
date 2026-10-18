@@ -27,6 +27,10 @@ PopupWindow {
     // se vería como un salto. Por eso espera a que la ventana haya dibujado un primer cuadro.
     property bool ready: false
 
+    // Ventana pre-creada: con el mouse sobre el botón se crea el menú (invisible y sin tomar
+    // clics) para que, al hacer clic, ya esté dibujado y la animación arranque al instante.
+    property bool warm: false
+
     // 0 = recogido en el botón, 1 = desplegado
     property real p: (open && ready) ? 1 : 0
 
@@ -60,7 +64,16 @@ PopupWindow {
     onOpenChanged: if (open)
         place()
 
-    visible: open || p > 0.001
+    onWarmChanged: if (warm)
+        place()
+
+    visible: open || p > 0.001 || warm
+    // Mientras solo está pre-creado, no recibe clics: pasan al escritorio que está debajo
+    mask: (open || p > 0.001) ? null : noInput
+
+    Region {
+        id: noInput
+    }
     onVisibleChanged: if (!visible)
         ready = false
 
@@ -75,6 +88,41 @@ PopupWindow {
         active: root.open
         windows: [root]
         onCleared: root.dismissed()
+    }
+
+    // El mouse sobre el botón: tras 100 ms se pre-crea el menú; al irse se libera con demora
+    Item {
+        parent: root.anchorItem
+        anchors.fill: parent
+
+        HoverHandler {
+            id: warmHover
+
+            onHoveredChanged: {
+                if (hovered) {
+                    coolTimer.stop();
+                    warmTimer.restart();
+                } else {
+                    warmTimer.stop();
+                    coolTimer.restart();
+                }
+            }
+        }
+
+        Timer {
+            id: warmTimer
+
+            interval: 100
+            onTriggered: root.warm = true
+        }
+
+        Timer {
+            id: coolTimer
+
+            interval: 1200
+            onTriggered: if (!root.open)
+                root.warm = false
+        }
     }
 
     // Avisa cuando la ventana ya dibujó su primer cuadro (ahí arranca la animación)
