@@ -80,6 +80,7 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 - **No hay suspend real**: el driver NVIDIA (GSP) cuelga la GPU al despertar. "Reposo" bloquea y muestra el salvapantallas.
 - Discord pide no bloquear la pantalla en llamadas de voz; una regla de Hyprland (`idle_inhibit = "none"`) lo ignora.
 
-## Avisos de los agentes
+## Avisos y confirmaciones de los agentes
 
-`bin/agent-notify.sh` avisa cuando Claude Code o Antigravity terminan una tarea larga (30 s o más). Lo llaman los hooks de cada uno (`~/.claude/settings.json` y `~/.gemini/config/hooks.json`). Si hay una terminal a la vista, ombu descarta el aviso (regla en `NotifRules.qml`).
+- `bin/agent-notify.sh`: avisa cuando Claude Code o Antigravity terminan una tarea. Si la terminal no tiene el foco, avisa siempre y permite hacer clic para volver a la consola al instante. Lo llaman los hooks de cada uno (`~/.claude/settings.json` y `~/.gemini/config/hooks.json`).
+- `bin/agent-confirm.sh`: hook de `PreToolUse` que muestra una notificación interactiva con botones (`[Permitir]`, `[Denegar]`, `[Ir a la consola]`) cuando el agente va a correr un comando y la terminal no tiene el foco. Permite aprobar comandos sin salir de juegos u otras apps.

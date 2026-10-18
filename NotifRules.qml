@@ -37,18 +37,22 @@ Singleton {
 
     // Escritorios que se están viendo ahora (uno por monitor)
     readonly property var visibleWorkspaces: Hyprland.monitors.values.map(m => m.activeWorkspace?.id).filter(id => id !== undefined)
+    readonly property int focusedWorkspace: Hyprland.focusedWorkspace?.id ?? -1
 
     function ruleFor(n: var): var {
         return rules.find(r => r.match(n)) ?? null;
     }
 
-    // ¿Hay una ventana de esa clase a la vista?
+    // ¿Hay una ventana de esa clase en el escritorio con foco?
     function isVisible(windowClass: string): bool {
-        return Hyprland.toplevels.values.some(t => t.wayland?.appId === windowClass && visibleWorkspaces.includes(t.workspace?.id));
+        return Hyprland.toplevels.values.some(t => (t.wayland?.appId === windowClass || t.lastIpcObject?.class === windowClass) && t.workspace?.id === focusedWorkspace);
     }
 
     // Verdadero si la notificación no hay que mostrarla
     function shouldDrop(n: var): bool {
+        // Nunca descartar avisos con botones de acción interactivos
+        if (n.actions && n.actions.length > 0)
+            return false;
         const rule = ruleFor(n);
         return rule !== null && !!rule.hideWhenVisible && isVisible(rule.hideWhenVisible);
     }

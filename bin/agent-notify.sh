@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# Avisa cuando un agente de IA de la terminal (Claude Code, Antigravity) termina una tarea larga.
+# Avisa cuando un agente de IA de la terminal (Claude Code, Antigravity) termina una tarea.
 # Lo llaman los hooks de cada agente:
 #
 #   agent-notify.sh claude start|stop     (hooks UserPromptSubmit y Stop de Claude Code)
 #   agent-notify.sh agy start|stop        (hooks PreInvocation y Stop de Antigravity)
 #
-# "start" anota la hora en que arranca el turno; "stop" calcula cuánto tardó y, si fueron
-# OMBU_AGENT_MIN_SECONDS o más (30 por defecto), manda una notificación en español. Si tenés
-# una terminal a la vista, ombu la descarta sola (ver NotifRules.qml).
+# "start" anota la hora en que arranca el turno; "stop" calcula cuánto tardó.
+# Si la terminal no tiene el foco (ej. estás jugando o en otra ventana), avisa siempre
+# y permite hacer clic para volver a la consola al instante.
+# Si ya tenés la terminal enfrente, solo avisa si tardó OMBU_AGENT_MIN_SECONDS (30 s por defecto).
 #
 # Nunca debe romper al agente: siempre termina bien y rápido.
 agent="${1:-}"
@@ -48,13 +49,26 @@ stop)
     reason=$(field terminationReason)
     if [ -n "$start" ] && [ "$reason" != "USER_CANCELED" ]; then
         secs=$((now - start))
-        if [ "$secs" -ge "$min" ]; then
+        active_class=$(hyprctl activewindow -j 2>/dev/null | python3 -I -c "import sys,json; print(json.load(sys.stdin).get('class',''))" 2>/dev/null)
+
+        # Si no estás en la consola, o si tardó más del mínimo configurado:
+        if [ "$active_class" != "kitty" ] || [ "$secs" -ge "$min" ]; then
             if [ "$secs" -ge 60 ]; then
                 took="$((secs / 60)) min $((secs % 60)) s"
             else
                 took="$secs s"
             fi
-            notify-send -a "$name" -u normal "$name terminó" "Tardó $took" >/dev/null 2>&1 &
+
+            (
+                choice=$(notify-send -a "$name" -u normal \
+                    -t 8000 \
+                    -A "default=Ir a la consola" \
+                    -A "focus=Ir a la consola" \
+                    "$name terminó" "Tardó $took" 2>/dev/null)
+                if [ "$choice" = "default" ] || [ "$choice" = "focus" ]; then
+                    hyprctl dispatch 'hl.dsp.focus({ window = "class:kitty" })' >/dev/null 2>&1
+                fi
+            ) &
         fi
     fi
     ;;
