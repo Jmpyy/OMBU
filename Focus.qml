@@ -71,6 +71,112 @@ Singleton {
 
     readonly property string phaseName: phase === "estudio" ? "Estudio" : (phase === "largo" ? "Descanso largo" : "Descanso")
 
+    // Procesos (nombre de 15 caracteres como máximo) que cuentan aunque todavía no tengan ventana:
+    // el launcher de Minecraft tarda en mostrarla y el cartel tiene que salir antes
+    readonly property var blockedProcesses: [
+        {
+            comm: "minecraft-launc",
+            family: "minecraft"
+        }
+    ]
+    property var procPids: ({})
+
+    // Familia de una app: el launcher y el juego de Minecraft comparten un solo aviso
+    function familyOf(cls: string): string {
+        if (/minecraft|mojang/i.test(cls))
+            return "minecraft";
+        if (/league|riot/i.test(cls))
+            return "league";
+        if (/steam|gamescope/i.test(cls))
+            return "steam";
+        return cls.toLowerCase();
+    }
+
+    // Revisa ventanas y procesos bloqueados: avisa al verlos, y pasado el plazo los cierra con un
+    // cierre normal; si la app lo ignora, a los 10 s le manda SIGTERM (nunca SIGKILL).
+    function scanBlocked(): void {
+        const now = Date.now();
+        const present = {};
+        for (const t of Apps.windows) {
+            // Con "||" y no "??": un appId vacío ("") tiene que caer al nombre de clase de Hyprland
+            const cls = t.wayland?.appId || t.lastIpcObject?.class || "";
+            if (!blockedPattern.test(cls))
+                continue;
+            const f = familyOf(cls);
+            if (!present[f])
+                present[f] = {
+                    cls: cls,
+                    title: t.title,
+                    windows: [],
+                    pids: []
+                };
+            present[f].windows.push(t.address);
+            const pid = t.lastIpcObject?.pid ?? 0;
+            if (pid > 0)
+                present[f].pids.push(pid);
+        }
+        for (const f of Object.keys(procPids)) {
+            if (procPids[f].length === 0)
+                continue;
+            if (!present[f])
+                present[f] = {
+                    cls: f,
+                    title: "",
+                    windows: [],
+                    pids: []
+                };
+            for (const pid of procPids[f])
+                present[f].pids.push(pid);
+        }
+
+        const next = {};
+        for (const f of Object.keys(present)) {
+            const p = present[f];
+            const seen = warned[f];
+            const entry = seen === undefined ? {
+                since: now,
+                closedAt: 0,
+                termAt: 0
+            } : {
+                since: seen.since,
+                closedAt: seen.closedAt,
+                termAt: seen.termAt
+            };
+            next[f] = entry;
+            if (seen === undefined) {
+                noticeTitle = friendlyName(p.cls, p.title);
+                noticePhrase = phrases[Math.floor(Math.random() * phrases.length)];
+                noticeEndsAt = now + warnSeconds * 1000;
+                chime();
+                console.log("FOCO: detectado " + f + " (" + p.windows.length + " ventanas, " + p.pids.length + " procesos)");
+                continue;
+            }
+            if (now - entry.since < warnSeconds * 1000 || entry.termAt !== 0)
+                continue;
+            if (p.windows.length > 0) {
+                // Primero un cierre normal: se enfoca cada ventana y se cierra la activa
+                // (close({ window = ... }) no cierra en esta versión de Hyprland)
+                if (entry.closedAt === 0) {
+                    entry.closedAt = now;
+                    console.log("FOCO: pidiendo cerrar " + f);
+                }
+                let code = "function() ";
+                for (const a of p.windows)
+                    code += "hl.dispatch(hl.dsp.focus({ window = \"address:0x" + a + "\" })); hl.dispatch(hl.dsp.window.close()); ";
+                Hyprland.dispatch(code + "end");
+            } else if (entry.closedAt === 0) {
+                // Sin ventana todavía (cargando): no hay a quién pedirle que cierre
+                entry.closedAt = now - terminateAfter * 1000;
+            }
+            if (now - entry.closedAt >= terminateAfter * 1000 && p.pids.length > 0) {
+                entry.termAt = now;
+                console.log("FOCO: " + f + " no se cerró, SIGTERM a " + p.pids.join(" "));
+                Quickshell.execDetached(["kill", "-TERM"].concat(p.pids.map(String)));
+            }
+        }
+        warned = next;
+    }
+
     function today(): string {
         return Qt.formatDate(new Date(), "yyyy-MM-dd");
     }
@@ -175,7 +281,7 @@ Singleton {
         Quickshell.execDetached(["sh", "-c", "mkdir -p \"$(dirname \"$2\")\"; printf -- '- %s %s\\n' \"$(date '+%F %H:%M')\" \"$1\" >> \"$2\"", "ideas", t, dataDir + "/ideas.md"]);
     }
 
-    // "Volver a estudiar": no espera los 15 s, cierra ahora lo que está bloqueado
+    // "Cerrar y estudiar": no espera los 15 s, cierra ahora lo que está bloqueado
     function closeBlocked(): void {
         if (!blocking)
             return;
@@ -189,7 +295,7 @@ Singleton {
             };
         warned = w;
         noticeEndsAt = Date.now();
-        blockTimer.triggered();
+        scanBlocked();
     }
 
     // Saltar el bloqueo: no es inmediato, hay que esperar
@@ -255,64 +361,37 @@ Singleton {
         }
     }
 
-    // Vigila las ventanas mientras el bloqueo está activo: avisa y, pasado el plazo, cierra la
-    // ventana con un cierre normal (no mata el proceso, para no perder una partida sin guardar)
+    // Vigila cada segundo mientras el bloqueo está activo (el aviso sale casi al abrir la app)
     Timer {
-        id: blockTimer
-
-        interval: 2500
+        interval: 1000
         repeat: true
         running: root.blocking
         onTriggered: {
-            const now = Date.now();
-            // Se arma un registro nuevo en cada vuelta: avisos de las ventanas que siguen abiertas
-            const next = {};
-            for (const t of Apps.windows) {
-                // Con "||" y no "??": un appId vacío ("") tiene que caer al nombre de clase de Hyprland
-                const cls = t.wayland?.appId || t.lastIpcObject?.class || "";
-                if (!root.blockedPattern.test(cls))
-                    continue;
-                const address = t.address;
-                const seen = root.warned[address];
-                if (seen === undefined) {
-                    next[address] = {
-                        since: now,
-                        closedAt: 0,
-                        termAt: 0
-                    };
-                    root.noticeTitle = root.friendlyName(cls, t.title);
-                    root.noticePhrase = root.phrases[Math.floor(Math.random() * root.phrases.length)];
-                    root.noticeEndsAt = now + root.warnSeconds * 1000;
-                    root.chime();
-                    console.log("FOCO: detectado " + cls + " (" + address + ")");
-                    continue;
+            root.scanBlocked();
+            if (!procProbe.running)
+                procProbe.running = true;
+        }
+    }
+
+    // Procesos bloqueados que están corriendo, con o sin ventana
+    Process {
+        id: procProbe
+
+        command: ["pgrep", "-x", "-l", root.blockedProcesses.map(b => b.comm).join("|")]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const found = {};
+                for (const line of text.split("\n")) {
+                    const m = /^(\d+)\s+(\S+)/.exec(line);
+                    if (!m)
+                        continue;
+                    const b = root.blockedProcesses.find(x => x.comm === m[2]);
+                    if (!b)
+                        continue;
+                    found[b.family] = (found[b.family] ?? []).concat([Number(m[1])]);
                 }
-                const entry = {
-                    since: seen.since,
-                    closedAt: seen.closedAt,
-                    termAt: seen.termAt
-                };
-                next[address] = entry;
-                if (now - entry.since < root.warnSeconds * 1000)
-                    continue;
-                if (entry.termAt === 0) {
-                    // Primero un cierre normal: se enfoca la ventana y se cierra la activa
-                    // (close({ window = ... }) no cierra en esta versión de Hyprland)
-                    if (entry.closedAt === 0)
-                        console.log("FOCO: pidiendo cerrar " + cls);
-                    entry.closedAt = entry.closedAt === 0 ? now : entry.closedAt;
-                    Hyprland.dispatch("function() hl.dispatch(hl.dsp.focus({ window = \"address:0x" + address + "\" })); hl.dispatch(hl.dsp.window.close()) end");
-                    // Si la app lo ignora (un juego puede hacerlo, o un launcher que solo se
-                    // esconde), a los 10 s se le manda SIGTERM: cierre ordenado, no SIGKILL
-                    const pid = t.lastIpcObject?.pid ?? 0;
-                    if (now - entry.closedAt >= root.terminateAfter * 1000 && pid > 0) {
-                        entry.termAt = now;
-                        console.log("FOCO: " + cls + " no se cerró, SIGTERM a " + pid);
-                        Quickshell.execDetached(["kill", "-TERM", String(pid)]);
-                    }
-                }
+                root.procPids = found;
             }
-            root.warned = next;
         }
     }
 
