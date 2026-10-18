@@ -165,6 +165,68 @@ DropPopup {
             }
         }
 
+        // Entorno de estudio: qué toca hoy y las herramientas para abrir a mano
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            Text {
+                text: "ENTORNO DE ESTUDIO"
+                color: Theme.textDim
+                font.pixelSize: 11
+                font.weight: Font.DemiBold
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                Repeater {
+                    model: Focus.kits
+
+                    Pill {
+                        required property var modelData
+
+                        Layout.fillWidth: true
+                        text: modelData.name
+                        selected: Focus.kit === modelData.id
+                        onClicked: Focus.setKit(modelData.id)
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                Pill {
+                    Layout.fillWidth: true
+                    text: "NotebookLM"
+                    onClicked: Focus.openTool("notebook")
+                }
+
+                Pill {
+                    Layout.fillWidth: true
+                    text: "Editor"
+                    onClicked: Focus.openTool("ide")
+                }
+
+                Pill {
+                    Layout.fillWidth: true
+                    text: "Antigravity"
+                    onClicked: Focus.openTool("ai")
+                }
+            }
+
+            Pill {
+                Layout.fillWidth: true
+                implicitHeight: 28
+                text: Focus.autoOpen ? "Abrir mi entorno al empezar: sí" : "Abrir mi entorno al empezar: no"
+                selected: Focus.autoOpen
+                onClicked: Focus.toggleAutoOpen()
+            }
+        }
+
         // Estadística del día
         RowLayout {
             Layout.fillWidth: true

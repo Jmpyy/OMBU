@@ -31,6 +31,35 @@ Singleton {
     readonly property int cyclesBeforeLong: 4
     readonly property int studySeconds_: studyLength
 
+    // Entorno de estudio: qué se abre al empezar según lo que toque estudiar
+    //   programacion  NotebookLM en Zen + el editor en la carpeta de la facultad + la IA en una terminal
+    //   matematica    NotebookLM + la IA (sin editor)
+    //   otro          solo NotebookLM
+    property string kit: "programacion"
+    property bool autoOpen: true
+    readonly property var kits: [
+        {
+            id: "programacion",
+            name: "Programación",
+            tools: ["notebook", "ide", "ai"]
+        },
+        {
+            id: "matematica",
+            name: "Matemática",
+            tools: ["notebook", "ai"]
+        },
+        {
+            id: "otro",
+            name: "Otro",
+            tools: ["notebook"]
+        }
+    ]
+    readonly property string notebookUrl: "https://notebooklm.google.com"
+    readonly property string studyDir: (Quickshell.env("HOME") ?? "") + "/universidad"
+    // El PATH de la sesión de Hyprland no trae ~/.local/bin: la IA se llama con su ruta completa
+    readonly property string aiCommand: (Quickshell.env("HOME") ?? "") + "/.local/bin/agy"
+    property var pendingTools: []
+
     // Estadística de hoy y racha de días seguidos con al menos un bloque completo
     property string day: ""
     property int studyToday: 0
@@ -300,9 +329,44 @@ Singleton {
         save();
     }
 
+    // Abre una herramienta de estudio; la carpeta de la facultad se crea si todavía no existe
+    function openTool(tool: string): void {
+        if (tool === "notebook") {
+            Quickshell.execDetached(["zen-browser", notebookUrl]);
+        } else if (tool === "ide") {
+            Quickshell.execDetached(["sh", "-c", "mkdir -p \"$1\" && exec zeditor \"$1\"", "ide", studyDir]);
+        } else if (tool === "ai") {
+            Quickshell.execDetached(["sh", "-c", "mkdir -p \"$1\" && exec kitty --directory \"$1\" \"$2\"", "ia", studyDir, aiCommand]);
+        }
+    }
+
+    // Abre todo lo del tipo de estudio elegido, de a una cada 0,7 s para que las ventanas no
+    // se pisen el foco; la última (la terminal con la IA) queda enfocada
+    function openKit(): void {
+        const k = kits.find(x => x.id === kit);
+        if (!k)
+            return;
+        pendingTools = k.tools.slice();
+        launchTimer.restart();
+    }
+
+    function setKit(id: string): void {
+        kit = id;
+        save();
+    }
+
+    function toggleAutoOpen(): void {
+        autoOpen = !autoOpen;
+        save();
+    }
+
     function start(): void {
+        // Arranque desde cero (no al volver de una pausa ni de un descanso)
+        const fresh = !running && phase === "estudio" && remaining === studyLength;
         if (mode === "libre")
             mode = "estudio";
+        if (fresh && autoOpen && mode === "estudio")
+            openKit();
         if (remaining <= 0)
             remaining = lengthOf(phase);
         endsAt = Date.now() + remaining * 1000;
@@ -472,11 +536,29 @@ Singleton {
     }
 
     Timer {
+        id: launchTimer
+
+        interval: 700
+        repeat: true
+        onTriggered: {
+            if (root.pendingTools.length === 0) {
+                launchTimer.stop();
+                return;
+            }
+            const rest = root.pendingTools.slice();
+            root.openTool(rest.shift());
+            root.pendingTools = rest;
+        }
+    }
+
+    Timer {
         id: saveTimer
 
         interval: 500
         onTriggered: file.setText(JSON.stringify({
             mode: root.mode,
+            kit: root.kit,
+            autoOpen: root.autoOpen,
             day: root.day,
             studyToday: root.studyToday,
             cycles: root.cycles,
@@ -500,6 +582,10 @@ Singleton {
             const saved = JSON.parse(file.text());
             if (typeof saved.mode === "string")
                 mode = saved.mode;
+            if (typeof saved.kit === "string" && kits.some(k => k.id === saved.kit))
+                kit = saved.kit;
+            if (typeof saved.autoOpen === "boolean")
+                autoOpen = saved.autoOpen;
             if (saved.day === today()) {
                 studyToday = saved.studyToday ?? 0;
                 cycles = saved.cycles ?? 0;

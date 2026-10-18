@@ -153,6 +153,19 @@ ShellRoot {
             Focus.closeBlocked();
         }
 
+        // focus kit programacion|matematica|otro · focus open (todo el entorno) · focus tool notebook|ide|ai
+        function kit(name: string): void {
+            Focus.setKit(name);
+        }
+
+        function open(): void {
+            Focus.openKit();
+        }
+
+        function tool(name: string): void {
+            Focus.openTool(name);
+        }
+
         function mode(name: string): void {
             Focus.setMode(name);
         }
