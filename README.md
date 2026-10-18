@@ -129,6 +129,11 @@ qs -c ombu ipc call lock saver        # vista previa con el salvapantallas
 qs -c ombu ipc call idle test 10      # simula la inactividad con 10 s (idle reset vuelve)
 qs -c ombu ipc call welcome play      # repite la bienvenida
 qs -c ombu ipc call power toggle      # menú de energía
+qs -c ombu ipc call bar focus         # menú del modo foco
+qs -c ombu ipc call focus start       # también: pause, stop, skip, mode estudio|trabajo|libre
+qs -c ombu ipc call focus idea "texto"   # anota una idea en el cajón
+qs -c ombu ipc call focus status      # estado del temporizador y del bloqueo
+qs -c ombu ipc call focus kit matematica # tipo de estudio; open abre el entorno completo
 ```
 
 ## Pantalla de inicio de sesión (greetd)
@@ -158,6 +163,8 @@ Todo el aspecto sale de [`Theme.qml`](Theme.qml): colores, radios, tamaños de l
 - **Launcher:** las favoritas de fábrica y lo que se oculta están en [`Launch.qml`](Launch.qml); lo que abrís y fijás se guarda en `~/.local/share/ombu/launcher.json`.
 - **Íconos de apps:** si una app trae un ícono que no te gusta, agregala a [`Icons.qml`](Icons.qml).
 - **Escritorios:** cada barra muestra los escritorios que Hyprland asigna a su monitor (reglas `hl.workspace_rule`, ver `hypr/ombu.lua` y tu `workspaces.lua`).
+- **Modo foco:** [`Focus.qml`](Focus.qml) tiene las duraciones (25/5/15), los juegos que se bloquean (`blockedPattern`, `blockedProcesses`), los sitios (`blockedSites`: se cierra la pestaña activa del navegador; YouTube queda libre) y qué se abre en cada tipo de estudio (`kits`, con la carpeta de la facultad en `studyDir`). Lo que anotás en el cajón queda en `~/.local/share/ombu/ideas.md`.
+- **Modo estudio para la IA:** [`bin/agent-study.sh`](bin/agent-study.sh) le pasa a Claude Code y a Antigravity unas reglas mientras dura un bloque de estudio (enseñar en vez de resolver, ideas ajenas al cajón). Se conecta con un hook de cada herramienta, ver [`AGENTS.md`](AGENTS.md).
 - **Notificaciones:** [`NotifRules.qml`](NotifRules.qml) permite pasar a español los avisos de ciertas apps y descartar los de algo que ya tenés a la vista (viene una regla para Claude Code en kitty).
 
 Quickshell recarga solo al guardar un archivo `.qml`.
