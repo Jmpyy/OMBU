@@ -112,12 +112,50 @@ ShellRoot {
             Ui.popup = Ui.popup === key ? "" : key;
         }
 
+        function focus(): void {
+            const key = "focus@" + (Hyprland.focusedMonitor?.name ?? "");
+            Ui.popup = Ui.popup === key ? "" : key;
+        }
+
         function apps(): void {
             const key = "apps@" + (Hyprland.focusedMonitor?.name ?? "");
             Ui.popup = Ui.popup === key ? "" : key;
         }
 
         target: "bar"
+    }
+
+    // qs -c ombu ipc call focus start|pause|stop|skip|mode estudio|idea "texto"|status
+    IpcHandler {
+        function start(): void {
+            Focus.start();
+        }
+
+        function pause(): void {
+            Focus.pause();
+        }
+
+        function stop(): void {
+            Focus.stop();
+        }
+
+        function skip(): void {
+            Focus.next(false);
+        }
+
+        function mode(name: string): void {
+            Focus.setMode(name);
+        }
+
+        function idea(text: string): void {
+            Focus.saveIdea(text);
+        }
+
+        function status(): string {
+            return Focus.mode + " " + (Focus.running ? Focus.phase + " " + Focus.clock(Focus.remaining) : "parado") + " | hoy " + Focus.minutesText(Focus.studyToday) + ", " + Focus.cycles + " bloques, racha " + Focus.streak + " | bloqueo " + (Focus.blocking ? "activo" : "inactivo");
+        }
+
+        target: "focus"
     }
 
     // qs -c ombu ipc call launcher toggle

@@ -14,6 +14,7 @@ PanelWindow {
     property real reveal: Ui.barShown && !Welcome.playing ? 1 : 0
     // Evitan que el clic que cierra un menú lo vuelva a abrir
     property double dismissedMixer: 0
+    property double dismissedFocus: 0
     property double dismissedApps: 0
     property double dismissedDevices: 0
     property double dismissedCalendar: 0
@@ -298,6 +299,25 @@ PanelWindow {
                             onClicked: Keyboard.toggle()
                         }
 
+                        // Modo foco: con el temporizador en marcha muestra el tiempo que falta
+                        BarButton {
+                            id: focusButton
+
+                            readonly property bool isOpen: Ui.popup === win.popupKey("focus")
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            active: isOpen
+                            icon: Focus.running ? (Focus.phase === "estudio" ? "school" : "coffee") : (Focus.mode === "trabajo" ? "work" : (Focus.mode === "estudio" ? "school" : "timer"))
+                            iconColor: Focus.running ? Theme.accent : Theme.textDim
+                            label: Focus.running ? Focus.clock(Focus.remaining) : ""
+                            labelColor: Theme.accent
+                            labelMinWidth: Focus.running ? 38 : 0
+                            onClicked: {
+                                if (Date.now() - win.dismissedFocus > 300)
+                                    win.togglePopup("focus");
+                            }
+                        }
+
                         // Volumen: clic abre la mezcladora, rueda cambia el volumen, clic del medio silencia
                         BarButton {
                             id: mixerButton
@@ -468,6 +488,18 @@ PanelWindow {
                     }
                 }
             }
+        }
+    }
+
+    FocusMenu {
+        barWindow: win
+        anchorItem: focusButton
+        open: focusButton.isOpen
+
+        onDismissed: {
+            win.dismissedFocus = Date.now();
+            if (focusButton.isOpen)
+                Ui.popup = "";
         }
     }
 

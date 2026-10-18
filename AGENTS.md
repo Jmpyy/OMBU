@@ -34,6 +34,7 @@ greeter/           pantalla de login para greetd; install.sh toca el sistema
 hypr/ombu.lua      configuración de Hyprland para compartir (copia de lo que usa la persona)
 Launch*.qml        launcher: favoritas, más usadas y qué se oculta (Launch.qml)
 Clip*.qml          historial del portapapeles (cliphist); bin/clip*.sh lo guardan y pegan
+Focus*.qml         modo foco: temporizador 25/5, modos estudio/trabajo/libre y bloqueo de juegos
 bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explorador, avisos de agentes
 ```
 
@@ -41,7 +42,7 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 
 - Arranca con `quickshell -c ombu -n -d` (lo hace Hyprland). **Recarga solo** al guardar un `.qml`.
 - Log: `qs -c ombu log`. Instancias vivas: `qs list --all` (**tiene que haber una sola**; dos copias pelean por D-Bus y duplican barras).
-- Comandos IPC para probar sin teclado: `qs -c ombu ipc call bar devices|mixer|calendar|apps|tray`, `power toggle`, `launcher toggle`, `lock preview` (vista previa inofensiva, Esc la cierra), `lock saver`, `welcome play`, `clip toggle`, `notif ...`. Ver `shell.qml`.
+- Comandos IPC para probar sin teclado: `qs -c ombu ipc call bar devices|mixer|calendar|apps|tray`, `power toggle`, `launcher toggle`, `lock preview` (vista previa inofensiva, Esc la cierra), `lock saver`, `welcome play`, `clip toggle`, `focus start|pause|stop|skip|mode <modo>|idea "texto"|status`, `notif ...`. Ver `shell.qml`.
 - **`lock lock` es un bloqueo real**: solo se abre con la contraseña. No lo uses para probar; usá `lock preview`.
 - Validar Hyprland: `Hyprland --verify-config` (o `-c archivo.lua`).
 
@@ -90,3 +91,11 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
   - Un clic suelto en la tarjeta o `notif invoke` **no aprueba nada** (`Notifs.invoke` ignora las de tipo `confirm`): solo el botón.
   - En Claude Code, `exit 1` **no bloquea** (error no bloqueante); para denegar hay que devolver el JSON de `PermissionRequest` o salir con `exit 2`.
 - La tarjeta (`NotifCard.qml`) muestra la carpeta, el comando completo en un bloque de código y los botones. Se activa con los hints `x-ombu-kind:confirm`, `x-ombu-risky`, `x-ombu-compound` y `x-ombu-cwd` de `notify-send`.
+
+## Modo foco
+
+- `Focus.qml` (singleton) lleva el temporizador (25 min de estudio, 5 de descanso, 15 cada 4 bloques), los tres modos y la estadística. Se guarda en `~/.local/share/ombu/focus.json`; las ideas, en `ideas.md` de esa carpeta.
+- Publica el estado en `~/.local/state/ombu/modo` (`estudio activo`, `trabajo inactivo`, `libre inactivo`...) para que otros programas, como un hook de IA, sepan si la persona está estudiando.
+- El bloqueo (solo en modo estudio, durante el bloque de estudio) **avisa y cierra a los 15 s** las ventanas de juegos. Se cierra enfocando la ventana y cerrando la activa: `hl.dsp.window.close({ window = ... })` **no cierra** en esta versión de Hyprland. No mata el proceso, para no perder una partida.
+- Saltar el bloqueo exige esperar 60 s (fricción a propósito) y lo pausa 15 min.
+- Probar el bloqueo: `kitty --class steam_app_prueba -o confirm_os_window_close=0 -e sleep 600` (sin esa opción kitty pide confirmación y la ventana no se cierra).
