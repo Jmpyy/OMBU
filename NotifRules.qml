@@ -50,8 +50,8 @@ Singleton {
 
     // Verdadero si la notificación no hay que mostrarla
     function shouldDrop(n: var): bool {
-        // Nunca descartar avisos con botones de acción interactivos
-        if (n.actions && n.actions.length > 0)
+        // Las confirmaciones de comandos de un agente nunca se descartan: hay algo esperando respuesta
+        if (n.hints && n.hints["x-ombu-kind"] === "confirm")
             return false;
         const rule = ruleFor(n);
         return rule !== null && !!rule.hideWhenVisible && isVisible(rule.hideWhenVisible);

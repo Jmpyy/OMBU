@@ -46,6 +46,11 @@ Singleton {
         property string appIcon: ""
         property string desktopEntry: ""
         property bool critical: false
+        // Confirmación de un comando de un agente (ver bin/agent-confirm.py)
+        property string kind: ""
+        property bool risky: false
+        property bool compound: false
+        property string cwd: ""
         property real expireSeconds: 0
         property var actionList: []
 
@@ -57,6 +62,11 @@ Singleton {
             appIcon = n.appIcon;
             desktopEntry = n.desktopEntry;
             critical = n.urgency === NotificationUrgency.Critical;
+            const h = n.hints ?? {};
+            kind = String(h["x-ombu-kind"] ?? "");
+            risky = Number(h["x-ombu-risky"] ?? 0) === 1;
+            compound = Number(h["x-ombu-compound"] ?? 0) === 1;
+            cwd = String(h["x-ombu-cwd"] ?? "");
             expireSeconds = n.expireTimeout;
             actionList = Array.from(n.actions).map(a => ({
                         identifier: a.identifier,
@@ -168,6 +178,10 @@ Singleton {
 
     // Acción principal ("default" o la primera) y cerrar
     function invoke(entry): void {
+        // Una confirmación de comando solo se aprueba con su propio botón: un clic suelto en la
+        // tarjeta o el atajo "ejecutar la acción de la última" no pueden tocar "Permitir".
+        if (entry.kind === "confirm")
+            return;
         const actions = entry.actionList;
         const action = actions.find(a => a.identifier === "default") ?? actions[0];
         if (action)

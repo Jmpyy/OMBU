@@ -83,4 +83,10 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 ## Avisos y confirmaciones de los agentes
 
 - `bin/agent-notify.sh`: avisa cuando Claude Code o Antigravity terminan una tarea. Si la terminal no tiene el foco, avisa siempre y permite hacer clic para volver a la consola al instante. Lo llaman los hooks de cada uno (`~/.claude/settings.json` y `~/.gemini/config/hooks.json`).
-- `bin/agent-confirm.sh`: hook de `PreToolUse` que muestra una notificación interactiva con botones (`[Permitir]`, `[Denegar]`, `[Ir a la consola]`) cuando el agente va a correr un comando y la terminal no tiene el foco. Permite aprobar comandos sin salir de juegos u otras apps.
+- `bin/agent-confirm.sh` (→ `agent-confirm.py`): confirma comandos de Bash desde una tarjeta de ombu cuando la terminal **no** tiene el foco. Claude Code lo usa como hook **`PermissionRequest`** (se dispara solo cuando iba a pedirte permiso) y Antigravity como `PreToolUse` de `run_command`. Reglas de seguridad, que no hay que aflojar:
+  - **El valor por defecto es no decidir, nunca permitir.** Si no se entiende el pedido, se cierra la tarjeta o vence (45 s), el agente pregunta en la consola.
+  - Los comandos de solo lectura (`ls`, `git status`...) no muestran tarjeta.
+  - Los comandos **destructivos** (`rm`, `sudo`, `git push`, `pacman`...) o muy largos no tienen botón "Permitir": solo "Denegar" o "Ir a la consola".
+  - Un clic suelto en la tarjeta o `notif invoke` **no aprueba nada** (`Notifs.invoke` ignora las de tipo `confirm`): solo el botón.
+  - En Claude Code, `exit 1` **no bloquea** (error no bloqueante); para denegar hay que devolver el JSON de `PermissionRequest` o salir con `exit 2`.
+- La tarjeta (`NotifCard.qml`) muestra la carpeta, el comando completo en un bloque de código y los botones. Se activa con los hints `x-ombu-kind:confirm`, `x-ombu-risky`, `x-ombu-compound` y `x-ombu-cwd` de `notify-send`.

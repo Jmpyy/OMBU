@@ -14,6 +14,16 @@ Rectangle {
 
     readonly property var extraActions: entry.actionList.filter(a => a.identifier !== "default")
 
+    // Confirmación de un comando de un agente (bin/agent-confirm.py)
+    readonly property bool confirm: entry.kind === "confirm"
+    readonly property color confirmColor: entry.risky ? Theme.warn : Theme.accent
+    readonly property var confirmActions: ["allow", "deny", "focus"].map(id => entry.actionList.find(a => a.identifier === id)).filter(a => a)
+    readonly property string cwdShort: {
+        const home = Quickshell.env("HOME") ?? "";
+        const c = entry.cwd;
+        return home !== "" && c.startsWith(home) ? "~" + c.slice(home.length) : c;
+    }
+
     // Las capturas de pantalla traen su imagen: se muestra grande, como miniatura
     readonly property string previewSource: {
         if (entry.appName !== "Capturas")
@@ -156,7 +166,7 @@ Rectangle {
             Layout.preferredWidth: 40
             Layout.preferredHeight: 40
             radius: 12
-            color: root.floating ? Theme.surface : Theme.bg
+            color: root.confirm ? Qt.rgba(root.confirmColor.r, root.confirmColor.g, root.confirmColor.b, 0.16) : (root.floating ? Theme.surface : Theme.bg)
 
             Image {
                 id: icon
@@ -164,7 +174,7 @@ Rectangle {
                 anchors.centerIn: parent
                 width: 28
                 height: 28
-                visible: source != "" && status !== Image.Error
+                visible: !root.confirm && source != "" && status !== Image.Error
                 source: root.iconSource
                 sourceSize: Qt.size(56, 56)
                 fillMode: Image.PreserveAspectFit
@@ -173,9 +183,9 @@ Rectangle {
 
             MIcon {
                 anchors.centerIn: parent
-                visible: !icon.visible
-                name: root.entry.appName === "Capturas" ? "photo_camera" : "notifications"
-                color: Theme.textDim
+                visible: root.confirm || !icon.visible
+                name: root.confirm ? (root.entry.risky ? "warning" : "terminal") : (root.entry.appName === "Capturas" ? "photo_camera" : "notifications")
+                color: root.confirm ? root.confirmColor : Theme.textDim
             }
         }
 
@@ -215,7 +225,7 @@ Rectangle {
 
             Text {
                 Layout.fillWidth: true
-                visible: text.length > 0
+                visible: text.length > 0 && !root.confirm
                 text: root.entry.body
                 textFormat: Text.PlainText
                 wrapMode: Text.Wrap
@@ -223,6 +233,149 @@ Rectangle {
                 elide: Text.ElideRight
                 color: Qt.rgba(1, 1, 1, 0.72)
                 font.pixelSize: 13
+            }
+
+            // Confirmación de un comando: carpeta, comando completo, aviso de riesgo y botones
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 6
+                visible: root.confirm
+                spacing: 8
+
+                Row {
+                    visible: root.entry.cwd !== ""
+                    spacing: 6
+
+                    MIcon {
+                        anchors.verticalCenter: parent.verticalCenter
+                        name: "folder_open"
+                        color: Theme.textDim
+                        font.pixelSize: 14
+                    }
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Math.min(implicitWidth, 270)
+                        text: root.cwdShort
+                        elide: Text.ElideMiddle
+                        color: Theme.textDim
+                        font.pixelSize: 12
+                    }
+                }
+
+                // El comando, completo y en tipografía de código
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: cmdText.implicitHeight + 20
+                    radius: 10
+                    color: "#0f0e14"
+                    border.width: 1
+                    border.color: Theme.border
+
+                    Text {
+                        id: cmdText
+
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: 10
+                        text: "$ " + root.entry.body
+                        textFormat: Text.PlainText
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        maximumLineCount: 9
+                        elide: Text.ElideRight
+                        color: Theme.text
+                        font.family: "CaskaydiaCove Nerd Font Mono"
+                        font.pixelSize: 12
+                        lineHeight: 1.15
+                    }
+                }
+
+                // Comando delicado: no se aprueba desde la tarjeta
+                Rectangle {
+                    visible: root.entry.risky
+                    Layout.fillWidth: true
+                    implicitHeight: riskText.implicitHeight + 16
+                    radius: 10
+                    color: Qt.rgba(Theme.warn.r, Theme.warn.g, Theme.warn.b, 0.14)
+
+                    Row {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 8
+
+                        MIcon {
+                            name: "warning"
+                            color: Theme.warn
+                            font.pixelSize: 17
+                        }
+
+                        Text {
+                            id: riskText
+
+                            width: parent.width - 28
+                            text: "Comando delicado: revisalo en la consola. Desde acá solo podés denegarlo."
+                            wrapMode: Text.Wrap
+                            color: Theme.warn
+                            font.pixelSize: 12
+                        }
+                    }
+                }
+
+                Text {
+                    visible: root.entry.compound && !root.entry.risky
+                    Layout.fillWidth: true
+                    text: "Encadena varias órdenes o redirige la salida: leelas completas."
+                    wrapMode: Text.Wrap
+                    color: Theme.textDim
+                    font.pixelSize: 12
+                }
+
+                // Botones: lo principal arriba, lo destructivo en rojo, lo demás discreto
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 2
+                    spacing: 8
+
+                    Repeater {
+                        model: root.confirmActions
+
+                        Rectangle {
+                            id: btn
+
+                            required property var modelData
+                            readonly property bool primary: modelData.identifier === "allow"
+                            readonly property bool danger: modelData.identifier === "deny"
+
+                            Layout.fillWidth: primary || danger
+                            Layout.preferredHeight: 34
+                            Layout.preferredWidth: primary || danger ? 1 : label.implicitWidth + 28
+                            radius: 17
+                            color: btn.primary ? (btnArea.containsMouse ? Qt.lighter(Theme.accent, 1.12) : Theme.accent) : (btn.danger && btnArea.containsMouse ? Theme.danger : (btnArea.containsMouse ? Theme.hover : "transparent"))
+                            border.width: btn.primary ? 0 : 1
+                            border.color: btn.danger ? Theme.danger : Theme.border
+
+                            Text {
+                                id: label
+
+                                anchors.centerIn: parent
+                                text: btn.modelData.text
+                                color: btn.primary || (btn.danger && btnArea.containsMouse) ? "#14131a" : (btn.danger ? Theme.danger : Theme.textDim)
+                                font.pixelSize: 13
+                                font.weight: Font.DemiBold
+                            }
+
+                            MouseArea {
+                                id: btnArea
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: Notifs.invokeAction(root.entry, btn.modelData.identifier)
+                            }
+                        }
+                    }
+                }
             }
 
             // Miniatura (solo las capturas de pantalla)
@@ -263,7 +416,7 @@ Rectangle {
             Flow {
                 Layout.fillWidth: true
                 Layout.topMargin: 6
-                visible: root.extraActions.length > 0
+                visible: root.extraActions.length > 0 && !root.confirm
                 spacing: 6
 
                 Repeater {
