@@ -19,6 +19,37 @@ end)
 -- sin esto, Hyprland les sumaría su propia animación de capa y se vería doble.
 hl.layer_rule({ match = { namespace = "^ombu-.*$" }, no_anim = true })
 
+-- Animaciones de ventanas y escritorios: suaves y cortas (150 a 350 ms)
+-- Curvas "ombu": salidas largas y suaves (sin rebote brusco)
+hl.curve("ombuOut",    { type = "bezier", points = { {0.16, 1},    {0.3, 1}     } })
+hl.curve("ombuInOut",  { type = "bezier", points = { {0.45, 0},    {0.15, 1}    } })
+hl.curve("ombuIn",     { type = "bezier", points = { {0.4, 0},     {0.9, 0.6}   } })
+-- Resorte casi crítico: se asienta con peso y un rebote apenas perceptible
+hl.curve("ombuSpring", { type = "spring", mass = 1, stiffness = 280, dampening = 30 })
+
+-- Animations (1 de velocidad = 100 ms)
+hl.animation({ leaf = "global",              enabled = true, speed = 3, bezier = "ombuInOut"                       })
+-- Ventanas: aparecen creciendo desde el 92 % y se achican apenas al cerrarse
+hl.animation({ leaf = "windowsIn",           enabled = true, speed = 3.5, bezier = "ombuOut", style = "popin 92%"  })
+hl.animation({ leaf = "windowsOut",          enabled = true, speed = 2.2, bezier = "ombuIn",  style = "popin 94%"  })
+hl.animation({ leaf = "windowsMove",         enabled = true, speed = 3,   spring = "ombuSpring"                    })
+hl.animation({ leaf = "fadeIn",              enabled = true, speed = 3,   bezier = "ombuOut"                       })
+hl.animation({ leaf = "fadeOut",             enabled = true, speed = 2,   bezier = "ombuIn"                        })
+-- Borde: el color se desvanece entre activa e inactiva; el giro del degradé queda apagado (cuesta GPU)
+hl.animation({ leaf = "border",              enabled = true, speed = 6,   bezier = "ombuInOut"                     })
+hl.animation({ leaf = "borderangle",         enabled = false                                                       })
+hl.animation({ leaf = "fadeShadow",          enabled = true, speed = 4,   bezier = "ombuInOut"                     })
+hl.animation({ leaf = "fadeDim",             enabled = true, speed = 4,   bezier = "ombuInOut"                     })
+-- Escritorios: deslizamiento con desvanecido corto
+hl.animation({ leaf = "workspaces",          enabled = true, speed = 4.5, bezier = "ombuOut", style = "slidefade 12%" })
+hl.animation({ leaf = "specialWorkspaceIn",  enabled = true, speed = 3,   bezier = "ombuOut", style = "slidefade 10%" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 2.5, bezier = "ombuIn",  style = "slidefade 10%" })
+-- Capas (menús, notificaciones de otros programas)
+hl.animation({ leaf = "layers",              enabled = true, speed = 4,   bezier = "ombuOut", style = "slide"      })
+hl.animation({ leaf = "layersIn",            enabled = true, speed = 4,   bezier = "ombuOut", style = "slide top"  })
+hl.animation({ leaf = "layersOut",           enabled = true, speed = 3,   bezier = "ombuIn",  style = "slide top"  })
+hl.animation({ leaf = "fadeLayers",          enabled = true, speed = 3,   bezier = "ombuInOut"                     })
+
 hl.config({
     misc = {
         -- Si el programa de bloqueo se cae con la pantalla bloqueada, permite lanzar otro en
