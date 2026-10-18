@@ -268,7 +268,8 @@ Singleton {
             // Se arma un registro nuevo en cada vuelta: avisos de las ventanas que siguen abiertas
             const next = {};
             for (const t of Apps.windows) {
-                const cls = t.wayland?.appId ?? t.lastIpcObject?.class ?? "";
+                // Con "||" y no "??": un appId vacío ("") tiene que caer al nombre de clase de Hyprland
+                const cls = t.wayland?.appId || t.lastIpcObject?.class || "";
                 if (!root.blockedPattern.test(cls))
                     continue;
                 const address = t.address;
