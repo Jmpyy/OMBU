@@ -101,6 +101,20 @@ ShellRoot {
         SystemMenu {}
     }
 
+    // El panel lateral y su borde sensible viven solo en el monitor principal: el que está más a la
+    // izquierda (y, si hay empate, más arriba)
+    Variants {
+        model: Quickshell.screens.length > 0 ? [Quickshell.screens.reduce((a, b) => (b.x < a.x || (b.x === a.x && b.y < a.y)) ? b : a)] : []
+
+        SidePanel {}
+    }
+
+    Variants {
+        model: Quickshell.screens.length > 0 ? [Quickshell.screens.reduce((a, b) => (b.x < a.x || (b.x === a.x && b.y < a.y)) ? b : a)] : []
+
+        SideEdge {}
+    }
+
     Variants {
         model: Quickshell.screens
 
@@ -124,6 +138,25 @@ ShellRoot {
         }
 
         target: "keys"
+    }
+
+    // qs -c ombu ipc call side toggle|open <resumen|noticias|sistema>|close  -> panel lateral (Super+A)
+    IpcHandler {
+        function toggle(): void {
+            Ui.sideTab = "";
+            Ui.sideOpen = !Ui.sideOpen;
+        }
+
+        function open(tab: string): void {
+            Ui.sideTab = tab;
+            Ui.sideOpen = true;
+        }
+
+        function close(): void {
+            Ui.sideOpen = false;
+        }
+
+        target: "side"
     }
 
     // qs -c ombu ipc call media toggle|next|previous|status  -> el reproductor de música

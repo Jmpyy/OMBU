@@ -102,6 +102,8 @@ hl.bind(mainMod .. " + K",           hl.dsp.exec_cmd(ipc .. "keys toggle"))
 hl.bind(mainMod .. " + ALT + Space",             hl.dsp.exec_cmd(ipc .. "menu toggle"))
 hl.bind(mainMod .. " + CONTROL + SHIFT + Space", hl.dsp.exec_cmd(ipc .. "menu open \"Estilo>Tema\""))
 hl.bind(mainMod .. " + CONTROL + Space",         hl.dsp.exec_cmd(ipc .. "wallpaper menu"))
+-- Panel lateral (también se abre pegando el mouse al borde izquierdo del monitor principal)
+hl.bind(mainMod .. " + A",                       hl.dsp.exec_cmd(ipc .. "side toggle"))
 
 -- Notificaciones (estilo Omarchy). Se usa el código de tecla de la coma (59) para que
 -- funcione igual con cualquier distribución de teclado.

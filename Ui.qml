@@ -16,6 +16,9 @@ Singleton {
     property bool clipOpen: false
     property bool keysOpen: false
     property bool sysMenuOpen: false
+    // Panel lateral (SidePanel) y la pestaña por la que abre (vacío = la última)
+    property bool sideOpen: false
+    property string sideTab: ""
     property bool wallMenuOpen: false
     // Contador que pide abrir o cerrar la vista previa del launcher (ipc call launcher preview)
     property int launcherPreviewTick: 0
