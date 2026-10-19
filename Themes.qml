@@ -13,7 +13,8 @@ Singleton {
 
     // onAccent: texto sobre el acento (por defecto oscuro) · border2: segundo color del degradé del borde
     // de la ventana activa (si falta, el borde es liso) · shadow: color de la sombra dura de las tarjetas
-    // (HardShadow; si falta, no hay sombra)
+    // (HardShadow; si falta, no hay sombra) · display: tipografía de los títulos · logo: dibujo de la barra
+    // (spider o reactor, ver bin/qt-theme.py; si falta, el de CachyOS)
     readonly property var palettes: [
         {
             // El fondo de pantalla de Peter Parker: negro cálido, papel crema, rojo y el verde azulado
@@ -31,6 +32,8 @@ Singleton {
             onAccent: "#fff4e8",
             border2: "#5fb0ae",
             shadow: "#8c231e",
+            display: "Bangers",
+            logo: "spider",
             folder: "red"
         },
         {
@@ -48,6 +51,8 @@ Singleton {
             onAccent: "#fff6f0",
             border2: "#f2b632",
             shadow: "#8f6b12",
+            display: "Bangers",
+            logo: "reactor",
             folder: "carmine"
         },
         {
@@ -182,11 +187,24 @@ Singleton {
         applyQt();
     }
 
-    // Dolphin y las demás apps Qt: paleta, hoja de estilos, esquema de KDE y color de las carpetas
-    // (bin/qt-theme.py). Las ventanas que ya están abiertas no cambian; la siguiente sí.
+    // Dolphin, las demás apps Qt, la terminal y el logo de la barra (bin/qt-theme.py). Las ventanas
+    // que ya están abiertas no cambian; la siguiente sí. Al terminar sube `logoRev` para que la barra
+    // vuelva a leer el logo.
+    property int logoRev: 0
+    readonly property string logoFile: active.logo ? "file://" + (Quickshell.env("HOME") ?? "") + "/.local/share/ombu/icons/bar-logo.svg?" + logoRev : ""
+
     function applyQt(): void {
         const p = active;
-        Quickshell.execDetached([Quickshell.shellPath("bin/qt-theme.py"), "--bg", p.bg, "--surface", p.surface, "--track", p.track, "--text", p.text, "--dim", p.textDim, "--accent", p.accent, "--danger", p.danger, "--warn", p.warn, "--on-accent", p.onAccent ?? "#14131a", "--folder", p.folder]);
+        qtProc.running = false;
+        qtProc.command = [Quickshell.shellPath("bin/qt-theme.py"), "--bg", p.bg, "--surface", p.surface, "--track", p.track, "--text", p.text, "--dim", p.textDim, "--accent", p.accent, "--danger", p.danger, "--warn", p.warn, "--on-accent", p.onAccent ?? "#14131a", "--folder", p.folder, "--accent2", p.border2 ?? "", "--logo", p.logo ?? ""];
+        qtProc.running = true;
+    }
+
+    Process {
+        id: qtProc
+
+        onRunningChanged: if (!running)
+            root.logoRev += 1
     }
 
     // Borde de la ventana activa: el acento del tema. Es un cambio en vivo de Hyprland (no toca tu

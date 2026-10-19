@@ -42,18 +42,22 @@ Item {
 
             Text {
                 text: Chrono.date.toLocaleString(Chrono.locale, "HH")
-                color: "#f4f4fa"
-                font.pixelSize: 132
-                font.weight: Font.Light
+                color: Theme.comic ? Theme.text : "#f4f4fa"
+                font.family: Theme.displayFont || Qt.application.font.family
+                font.pixelSize: Theme.comic ? 150 : 132
+                font.weight: Theme.comic ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comic ? 4 : 0
             }
 
             Text {
                 id: colon
 
                 text: ":"
-                color: "#f4f4fa"
-                font.pixelSize: 132
-                font.weight: Font.Light
+                color: Theme.comic ? Theme.text : "#f4f4fa"
+                font.family: Theme.displayFont || Qt.application.font.family
+                font.pixelSize: Theme.comic ? 150 : 132
+                font.weight: Theme.comic ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comic ? 4 : 0
 
                 // Parpadea una vez por segundo con un fundido corto (una animación continua haría
                 // redibujar toda la pantalla 60 veces por segundo)
@@ -78,9 +82,11 @@ Item {
 
             Text {
                 text: Chrono.date.toLocaleString(Chrono.locale, "mm")
-                color: "#f4f4fa"
-                font.pixelSize: 132
-                font.weight: Font.Light
+                color: Theme.comic ? Theme.text : "#f4f4fa"
+                font.family: Theme.displayFont || Qt.application.font.family
+                font.pixelSize: Theme.comic ? 150 : 132
+                font.weight: Theme.comic ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comic ? 4 : 0
             }
         }
 
@@ -161,7 +167,7 @@ Item {
                     enabled: Auth.state !== "checking"
                     color: Theme.text
                     selectionColor: Theme.accent
-                    selectedTextColor: Theme.onAccent
+                    selectedTextColor: Theme.accentText
                     font.pixelSize: 17
                     clip: true
                     focus: true
@@ -249,7 +255,7 @@ Item {
                     MIcon {
                         anchors.centerIn: parent
                         name: Auth.state === "checking" ? "hourglass_top" : "arrow_forward"
-                        color: input.text.length > 0 ? Theme.onAccent : Theme.textDim
+                        color: input.text.length > 0 ? Theme.accentText : Theme.textDim
                         font.pixelSize: 20
                     }
 

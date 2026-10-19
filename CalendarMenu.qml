@@ -328,7 +328,7 @@ DropPopup {
                                     width: 14
                                     height: 14
                                     radius: 7
-                                    color: calRow.shown ? Theme.onAccent : Theme.text
+                                    color: calRow.shown ? Theme.accentText : Theme.text
 
                                     Behavior on x {
                                         NumberAnimation {
@@ -373,7 +373,7 @@ DropPopup {
 
                         anchors.centerIn: parent
                         text: Agenda.apiAuthing ? "Esperando el permiso en el navegador…" : "Conectar con Google"
-                        color: Agenda.apiAuthing ? Theme.textDim : Theme.onAccent
+                        color: Agenda.apiAuthing ? Theme.textDim : Theme.accentText
                         font.pixelSize: 12
                         font.weight: Font.DemiBold
                     }
@@ -452,7 +452,7 @@ DropPopup {
                         verticalAlignment: TextInput.AlignVCenter
                         color: Theme.text
                         selectionColor: Theme.accent
-                        selectedTextColor: Theme.onAccent
+                        selectedTextColor: Theme.accentText
                         font.pixelSize: 12
                         clip: true
                         onAccepted: {
@@ -684,7 +684,7 @@ DropPopup {
                             text: day.model.day
                             font.pixelSize: 13
                             font.weight: day.model.today ? Font.Bold : Font.Normal
-                            color: day.model.today ? Theme.onAccent : (!day.inMonth ? Theme.track : (day.marks.holiday ? Agenda.holidayColor : (day.isWeekend ? Theme.accent : Theme.text)))
+                            color: day.model.today ? Theme.accentText : (!day.inMonth ? Theme.track : (day.marks.holiday ? Agenda.holidayColor : (day.isWeekend ? Theme.accent : Theme.text)))
                         }
 
                         // Puntos: evento propio, Google y día de estudio
@@ -716,7 +716,7 @@ DropPopup {
                                     width: 4
                                     height: 4
                                     radius: 2
-                                    color: day.model.today ? Theme.onAccent : modelData.color
+                                    color: day.model.today ? Theme.accentText : modelData.color
                                 }
                             }
                         }
@@ -825,7 +825,7 @@ DropPopup {
                                     anchors.centerIn: parent
                                     name: "check"
                                     font.pixelSize: 12
-                                    color: Theme.onAccent
+                                    color: Theme.accentText
                                 }
 
                                 TapHandler {
@@ -929,7 +929,7 @@ DropPopup {
                     Layout.fillWidth: true
                     color: Theme.text
                     selectionColor: Theme.accent
-                    selectedTextColor: Theme.onAccent
+                    selectedTextColor: Theme.accentText
                     font.pixelSize: 13
                     clip: true
                     onAccepted: root.submitEvent()
@@ -982,7 +982,7 @@ DropPopup {
                         horizontalAlignment: TextInput.AlignHCenter
                         color: Theme.text
                         selectionColor: Theme.accent
-                        selectedTextColor: Theme.onAccent
+                        selectedTextColor: Theme.accentText
                         font.pixelSize: 12
                         maximumLength: 5
                         clip: true

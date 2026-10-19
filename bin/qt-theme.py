@@ -7,12 +7,15 @@ el del tema elegido; los tonos derivados (más claro, más oscuro) se calculan. 
   ~/.config/qt6ct/qss/ombu.qss            la hoja de estilos (bordes redondeados, selección)
   ~/.local/share/color-schemes/Ombu.colors  el esquema de colores de KDE
   ~/.config/kitty/themes/ombu.conf        los colores de la terminal (se recarga sola con SIGUSR1)
+  ~/.local/share/ombu/icons/bar-logo.svg  el logo de la barra (araña o reactor, en los colores del tema;
+                                          sin --logo se borra y la barra usa el de CachyOS)
 y rehace las carpetas del tema de íconos Ombu en el color de Papirus que corresponda.
 Los archivos de antes se guardan una vez como .pre-temas. Las ventanas abiertas no cambian: el
 tema se nota en la siguiente que abras.
 
 Uso: qt-theme.py --bg #14131a --surface #1d1c26 --track #2b2a38 --text #e8e8f0 --dim #8a8a9c
-                 --accent #a78bfa --danger #f87171 --warn #fbbf24 --on-accent #14131a --folder violet [--out CARPETA]
+                 --accent #a78bfa --danger #f87171 --warn #fbbf24 --on-accent #14131a --folder violet
+                 [--accent2 #5fb0ae] [--logo spider|reactor] [--out CARPETA]
   --out escribe en CARPETA en vez de en tu configuración (para probar)."""
 import argparse
 import os
@@ -108,6 +111,34 @@ def recolor(text, c):
     return text.replace(ON, on_accent or "#14131a")
 
 
+def logo_svg(kind, accent, accent2, text):
+    """Logos dibujados a mano (formas propias, sin archivos de nadie) para la barra"""
+    import math
+    if kind == "spider":
+        legs = [[(28, 22), (14, 8), (6, 14)], [(27, 27), (8, 22), (3, 32)], [(27, 34), (8, 38), (4, 50)], [(28, 42), (14, 54), (10, 62)]]
+        paths = ""
+        for leg in legs:
+            for mirror in (False, True):
+                pts = " ".join("%d,%d" % ((64 - x) if mirror else x, y) for x, y in leg)
+                paths += '<polyline points="%s"/>' % pts
+        return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+                '<g fill="none" stroke="%s" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">%s</g>'
+                '<ellipse cx="32" cy="41" rx="8.5" ry="14" fill="%s"/><circle cx="32" cy="24" r="5.5" fill="%s"/></svg>\n') % (accent, paths, accent, accent)
+    if kind == "reactor":
+        seg = ""
+        for k in range(10):
+            a = math.radians(k * 36)
+            x1, y1 = 32 + 13 * math.cos(a), 32 + 13 * math.sin(a)
+            x2, y2 = 32 + 21 * math.cos(a), 32 + 21 * math.sin(a)
+            seg += '<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f"/>' % (x1, y1, x2, y2)
+        return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+                '<circle cx="32" cy="32" r="29" fill="none" stroke="%s" stroke-width="4"/>'
+                '<g stroke="%s" stroke-width="5" stroke-linecap="butt">%s</g>'
+                '<circle cx="32" cy="32" r="10" fill="none" stroke="%s" stroke-width="3"/>'
+                '<circle cx="32" cy="32" r="5.5" fill="%s"/></svg>\n') % (accent, accent2, seg, accent, text)
+    return ""
+
+
 def write(path, content, backup):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if backup and os.path.exists(path) and not os.path.exists(path + ".pre-temas"):
@@ -122,6 +153,8 @@ def main():
         ap.add_argument("--" + k, default=DEFAULT[k])
     ap.add_argument("--on-accent", dest="on_accent", default="#14131a")
     ap.add_argument("--folder", default="violet")
+    ap.add_argument("--accent2", default="")
+    ap.add_argument("--logo", default="")
     ap.add_argument("--out", default="")
     a = ap.parse_args()
     colors = {k: getattr(a, k) for k in DEFAULT}
@@ -140,6 +173,13 @@ def main():
         # Con el tema Ombú las plantillas ya están en sus colores: se copian sin tocar
         same = colors == DEFAULT and on_accent == "#14131a"
         write(dst, text if same else recolor(text, dict(colors, on_accent=on_accent)), backup=not a.out)
+    # Logo de la barra: se escribe si el tema tiene uno y se borra si no (la barra vuelve al de CachyOS)
+    logo_path = os.path.join(root, ".local/share/ombu/icons/bar-logo.svg")
+    svg = logo_svg(a.logo, colors["accent"], a.accent2 or colors["accent"], colors["text"]) if a.logo else ""
+    if svg:
+        write(logo_path, svg, backup=False)
+    elif os.path.exists(logo_path):
+        os.remove(logo_path)
     if not a.out:
         # kitty vuelve a leer su configuración al recibir SIGUSR1: las terminales abiertas cambian de color
         subprocess.run(["pkill", "-USR1", "-x", "kitty"], check=False)

@@ -99,7 +99,7 @@ Item {
         Text {
             anchors.centerIn: parent
             text: root.letter
-            color: Theme.onAccent
+            color: Theme.accentText
             font.pixelSize: 36
             font.weight: Font.DemiBold
         }

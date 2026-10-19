@@ -156,7 +156,7 @@ Rectangle {
                 MIcon {
                     anchors.centerIn: parent
                     name: root.player?.isPlaying ? "pause" : "play_arrow"
-                    color: Theme.onAccent
+                    color: Theme.accentText
                     font.pixelSize: 28
                 }
 

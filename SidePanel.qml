@@ -165,6 +165,8 @@ PanelWindow {
             border.color: Theme.outline
             opacity: Math.min(1, win.p * 1.6)
 
+            Halftone {}
+
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 14
@@ -211,8 +213,10 @@ PanelWindow {
                             Text {
                                 text: Qt.formatTime(Chrono.date, "HH:mm")
                                 color: Theme.text
-                                font.pixelSize: 44
-                                font.weight: Font.Light
+                                font.family: Theme.displayFont || Qt.application.font.family
+                                font.pixelSize: Theme.comic ? 52 : 44
+                                font.weight: Theme.comic ? Font.Normal : Font.Light
+                                font.letterSpacing: Theme.comic ? 2 : 0
                             }
 
                             Text {
@@ -232,10 +236,11 @@ PanelWindow {
 
                             Text {
                                 text: "HOY"
-                                color: Theme.textDim
-                                font.pixelSize: 11
-                                font.weight: Font.DemiBold
-                                font.letterSpacing: 0.8
+                                color: Theme.comic ? Theme.accent : Theme.textDim
+                                font.family: Theme.displayFont || Qt.application.font.family
+                                font.pixelSize: Theme.comic ? 15 : 11
+                                font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                font.letterSpacing: Theme.comic ? 1.5 : 0.8
                             }
 
                             Text {
@@ -282,10 +287,11 @@ PanelWindow {
                                 visible: parent.next.length > 0
                                 Layout.topMargin: 6
                                 text: "PRÓXIMOS"
-                                color: Theme.textDim
-                                font.pixelSize: 11
-                                font.weight: Font.DemiBold
-                                font.letterSpacing: 0.8
+                                color: Theme.comic ? Theme.accent : Theme.textDim
+                                font.family: Theme.displayFont || Qt.application.font.family
+                                font.pixelSize: Theme.comic ? 15 : 11
+                                font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                font.letterSpacing: Theme.comic ? 1.5 : 0.8
                             }
 
                             Repeater {
@@ -324,10 +330,11 @@ PanelWindow {
 
                             Text {
                                 text: "PAGOS"
-                                color: Theme.textDim
-                                font.pixelSize: 11
-                                font.weight: Font.DemiBold
-                                font.letterSpacing: 0.8
+                                color: Theme.comic ? Theme.accent : Theme.textDim
+                                font.family: Theme.displayFont || Qt.application.font.family
+                                font.pixelSize: Theme.comic ? 15 : 11
+                                font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                font.letterSpacing: Theme.comic ? 1.5 : 0.8
                             }
 
                             Repeater {

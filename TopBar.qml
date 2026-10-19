@@ -182,14 +182,29 @@ PanelWindow {
                     radius: 12
                     color: logoArea.containsMouse || Ui.sysMenuOpen ? Theme.hover : "transparent"
 
+                    // El logo de CachyOS, o el del tema (araña, reactor) cuando hay uno
                     Image {
                         anchors.centerIn: parent
                         width: 18
                         height: 18
+                        visible: themeLogo.status !== Image.Ready
                         source: "file:///usr/share/icons/cachyos.svg"
                         sourceSize: Qt.size(72, 72)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
+                    }
+
+                    Image {
+                        id: themeLogo
+
+                        anchors.centerIn: parent
+                        width: 22
+                        height: 22
+                        source: Themes.logoFile
+                        sourceSize: Qt.size(88, 88)
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                        cache: false
                     }
 
                     MouseArea {
@@ -276,7 +291,7 @@ PanelWindow {
 
                         anchors.centerIn: parent
                         text: Submap.label + "  ·  Esc para salir"
-                        color: Theme.onAccent
+                        color: Theme.accentText
                         font.pixelSize: 12
                         font.weight: Font.DemiBold
                     }

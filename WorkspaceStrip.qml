@@ -84,7 +84,7 @@ Row {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: ws.active && ws.wsId < 0
                     name: "sports_esports"
-                    color: Theme.onAccent
+                    color: Theme.accentText
                     font.pixelSize: 15
                 }
 
@@ -92,7 +92,7 @@ Row {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: ws.active && ws.wsId > 0
                     text: ws.wsId
-                    color: Theme.onAccent
+                    color: Theme.accentText
                     font.pixelSize: 12
                     font.weight: Font.Bold
                 }
@@ -101,7 +101,7 @@ Row {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: ws.occupied && appIcon.source == ""
                     name: "apps"
-                    color: ws.active ? Theme.onAccent : Theme.textDim
+                    color: ws.active ? Theme.accentText : Theme.textDim
                     font.pixelSize: 15
                 }
 

@@ -27,7 +27,10 @@ Singleton {
     // temas de acento claro y crema en los de acento rojo, donde el oscuro no se lee bien.
     // Sombra dura de las tarjetas (HardShadow): transparente salvo en los temas de cómic
     readonly property color shadow: Themes.active.shadow ?? "transparent"
-    readonly property color onAccent: Themes.active.onAccent ?? "#14131a"
+    // Los temas de cómic llevan sombra dura, puntos de impresión y una tipografía de historieta
+    readonly property bool comic: shadow.a > 0
+    readonly property string displayFont: Themes.active.display ?? ""
+    readonly property color accentText: Themes.active.onAccent ?? "#14131a"
     readonly property color hover: Qt.rgba(1, 1, 1, 0.09)
     readonly property color border: Qt.rgba(1, 1, 1, 0.08)
     // Contorno de la barra y de los menús que cuelgan de ella: se nota sobre una terminal oscura

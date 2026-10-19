@@ -194,7 +194,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             color: Theme.text
                             selectionColor: Theme.accent
-                            selectedTextColor: Theme.onAccent
+                            selectedTextColor: Theme.accentText
                             font.pixelSize: 13
                             clip: true
                             focus: true
@@ -412,7 +412,7 @@ PanelWindow {
                                 anchors.centerIn: parent
                                 name: "check"
                                 font.pixelSize: 14
-                                color: Theme.onAccent
+                                color: Theme.accentText
                             }
                         }
                     }

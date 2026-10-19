@@ -232,7 +232,7 @@ DropPopup {
                                     anchors.centerIn: parent
                                     name: "close"
                                     font.pixelSize: 16
-                                    color: closeHover.hovered ? Theme.onAccent : Theme.textDim
+                                    color: closeHover.hovered ? Theme.accentText : Theme.textDim
                                 }
 
                                 HoverHandler {
@@ -373,7 +373,7 @@ DropPopup {
                                 anchors.centerIn: parent
                                 name: "close"
                                 font.pixelSize: 16
-                                color: bgRow.armed || bgCloseHover.hovered ? Theme.onAccent : Theme.textDim
+                                color: bgRow.armed || bgCloseHover.hovered ? Theme.accentText : Theme.textDim
                             }
 
                             HoverHandler {

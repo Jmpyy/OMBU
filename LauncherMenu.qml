@@ -461,7 +461,7 @@ PanelWindow {
                     Layout.fillWidth: true
                     color: Theme.text
                     selectionColor: Theme.accent
-                    selectedTextColor: Theme.onAccent
+                    selectedTextColor: Theme.accentText
                     font.pixelSize: 19
                     clip: true
                     focus: true

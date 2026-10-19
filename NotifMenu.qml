@@ -59,7 +59,7 @@ DropPopup {
                         anchors.verticalCenter: parent.verticalCenter
                         name: Notifs.dnd ? "notifications_off" : "notifications_active"
                         font.pixelSize: 15
-                        color: Notifs.dnd ? Theme.onAccent : Theme.textDim
+                        color: Notifs.dnd ? Theme.accentText : Theme.textDim
                     }
 
                     Text {
@@ -67,7 +67,7 @@ DropPopup {
                         text: "No molestar"
                         font.pixelSize: 12
                         font.weight: Font.Medium
-                        color: Notifs.dnd ? Theme.onAccent : Theme.text
+                        color: Notifs.dnd ? Theme.accentText : Theme.text
                     }
                 }
 
@@ -94,7 +94,7 @@ DropPopup {
                     text: "Limpiar"
                     font.pixelSize: 12
                     font.weight: Font.Medium
-                    color: clearHover.hovered ? Theme.onAccent : Theme.text
+                    color: clearHover.hovered ? Theme.accentText : Theme.text
                 }
 
                 HoverHandler {

@@ -206,7 +206,7 @@ PanelWindow {
                     Layout.fillWidth: true
                     color: Theme.text
                     selectionColor: Theme.accent
-                    selectedTextColor: Theme.onAccent
+                    selectedTextColor: Theme.accentText
                     font.pixelSize: 18
                     clip: true
                     focus: true
@@ -299,7 +299,7 @@ PanelWindow {
                         MIcon {
                             anchors.verticalCenter: parent.verticalCenter
                             name: "delete_sweep"
-                            color: win.clearArmed ? Theme.onAccent : Theme.textDim
+                            color: win.clearArmed ? Theme.accentText : Theme.textDim
                             font.pixelSize: 19
                         }
 
@@ -307,7 +307,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: win.clearArmed
                             text: "Tocá de nuevo"
-                            color: Theme.onAccent
+                            color: Theme.accentText
                             font.pixelSize: 12
                             font.weight: Font.DemiBold
                         }
@@ -493,7 +493,7 @@ PanelWindow {
                                     MIcon {
                                         anchors.centerIn: parent
                                         name: "close"
-                                        color: delHover.hovered ? Theme.onAccent : Theme.textDim
+                                        color: delHover.hovered ? Theme.accentText : Theme.textDim
                                         font.pixelSize: 17
                                     }
 
