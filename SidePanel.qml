@@ -115,11 +115,11 @@ PanelWindow {
         top: true
         bottom: true
     }
-    // Pegado al borde izquierdo, debajo de la barra y hasta el fondo de la pantalla: un cajón de la
-    // pantalla, no una tarjeta flotante
-    margins.top: Theme.barHeight
+    // Sale del borde izquierdo y se funde con la barra y con el borde inferior (SideShape). Arranca un
+    // pixel dentro de la barra para tapar el filo que ella trae abajo.
+    margins.top: Theme.barHeight - 1
     margins.bottom: 0
-    implicitWidth: panelWidth + 12
+    implicitWidth: panelWidth + Theme.fillet + 2
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "ombu-side"
@@ -152,25 +152,22 @@ PanelWindow {
         focus: true
         Keys.onEscapePressed: Ui.sideOpen = false
 
-        HardShadow {
-            target: card
-        }
-
-        Rectangle {
+        Item {
             id: card
 
             x: -(1 - win.p) * (win.panelWidth + 20)
             width: win.panelWidth
             height: parent.height
-            radius: Theme.cardRadius
-            topLeftRadius: 0
-            bottomLeftRadius: 0
-            color: Theme.bg
-            border.width: 1
-            border.color: Theme.outline
             opacity: Math.min(1, win.p * 1.6)
 
-            Halftone {}
+            SideShape {
+                panelWidth: win.panelWidth
+                panelHeight: card.height
+            }
+
+            Halftone {
+                anchors.rightMargin: 10
+            }
 
             ColumnLayout {
                 anchors.fill: parent
