@@ -28,7 +28,7 @@ Singleton {
         if (shown || Ui.locked)
             return;
         Saver.beginWelcome();
-        line = (Quickshell.env("USER") ?? "") + "@ombu · sesión iniciada · " + Qt.formatTime(new Date(), "HH:mm");
+        line = (Theme.comic ? "¡THWIP! · " : "") + (Quickshell.env("USER") ?? "") + "@ombu · sesión iniciada · " + Qt.formatTime(new Date(), "HH:mm");
         fadeMs = 0;
         fade = 1;
         shown = true;

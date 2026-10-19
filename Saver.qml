@@ -41,14 +41,15 @@ Singleton {
     property int cols: 0
     property int rows: 0
 
-    readonly property string glyphs: "0123456789ABCDEF<>{}[]()/\\|=+-*#$%&@;:^~?!"
+    // Con los temas de cómic llueven trazos de telaraña en lugar de hexadecimal
+    readonly property string glyphs: Theme.comic ? "╱╲╳┼╌╎+x*/\\|-:·╱╲╳" : "0123456789ABCDEF<>{}[]()/\\|=+-*#$%&@;:^~?!"
 
     // Modo bienvenida (ver Welcome): el mismo efecto, pero el logo se descifra enseguida,
     // se queda y no se disuelve
     property bool welcome: false
     // Fila de la grilla donde queda la frase debajo del logo
     property int tagRow: 0
-    readonly property string tagline: welcome ? "B I E N V E N I D O" : "S E S I Ó N   B L O Q U E A D A"
+    readonly property string tagline: welcome ? (Theme.comic ? "B I E N V E N I D O ,   V E C I N O" : "B I E N V E N I D O") : "S E S I Ó N   B L O Q U E A D A"
 
     // Ciclo, en segundos: lluvia sola -> el logo se descifra -> brilla -> se disuelve
     readonly property real decryptStart: welcome ? 0.5 : 2.5
@@ -115,6 +116,9 @@ Singleton {
             "U": ["██  ██", "██  ██", "██  ██", "██  ██", " ████ "]
         })
 
+    // La araña que corona el logo en los temas de cómic
+    readonly property var spider: ["█     ███     █", " █   █████   █ ", "  ██ █████ ██  ", "████ █████ ████", "  ██ █████ ██  ", " █   █████   █ ", "█     ███     █"]
+
     function layoutLogo(): void {
         const C = cols, R = rows;
         const word = ["O", "M", "B", "U"];
@@ -129,9 +133,27 @@ Singleton {
         const totalCols = widthPx * sx;
         const totalRows = 5 * sy;
         const left = Math.floor((C - totalCols) / 2);
-        const top = Math.max(1, Math.floor(R / 2) - 7);
+        // Con la araña arriba, todo sube para que el conjunto siga centrado
+        const spiderRows = Theme.comic ? spider.length * sy + 2 : 0;
+        const top = Math.max(1, Math.floor(R / 2) - 7 - Math.floor(spiderRows / 2)) + spiderRows;
 
         const lr = [], lc = [], lch = [];
+        if (spiderRows > 0) {
+            const sLeft = Math.floor((C - spider[0].length * sx) / 2);
+            for (let gy = 0; gy < spider.length; gy++) {
+                for (let gx = 0; gx < spider[gy].length; gx++) {
+                    if (spider[gy][gx] === " ")
+                        continue;
+                    for (let dy = 0; dy < sy; dy++) {
+                        for (let dx = 0; dx < sx; dx++) {
+                            lr.push(top - spiderRows + gy * sy + dy);
+                            lc.push(sLeft + gx * sx + dx);
+                            lch.push(0x2588);
+                        }
+                    }
+                }
+            }
+        }
         let px = 0;
         for (const ch of word) {
             const glyph = letters[ch];

@@ -37,7 +37,7 @@ PanelWindow {
         y: view.gridY + (Saver.tagRow + 2) * view.lh
         opacity: Welcome.fade
         text: shownText + (Welcome.typed < Welcome.line.length || cursor.on ? "▌" : " ")
-        color: "#9b87f5"
+        color: view.brightColor
         font.family: "monospace"
         font.pixelSize: Theme.saverFontSize
         renderType: Text.QtRendering
