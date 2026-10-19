@@ -42,7 +42,7 @@ Item {
     // La lluvia y el logo se calculan una sola vez para todos los monitores: manda el principal (el de
     // menor x). Con el último en configurar, el logo salía descentrado en el principal.
     readonly property var myScreen: QsWindow.window ? QsWindow.window.screen : null
-    readonly property bool primary: myScreen === null || Quickshell.screens.every(s => s.x >= myScreen.x)
+    readonly property bool primary: myScreen === null || Screens.list.every(s => s.x >= myScreen.x)
     function configureIfPrimary(): void {
         if (primary)
             Saver.configure(cols, rows);

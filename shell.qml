@@ -27,37 +27,37 @@ ShellRoot {
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         Wallpaper {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         TopBar {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         WelcomeWindow {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         VolumeOsd {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         NotifToasts {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         LockPreview {}
     }
@@ -66,37 +66,37 @@ ShellRoot {
 
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         PowerMenu {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         LauncherMenu {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         FocusBlock {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         ClipMenu {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         KeysMenu {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         SystemMenu {}
     }
@@ -104,19 +104,19 @@ ShellRoot {
     // El panel lateral y su borde sensible viven solo en el monitor principal: el que está más a la
     // izquierda (y, si hay empate, más arriba)
     Variants {
-        model: Quickshell.screens.length > 0 ? [Quickshell.screens.reduce((a, b) => (b.x < a.x || (b.x === a.x && b.y < a.y)) ? b : a)] : []
+        model: Screens.primary ? [Screens.primary] : []
 
         SidePanel {}
     }
 
     Variants {
-        model: Quickshell.screens.length > 0 ? [Quickshell.screens.reduce((a, b) => (b.x < a.x || (b.x === a.x && b.y < a.y)) ? b : a)] : []
+        model: Screens.primary ? [Screens.primary] : []
 
         SideEdge {}
     }
 
     Variants {
-        model: Quickshell.screens
+        model: Screens.list
 
         WallpaperPicker {}
     }
