@@ -2,7 +2,9 @@
 """Genera el tema de Plymouth (la intro de arranque) de ombu: una araña colgada de su hilo que se balancea
 mientras el sistema arranca y, al terminar, sube por el hilo. Usa los colores del tema de ombu.
 
-Uso: make-plymouth.py CARPETA [--accent #e23b32] [--cream #efe8dc] [--shadow #8c231e] [--ink #0a0708]
+Uso: make-plymouth.py CARPETA [--accent #e23b32] [--cream #efe8dc] [--shadow #8c231e] [--ink #0a0708] [--label]
+La araña va sola, sin texto: «OMBU» se revela una sola vez, en el video del login. Con --label se le suma el
+nombre debajo (como la primera versión).
 Escribe CARPETA/ombu-spidey.plymouth, los cuadros (throbber-NN.png en bucle, animation-NN.png al terminar) y las
 imágenes obligatorias del diálogo de contraseña (copiadas del tema spinner del sistema).
 Necesita ImageMagick (`magick`) y la fuente Bangers (~/.local/share/fonts/ombu) para el nombre; sin ella
@@ -101,15 +103,16 @@ def main():
     ap.add_argument("--cream", default="#efe8dc")
     ap.add_argument("--shadow", default="#8c231e")
     ap.add_argument("--ink", default="#0a0708")
+    ap.add_argument("--label", action="store_true")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     for i in range(LOOP):
         t = i / LOOP * 2 * math.pi
-        frame(os.path.join(a.out, "throbber-%02d.png" % i), CY + 22 * math.sin(t), t * 2, 5 * math.sin(t), 1, a)
+        frame(os.path.join(a.out, "throbber-%02d.png" % i), CY + 22 * math.sin(t), t * 2, 5 * math.sin(t), 1, a, label=a.label)
     for i in range(END):
         u = i / (END - 1)
         # sube por el hilo cada vez más rápido y se desvanece
-        frame(os.path.join(a.out, "animation-%02d.png" % i), CY - (CY + 120) * u * u, u * 8, 0, 1 - u * u, a, label=True)
+        frame(os.path.join(a.out, "animation-%02d.png" % i), CY - (CY + 120) * u * u, u * 8, 0, 1 - u * u, a, label=a.label)
     copy_required(a.out)
     with open(os.path.join(a.out, "ombu-spidey.plymouth"), "w", encoding="utf-8") as f:
         f.write(PLYMOUTH)
