@@ -3,15 +3,19 @@
   "logo": {
     "type": "file",
     "source": "~/.config/fastfetch/ombu.txt",
-    "color": { "1": "38;2;167;139;250" },
+    "color": {
+      "1": "38;2;226;59;50",
+      "2": "38;2;95;176;174",
+      "3": "38;2;239;232;220"
+    },
     "padding": { "top": 1, "left": 2, "right": 4 }
   },
   "display": {
     "separator": "  ",
     "color": {
-      "keys": "38;2;167;139;250",
-      "title": "38;2;167;139;250",
-      "separator": "38;2;74;73;96"
+      "keys": "38;2;226;59;50",
+      "title": "38;2;226;59;50",
+      "separator": "38;2;95;176;174"
     }
   },
   "modules": [
@@ -20,7 +24,12 @@
     { "type": "kernel", "key": "Kernel  " },
     { "type": "wm", "key": "Entorno " },
     { "type": "shell", "key": "Shell   " },
+    { "type": "terminal", "key": "Terminal" },
+    { "type": "cpu", "key": "CPU     " },
+    { "type": "gpu", "key": "GPU     " },
+    { "type": "memory", "key": "Memoria ", "format": "{used} / {total}" },
     { "type": "uptime", "key": "Activo  ", "format": "{?days}{days} d {?}{hours} h {minutes} min" },
-    { "type": "memory", "key": "Memoria ", "format": "{used} / {total}" }
+    "break",
+    { "type": "colors", "symbol": "circle" }
   ]
 }

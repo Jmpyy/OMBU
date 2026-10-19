@@ -7,18 +7,18 @@ add_newline = true
 palette = "ombu"
 
 format = """
-@LEAD@[](fg:accent)$directory[](fg:accent) $git_branch$git_status$fill $c$cmake$python$nodejs$rust$golang$cmd_duration$time
-$character"""
+[󰌵 ](fg:accent)[](fg:accent)$directory[](fg:accent) $git_branch$git_status$fill $c$cmake$python$nodejs$rust$golang$cmd_duration$time
+$status$character"""
 
 [palettes.ombu]
-accent = "@ACCENT@"
-light = "@LIGHT@"
-dim = "@DIM@"
-line = "@LINE@"
-danger = "@DANGER@"
-warn = "@WARN@"
-ok = "@OK@"
-dark = "@DARK@"
+accent = "#e23b32"
+light = "#ec807a"
+dim = "#a89c90"
+line = "#35282a"
+danger = "#ff7a8a"
+warn = "#f2b84b"
+ok = "#86efac"
+dark = "#fff4e8"
 
 # Carpeta: píldora violeta con ícono. Las carpetas de siempre tienen el suyo.
 [directory]
@@ -96,5 +96,12 @@ style = "fg:dim"
 format = "[󰥔 $time]($style)"
 
 [character]
-success_symbol = "[@PROMPT@](bold fg:accent)"
-error_symbol = "[@PROMPT@](bold fg:danger)"
+success_symbol = "[❯❯](bold fg:accent)"
+error_symbol = "[❯❯](bold fg:danger)"
+
+[status]
+disabled = false
+format = "[$symbol$status]($style) "
+symbol = "✘ "
+style = "bold fg:danger"
+
