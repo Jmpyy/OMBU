@@ -101,6 +101,12 @@ ShellRoot {
         SystemMenu {}
     }
 
+    Variants {
+        model: Quickshell.screens
+
+        WallpaperPicker {}
+    }
+
     // qs -c ombu ipc call bar toggle  -> mostrar/ocultar la barra
     // qs -c ombu ipc call bar mixer   -> abrir/cerrar la mezcladora (monitor con foco)
     // qs -c ombu ipc call bar apps    -> abrir/cerrar las apps abiertas (monitor con foco)
@@ -216,6 +222,17 @@ ShellRoot {
             return Walls.current;
         }
 
+        // ipc call wallpaper menu  -> selector de fondos (Super+Ctrl+Espacio)
+        function menu(): void {
+            Ui.powerOpen = false;
+            Ui.launcherOpen = false;
+            Ui.clipOpen = false;
+            Ui.keysOpen = false;
+            Ui.sysMenuOpen = false;
+            Ui.popup = "";
+            Ui.wallMenuOpen = !Ui.wallMenuOpen;
+        }
+
         target: "wallpaper"
     }
 
@@ -266,8 +283,8 @@ ShellRoot {
         }
 
         function walls(): void {
-            const key = "walls@" + (Hyprland.focusedMonitor?.name ?? "");
-            Ui.popup = Ui.popup === key ? "" : key;
+            Ui.popup = "";
+            Ui.wallMenuOpen = !Ui.wallMenuOpen;
         }
 
         function devices(): void {

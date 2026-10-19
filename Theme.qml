@@ -29,8 +29,9 @@ Singleton {
     readonly property color outline: Qt.rgba(1, 1, 1, 0.2)
     readonly property color scrim: Qt.rgba(0, 0, 0, 0.55)
 
-    // Fondo de pantalla (el mismo que usaba Caelestia; archivo del sistema de CachyOS)
-    readonly property string wallpaper: "/usr/share/wallpapers/cachyos-wallpapers/Cachy_Topography.jpg"
+    // Fondo de pantalla por defecto: ninguno (se ve el color de fondo). Los fondos se eligen en el
+    // selector (Super+Ctrl+Espacio) entre las imágenes de ~/Imágenes/Fondos
+    readonly property string wallpaper: ""
 
     // Bloqueo por inactividad: a los idleLockSeconds se bloquea la sesión mostrando el
     // salvapantallas ASCII; a los idleScreenOffSeconds se apagan los monitores (siguen

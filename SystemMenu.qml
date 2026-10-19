@@ -78,7 +78,10 @@ PanelWindow {
                 {
                     name: "Fondo de pantalla",
                     icon: "wallpaper",
-                    run: () => win.openPopup("walls")
+                    hint: "Super+Ctrl+Espacio",
+                    run: () => {
+                        Ui.wallMenuOpen = true;
+                    }
                 }
             ]
         },

@@ -12,10 +12,14 @@ Singleton {
     readonly property string home: Quickshell.env("HOME") ?? ""
     // La carpeta propia va primero: lo que pongas ahí aparece arriba en el selector
     readonly property string userDir: home + "/Imágenes/Fondos"
-    readonly property var dirs: [userDir, home + "/Imágenes", home + "/Pictures/Wallpapers", "/usr/share/wallpapers/cachyos-wallpapers"]
+    readonly property var dirs: [userDir, home + "/Imágenes", home + "/Pictures/Wallpapers"]
     readonly property string stateFile: home + "/.local/share/ombu/fondo.json"
 
     property string current: Theme.wallpaper
+    // Fondo que se está mirando en el selector sin confirmar (vacío = ninguno)
+    property string preview: ""
+    // Lo que se dibuja en el escritorio
+    readonly property string shown: preview !== "" ? preview : current
     property var list: []
 
     function set(path: string): void {

@@ -22,7 +22,7 @@ PanelWindow {
 
     Image {
         anchors.fill: parent
-        source: "file://" + Walls.current
+        source: "file://" + Walls.shown
         asynchronous: true
         smooth: true
         // La imagen es ultrawide: se recorta para llenar el monitor sin deformarse
