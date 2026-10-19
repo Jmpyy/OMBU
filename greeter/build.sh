@@ -8,12 +8,14 @@ DEST="${1:?uso: build.sh DESTINO}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 OMBU="$(cd "$HERE/.." && pwd)"
 
-SHARED=(Theme.qml MIcon.qml AvatarRing.qml LockBackdrop.qml LockChip.qml LockPower.qml Chrono.qml Keyboard.qml Ui.qml)
+SHARED=(Theme.qml MIcon.qml AvatarRing.qml NameBadge.qml Halftone.qml LockBackdrop.qml LockChip.qml LockPower.qml Chrono.qml Keyboard.qml Ui.qml)
 OWN=(shell.qml GreeterConfig.qml GreeterAuth.qml GreeterScreen.qml)
 
 mkdir -p "$DEST"
 for f in "${SHARED[@]}"; do cp "$OMBU/$f" "$DEST/$f"; done
 for f in "${OWN[@]}"; do cp "$HERE/$f" "$DEST/$f"; done
+# La trama de puntos (Halftone) lee su imagen de assets/
+mkdir -p "$DEST/assets" && cp "$OMBU/assets/halftone.png" "$DEST/assets/halftone.png"
 cp "$HERE/run-greeter.sh" "$DEST/run-greeter.sh"
 cp "$HERE/hyprland.lua.in" "$DEST/hyprland.lua.in"
 chmod +x "$DEST/run-greeter.sh"

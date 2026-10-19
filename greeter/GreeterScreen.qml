@@ -11,6 +11,8 @@ Item {
     property bool interactive: true
 
     readonly property string userName: GreeterConfig.user
+    // Nombre del cartel de los temas de cómic (el mismo que usa la pantalla de bloqueo)
+    readonly property string displayName: (userName === "jmpyy" || userName === "juampy") ? "JUAMPY" : userName.toUpperCase()
     readonly property bool busy: GreeterAuth.state === "checking" || GreeterAuth.state === "launching"
     readonly property string greeting: {
         const h = Chrono.date.getHours();
@@ -96,18 +98,29 @@ Item {
 
         Item {
             visible: root.interactive
-            Layout.preferredHeight: 44
+            Layout.preferredHeight: Theme.comic ? 28 : 44
+        }
+
+        // Cartel «HELLO my name is…» en los temas de cómic (igual que el bloqueo); el círculo con la inicial en el resto
+        NameBadge {
+            visible: root.interactive && Theme.comic
+            Layout.alignment: Qt.AlignHCenter
+            name: root.displayName
+            alert: GreeterAuth.state === "failed"
+            transform: Translate {
+                x: root.shakeX
+            }
         }
 
         AvatarRing {
-            visible: root.interactive
+            visible: root.interactive && !Theme.comic
             Layout.alignment: Qt.AlignHCenter
             letter: root.userName.charAt(0).toUpperCase()
             alert: GreeterAuth.state === "failed"
         }
 
         Text {
-            visible: root.interactive
+            visible: root.interactive && !Theme.comic
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 14
             text: root.greeting + ", " + root.userName
