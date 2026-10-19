@@ -108,7 +108,15 @@ def access_token():
             "grant_type": "refresh_token",
         })
     except Fail as e:
-        raise Fail("Hay que volver a conectar Google (%s)" % e)
+        # Con la app en modo Prueba Google vence el permiso a los 7 días: se borra el token para
+        # que ombu ofrezca conectar de nuevo en lugar de seguir fallando
+        if "invalid_grant" in str(e) or "expired" in str(e).lower() or "revoked" in str(e).lower():
+            try:
+                os.remove(TOKEN)
+            except OSError:
+                pass
+            raise Fail("La sesión de Google venció: volvé a conectar")
+        raise Fail("No se pudo renovar el permiso de Google (%s)" % e)
     tok["access_token"] = fresh["access_token"]
     tok["expires_at"] = time.time() + int(fresh.get("expires_in", 3600))
     save_token(tok)
@@ -245,7 +253,11 @@ def normalize(ev, cal, since, until_day):
 def cmd_list(since, until_day):
     try:
         cals = [c for c in api("GET", "/users/me/calendarList").get("items", []) if c.get("selected", True) and not c.get("deleted")]
-    except Fail:
+    except Fail as e:
+        # Sin la lista de calendarios (permiso de más) se sigue con el principal; pero si la sesión
+        # venció o no hay red, ese es el error que hay que mostrar
+        if "venció" in str(e) or "Sin conexión" in str(e):
+            raise
         cals = []
     # Los feriados ya los trae ombu aparte (bin/feriados.sh): los calendarios de feriados de Google duplicarían
     cals = [c for c in cals if not c.get("id", "").endswith("#holiday@group.v.calendar.google.com")]

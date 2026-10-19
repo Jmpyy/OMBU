@@ -32,6 +32,7 @@ Singleton {
     property bool apiConnected: false
     property bool apiAuthing: false
     property string apiError: ""
+    property bool sessionNotified: false
     // Al anotar un evento, ¿va a Google (y al celular) o queda solo en ombu?
     property bool createInGoogle: true
     readonly property bool googleOn: apiConnected || googleUrl !== ""
@@ -228,8 +229,10 @@ Singleton {
         gcal(["status"], r => {
             apiClient = r.client === true;
             apiConnected = r.connected === true;
-            if (apiConnected)
+            if (apiConnected) {
+                sessionNotified = false;
                 refreshGoogle(true);
+            }
         });
     }
 
@@ -256,6 +259,17 @@ Singleton {
         });
     }
 
+    // Si Google dice que la sesión venció, vuelve al estado "sin conectar" y avisa una sola vez
+    function handleApiError(message: string): void {
+        if (!message.includes("venció"))
+            return;
+        refreshApiStatus();
+        if (!sessionNotified) {
+            sessionNotified = true;
+            Quickshell.execDetached(["notify-send", "-a", "Agenda", "-i", "dialog-warning", "Google Calendar se desconectó", "El permiso venció. Abrí el calendario y tocá «Conectar con Google»."]);
+        }
+    }
+
     function refreshGoogle(force: bool): void {
         if (!googleOn || googleLoading)
             return;
@@ -270,6 +284,7 @@ Singleton {
                 googleAt = Date.now();
                 google = r.events ?? [];
                 googleError = r.error ?? "";
+                handleApiError(googleError);
             });
             return;
         }

@@ -107,6 +107,11 @@ check("crea de todo el día", ins["start"] == {"date": "2026-10-22"} and ins["en
 # 6) borrar
 o, _ = run("delete", "primary", "d"); check("borra uno creado por ombu", o.get("ok") is True and any(l[0] == "delete" for l in LOG), o)
 o, _ = run("delete", "primary", "a"); check("se niega a borrar uno ajeno", "error" in o and not any(l[0] == "delete" and l[1].endswith("/a") for l in LOG), o)
+# 6b) permiso vencido o revocado: se borra el token y el mensaje pide volver a conectar
+t = json.load(open(tokpath)); t["refresh_token"] = "RT-vencido"; t["expires_at"] = 0; json.dump(t, open(tokpath, "w"))
+o, _ = run("list", "2026-10-01", "2026-10-31")
+check("permiso vencido: avisa 'venció' y borra el token", "venció" in o.get("error", "") and not os.path.exists(tokpath) and run("status")[0]["connected"] is False, o)
+json.dump({"refresh_token": "RT-secret", "access_token": "", "expires_at": 0}, open(tokpath, "w"))
 # 7) desconectar
 o, _ = run("disconnect"); check("desconecta y borra el token", not os.path.exists(tokpath) and run("status")[0]["connected"] is False)
 o, _ = run("list", "2026-10-01", "2026-10-31"); check("sin sesión avisa y no revienta", "error" in o and o["error"], o)

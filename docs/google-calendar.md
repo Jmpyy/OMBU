@@ -30,9 +30,11 @@ Si solo querés *ver* tus eventos, hay una alternativa más simple: pegar la «d
 3. Elegí tu cuenta. Google va a decir **«Google no ha verificado esta app»**: es normal, la app es tuya. Tocá **Configuración avanzada → Ir a ombu (no seguro)** y aceptá los permisos.
 4. Cuando el navegador diga «Listo, ya podés cerrar esta pestaña», volvé a ombu: el panel dice **Google Calendar conectado**.
 
-## Importante: que no se desconecte a la semana
+## Si se desconecta a la semana (modo Prueba)
 
-Mientras la app esté en **modo Prueba**, Google vence el permiso a los **7 días** y hay que volver a conectar. Para evitarlo, en la pantalla de consentimiento de OAuth tocá **Publicar la app** (pasar a **En producción**). Para uso personal no hace falta verificarla: solo vas a ver la advertencia de «app no verificada» al conectar.
+Mientras la app esté en **modo Prueba**, Google vence el permiso a los **7 días**. No pasa nada grave: ombu avisa con una notificación («Google Calendar se desconectó») y el botón **Conectar con Google** del calendario vuelve a aparecer; son dos clics y no hay que tocar nada más.
+
+Si preferís que no venza, en la pantalla de consentimiento de OAuth podés tocar **Publicar la app** (pasar a **En producción**). No la hace comercial ni pública, no se verifica y no cuesta nada; solo vas a ver el aviso de «app no verificada» al conectar. Es opcional.
 
 ## Cómo se usa
 
