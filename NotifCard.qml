@@ -99,6 +99,8 @@ Rectangle {
             return "¡LOOK OUT!";
         const app = (entry.appName || "").toLowerCase();
         const sum = (entry.summary || "").toLowerCase();
+        if (app.includes("claude") && /esper|permiso|atenci/.test(sum))
+            return "SPIDEY-SENSE!";
         if (app.includes("claude") || app.includes("antigravity") || sum.includes("terminó") || sum.includes("listo"))
             return "THWIP!";
         if (app.includes("capturas") || app.includes("shot"))

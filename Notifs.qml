@@ -134,9 +134,15 @@ Singleton {
         const entry = entryComponent.createObject(root, {
             n: n
         });
-        // Pasa el texto a español si hay una regla para esta app
-        entry.summary = NotifRules.translate(n, entry.summary);
-        entry.body = NotifRules.translate(n, entry.body);
+        // Pasa el texto a español si hay una regla para esta app (o lo reescribe, ver NotifRules.speak)
+        const spoken = NotifRules.speak(n);
+        const rule = NotifRules.ruleFor(n);
+        entry.summary = spoken ? spoken[0] : NotifRules.translate(n, entry.summary);
+        entry.body = spoken ? spoken[1] : NotifRules.translate(n, entry.body);
+        if (rule && rule.asApp)
+            entry.appName = rule.asApp;
+        if (rule && rule.icon)
+            entry.appIcon = rule.icon;
         history = [entry, ...history];
         n.closed.connect(() => root.remove(entry));
         received(entry);

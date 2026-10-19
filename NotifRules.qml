@@ -10,15 +10,37 @@ import Quickshell.Hyprland
 // Cada regla tiene:
 //   match(n)        qué notificaciones le tocan (n.appName, n.summary, n.body)
 //   translate       pares [expresión, reemplazo] que se aplican al texto
+//   asApp / icon    el aviso se muestra como de otra app (nombre e ícono), p. ej. los de Claude Code
+//   speak(n)        reescribe el aviso entero: devuelve [título, texto] o null si no sabe qué decir
 //   hideWhenVisible clase de ventana (ej. "kitty"): si hay una a la vista en algún monitor, la
 //                   notificación se descarta (no tiene sentido avisar de lo que estás mirando)
 Singleton {
     id: root
 
+    // Logo de Claude: archivo propio de la persona (no va al repo: es una marca de otra empresa). Si no
+    // existe, la tarjeta cae al ícono genérico.
+    readonly property string claudeIcon: (Quickshell.env("HOME") ?? "") + "/.local/share/ombu/icons/claude.svg"
+
     readonly property var rules: [
         {
-            // Claude Code avisa por la terminal (kitty) cuando espera algo de vos
+            // Claude Code avisa por la terminal (kitty) cuando espera algo de vos: aparece como Claude Code,
+            // con su logo, y habla en primera persona
             match: n => n.appName.toLowerCase() === "kitty" && /claude/i.test(n.summary + " " + n.body),
+            asApp: "Claude Code",
+            icon: root.claudeIcon,
+            speak: n => {
+                const t = n.summary + " " + n.body;
+                let m;
+                if (/is waiting for your input/i.test(t))
+                    return ["Te estoy esperando", "Terminé lo que estaba haciendo y necesito tu respuesta para seguir."];
+                if ((m = t.match(/needs your permission to use (.+?)\.?\s*$/i)))
+                    return ["Necesito tu permiso", "Quiero usar «" + m[1] + "». ¿Me dejás?"];
+                if (/needs your permission/i.test(t))
+                    return ["Necesito tu permiso", "Hay algo que no puedo hacer sin que me des el visto bueno."];
+                if (/needs your attention/i.test(t))
+                    return ["Necesito tu atención", "Hay algo que tenés que ver antes de que siga."];
+                return null;
+            },
             translate: [[/Claude is waiting for your input/i, "Claude te está esperando"], [/Claude needs your permission to use (.+)/i, "Claude necesita tu permiso para usar $1"], [/Claude needs your permission/i, "Claude necesita tu permiso"], [/Claude needs your attention/i, "Claude necesita tu atención"]],
             hideWhenVisible: "kitty"
         },
@@ -89,6 +111,12 @@ Singleton {
 
     function translateAction(text: string): string {
         return actionNames[text.trim().toLowerCase()] ?? text;
+    }
+
+    // [título, texto] que reemplazan a los del aviso, o null si la regla no reescribe nada
+    function speak(n: var): var {
+        const rule = ruleFor(n);
+        return rule && rule.speak ? rule.speak(n) : null;
     }
 
     // Texto traducido de un campo (o el mismo si ninguna regla le toca)
