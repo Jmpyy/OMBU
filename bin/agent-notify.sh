@@ -19,9 +19,19 @@ state="${XDG_RUNTIME_DIR:-/tmp}/ombu-agent-$agent.start"
 # Antigravity espera un JSON de salida; Claude Code toma como contexto lo que se imprima
 reply() { [ "$agent" = "agy" ] && printf '{}\n'; return 0; }
 
+# Ícono del aviso: el de Claude es un archivo propio del usuario (no se sube al repo: es una
+# marca de otra empresa); si no existe, el aviso sale con el ícono genérico
 case "$agent" in
-claude) name="Claude Code" ;;
-agy) name="Antigravity" ;;
+claude)
+    name="Claude Code"
+    icon="${XDG_DATA_HOME:-$HOME/.local/share}/ombu/icons/claude.svg"
+    [ -r "$icon" ] || icon=""
+    ;;
+agy)
+    name="Antigravity"
+    icon="/usr/share/icons/Papirus/48x48/apps/antigravity.svg"
+    [ -r "$icon" ] || icon=""
+    ;;
 *) exit 0 ;;
 esac
 
@@ -64,14 +74,16 @@ stop)
             # las tuberías del hook, y con un tope de 2 minutos para no dejar procesos colgados.
             # (Aunque falle, ombu lleva a la terminal solo con tocar el aviso: ver Notifs.focusApp.)
             setsid -f bash -c '
-                choice=$(timeout 120 notify-send -a "$1" -u normal -t 8000 \
+                args=(-a "$1" -u normal -t 8000)
+                [ -n "$3" ] && args+=(-i "$3")
+                choice=$(timeout 120 notify-send "${args[@]}" \
                     -A "default=Ir a la consola" \
                     -A "focus=Ir a la consola" \
                     "$1 terminó" "Tardó $2" 2>/dev/null)
                 if [ "$choice" = "default" ] || [ "$choice" = "focus" ]; then
                     hyprctl dispatch "hl.dsp.focus({ window = \"class:kitty\" })" >/dev/null 2>&1
                 fi
-            ' _ "$name" "$took" </dev/null >/dev/null 2>&1
+            ' _ "$name" "$took" "$icon" </dev/null >/dev/null 2>&1
         fi
     fi
     ;;
