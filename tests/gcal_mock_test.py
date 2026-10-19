@@ -30,7 +30,7 @@ class H(http.server.BaseHTTPRequestHandler):
         if not self.auth_ok(): return self.send(401, {"error": {"message": "bad token"}})
         u = urllib.parse.urlparse(self.path); q = urllib.parse.parse_qs(u.query)
         if u.path == "/users/me/calendarList":
-            return self.send(200, {"items": [{"id": "primary", "summary": "Juan", "selected": True}, {"id": "clases", "summary": "UPE", "selected": True}, {"id": "oculto", "summary": "Oculto", "selected": False}, {"id": "es.ar#holiday@group.v.calendar.google.com", "summary": "Feriados", "selected": True}]})
+            return self.send(200, {"items": [{"id": "primary", "summary": "Juan", "selected": True, "defaultReminders": [{"method": "popup", "minutes": 30}]}, {"id": "clases", "summary": "UPE", "selected": True}, {"id": "oculto", "summary": "Oculto", "selected": False}, {"id": "es.ar#holiday@group.v.calendar.google.com", "summary": "Feriados", "selected": True}]})
         m = re.fullmatch(r"/calendars/([^/]+)/events", u.path)
         if m:
             LOG.append(("list", m.group(1), q))
@@ -42,6 +42,7 @@ class H(http.server.BaseHTTPRequestHandler):
                     ], "nextPageToken": "P2"})
                 return self.send(200, {"items": [
                     {"id": "c", "summary": "Viaje", "start": {"date": "2026-10-23"}, "end": {"date": "2026-10-26"}},
+                    {"id": "p", "summary": "Pago", "recurringEventId": "serie1", "start": {"dateTime": "2026-10-08T09:00:00-03:00"}, "end": {"dateTime": "2026-10-08T09:30:00-03:00"}, "reminders": {"useDefault": False, "overrides": [{"method": "popup", "minutes": 0}, {"method": "popup", "minutes": 1440}, {"method": "email", "minutes": 60}]}},
                     {"id": "d", "summary": "Mío", "start": {"dateTime": "2026-10-21T09:00:00-03:00"}, "end": {"dateTime": "2026-10-21T10:00:00-03:00"}, "extendedProperties": {"private": {"ombu": "1"}}},
                 ]})
             return self.send(200, {"items": [{"id": "e", "summary": "Programación I", "hangoutLink": "https://meet.google.com/abc-defg-hij", "start": {"dateTime": "2026-10-19T22:00:00Z"}, "end": {"dateTime": "2026-10-20T00:00:00Z"}}]})
@@ -90,10 +91,13 @@ o, err = run("list", "2026-10-01", "2026-10-31"); ev = o["events"]
 check("sin error ni advertencias", o["error"] is None and err == "", (o, err))
 titles = [(e["date"], e["time"], e["title"]) for e in ev]
 print(titles)
-check("pagina y junta calendarios (sin el oculto ni el cancelado)", sorted(set(e["title"] for e in ev)) == ["Mío", "Programación I", "Reunión", "Viaje"])
+check("pagina y junta calendarios (sin el oculto ni el cancelado)", sorted(set(e["title"] for e in ev)) == ["Mío", "Pago", "Programación I", "Reunión", "Viaje"])
 check("evento de todo el día de varios días se reparte (23, 24 y 25)", [e["date"] for e in ev if e["title"] == "Viaje"] == ["2026-10-23", "2026-10-24", "2026-10-25"])
 check("no repite los calendarios de feriados de Google", len([e for e in ev if e["title"] == "Programación I"]) == 1, titles)
 check("UTC pasa a hora local (22:00Z -> 19:00)", ("2026-10-19", "19:00", "Programación I") in titles)
+rem = {e["title"]: e["reminders"] for e in ev}
+check("avisos: propios del evento, los del calendario por defecto y 10 si no hay datos", rem.get("Pago") == [1440, 0] and rem.get("Reunión") == [30] and rem.get("Programación I") == [10], rem)
+check("marca los eventos de una serie", [e["series"] for e in ev if e["title"] == "Pago"] == ["serie1"])
 check("trae el link de Meet y la marca 'mío'", any(e["meet"].startswith("https://meet.google.com") for e in ev) and [e["mine"] for e in ev if e["title"] == "Mío"] == [True])
 # 4) renovación: el access token vence y se renueva solo
 t = json.load(open(tokpath)); t["expires_at"] = 0; json.dump(t, open(tokpath, "w"))
@@ -104,6 +108,18 @@ o, _ = run("add", "2026-10-22", "18:30", "Estudiar C", "90"); ins = [l[1] for l 
 check("crea con hora, duración y marca de ombu", o.get("ok") and ins["start"]["dateTime"].startswith("2026-10-22T18:30") and ins["end"]["dateTime"].startswith("2026-10-22T20:00") and ins["extendedProperties"]["private"]["ombu"] == "1", ins)
 o, _ = run("add", "2026-10-22", "", "Todo el día"); ins = [l[1] for l in LOG if l[0] == "insert"][-1]
 check("crea de todo el día", ins["start"] == {"date": "2026-10-22"} and ins["end"] == {"date": "2026-10-23"}, ins)
+# 5b) repetición mensual con avisos, nota y etiqueta
+o, _ = run("add", "2026-10-31", "09:00", "Pagar Gemini", "30", "--repeat", "monthly-last", "--remind", "1440,0", "--note", "5 USD", "--tag", "sub:gemini")
+ins = [l[1] for l in LOG if l[0] == "insert"][-1]
+check("repite el último día de cada mes con zona horaria", ins["recurrence"] == ["RRULE:FREQ=MONTHLY;BYMONTHDAY=-1"] and ins["start"]["timeZone"] and ins["start"]["dateTime"].startswith("2026-10-31T09:00"), ins)
+check("avisos, nota y etiqueta viajan", ins["reminders"] == {"useDefault": False, "overrides": [{"method": "popup", "minutes": 1440}, {"method": "popup", "minutes": 0}]} and ins["description"] == "5 USD" and ins["extendedProperties"]["private"] == {"ombu": "1", "tag": "sub:gemini"}, ins)
+o, _ = run("add", "2026-11-06", "09:00", "Avisar Netflix", "30", "--repeat", "monthly")
+ins = [l[1] for l in LOG if l[0] == "insert"][-1]
+check("mensual el mismo día", ins["recurrence"] == ["RRULE:FREQ=MONTHLY"] and ins["start"]["dateTime"].startswith("2026-11-06T09:00"), ins)
+o, _ = run("add", "2026-11-30", "", "Fin de mes", "--repeat", "monthly-last")
+ins = [l[1] for l in LOG if l[0] == "insert"][-1]
+check("último día en un evento de todo el día", ins["start"] == {"date": "2026-11-30"} and ins["recurrence"] == ["RRULE:FREQ=MONTHLY;BYMONTHDAY=-1"], ins)
+o, _ = run("add", "2026-11-30", "", "x", "--repeat", "semanal"); check("rechaza una repetición desconocida", "error" in o, o)
 # 6) borrar
 o, _ = run("delete", "primary", "d"); check("borra uno creado por ombu", o.get("ok") is True and any(l[0] == "delete" for l in LOG), o)
 o, _ = run("delete", "primary", "a"); check("se niega a borrar uno ajeno", "error" in o and not any(l[0] == "delete" and l[1].endswith("/a") for l in LOG), o)

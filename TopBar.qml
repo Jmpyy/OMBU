@@ -612,9 +612,23 @@ PanelWindow {
         onOpenDevices: win.togglePopup("devices")
         onOpenFocus: win.togglePopup("focus")
         onOpenWalls: win.togglePopup("walls")
+        onOpenPayments: win.togglePopup("payments")
         onDismissed: {
             win.dismissedControl = Date.now();
             if (controlButton.isOpen)
+                Ui.popup = "";
+        }
+    }
+
+    PaymentsMenu {
+        readonly property bool isOpen: Ui.popup === win.popupKey("payments")
+
+        barWindow: win
+        anchorItem: controlButton
+        open: isOpen
+
+        onDismissed: {
+            if (isOpen)
                 Ui.popup = "";
         }
     }

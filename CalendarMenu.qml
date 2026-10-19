@@ -79,7 +79,7 @@ DropPopup {
     }
 
     function submitEvent(): void {
-        Agenda.add(selected, timeInput.text, titleInput.text);
+        Agenda.add(selected, timeInput.text, titleInput.text, "", [0], undefined);
         titleInput.text = "";
         timeInput.text = "";
     }

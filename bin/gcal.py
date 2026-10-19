@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Google Calendar para ombu, por la API oficial (OAuth de aplicación de escritorio).
 
-Uso: gcal.py status | auth | list DESDE HASTA | add DIA HORA TITULO [MINUTOS] | delete CAL ID | disconnect
+Uso: gcal.py status | auth | list DESDE HASTA | add DIA HORA TITULO [MINUTOS] [opciones] | delete CAL ID | disconnect
   status      ¿hay credenciales y sesión? -> {"client": bool, "connected": bool}
   auth        abre el navegador para dar permiso y guarda el token
   list        eventos entre dos fechas (YYYY-MM-DD) de todos tus calendarios, con las repeticiones
               ya expandidas por Google -> {"events": [...], "error": null | "texto"}
-  add         crea un evento en el calendario principal (HORA vacía = todo el día)
+  add         crea un evento en el calendario principal (HORA vacía = todo el día). Opciones:
+                --repeat monthly|monthly-last|yearly   se repite (monthly-last = el último día de cada mes)
+                --remind 1440,0                        avisos en minutos antes (por defecto los del calendario)
+                --note TEXTO                           descripción del evento
+                --tag ETIQUETA                         marca privada para reconocerlo después
   delete      borra un evento que creó ombu (los ajenos no se tocan)
   disconnect  borra el token y lo revoca en Google
 
@@ -36,6 +40,17 @@ DATA = os.path.join(os.environ.get("HOME", ""), ".local", "share", "ombu")
 CLIENT = os.path.join(DATA, "google-client.json")
 TOKEN = os.path.join(DATA, "google-token.json")
 LOCAL_TZ = datetime.now().astimezone().tzinfo
+
+
+def tz_name():
+    """Nombre de la zona horaria del sistema (Google la pide para los eventos que se repiten)"""
+    try:
+        target = os.path.realpath("/etc/localtime")
+        if "zoneinfo/" in target:
+            return target.split("zoneinfo/", 1)[1]
+    except OSError:
+        pass
+    return os.environ.get("TZ", "UTC")
 
 
 class Fail(Exception):
@@ -228,7 +243,15 @@ def normalize(ev, cal, since, until_day):
             if ep.get("entryPointType") == "video":
                 meet = ep.get("uri", "")
                 break
+    rem = ev.get("reminders") or {}
+    if rem.get("useDefault", True):
+        pool = cal.get("defaultReminders") or []
+    else:
+        pool = rem.get("overrides") or []
+    reminders = sorted({int(r["minutes"]) for r in pool if r.get("method", "popup") == "popup" and "minutes" in r}, reverse=True)
     base = {"title": title, "calendar": cal.get("summary", ""), "calendarId": cal["id"], "id": ev.get("id", ""),
+            "reminders": reminders if (reminders or not rem.get("useDefault", True)) else [10],
+            "series": ev.get("recurringEventId", ""),
             "mine": ((ev.get("extendedProperties") or {}).get("private") or {}).get("ombu") == "1", "meet": meet}
     s, e = ev.get("start", {}), ev.get("end", {})
     res = []
@@ -281,17 +304,51 @@ def cmd_list(since, until_day):
     out({"events": events, "error": None})
 
 
-def cmd_add(day, hhmm, title, minutes=60):
+def last_day(d):
+    nxt = date(d.year + (d.month == 12), d.month % 12 + 1, 1)
+    return nxt - timedelta(days=1)
+
+
+def cmd_add(day, hhmm, title, *rest):
+    minutes, opts, i = 60, {}, 0
+    rest = list(rest)
+    if rest and not rest[0].startswith("--"):
+        minutes = int(rest.pop(0))
+    while i < len(rest):
+        if rest[i].startswith("--") and i + 1 < len(rest):
+            opts[rest[i][2:]] = rest[i + 1]
+            i += 2
+        else:
+            raise Fail("opción inválida: %s" % rest[i])
     d = date.fromisoformat(day)
-    body = {"summary": title, "reminders": {"useDefault": True}, "extendedProperties": {"private": {"ombu": "1"}}}
+    repeat = opts.get("repeat")
+    rules = {"monthly": "RRULE:FREQ=MONTHLY", "monthly-last": "RRULE:FREQ=MONTHLY;BYMONTHDAY=-1", "yearly": "RRULE:FREQ=YEARLY"}
+    if repeat and repeat not in rules:
+        raise Fail("repetición inválida: %s" % repeat)
+    if repeat == "monthly-last":
+        d = last_day(d)
+    private = {"ombu": "1"}
+    if opts.get("tag"):
+        private["tag"] = opts["tag"]
+    body = {"summary": title, "extendedProperties": {"private": private}}
+    if opts.get("note"):
+        body["description"] = opts["note"]
+    if opts.get("remind"):
+        body["reminders"] = {"useDefault": False, "overrides": [{"method": "popup", "minutes": int(m)} for m in opts["remind"].split(",") if m != ""]}
+    else:
+        body["reminders"] = {"useDefault": True}
     if hhmm:
         h, m = hhmm.split(":")
         start = datetime(d.year, d.month, d.day, int(h), int(m), tzinfo=LOCAL_TZ)
         body["start"] = {"dateTime": start.isoformat()}
         body["end"] = {"dateTime": (start + timedelta(minutes=int(minutes))).isoformat()}
+        if repeat:
+            body["start"]["timeZone"] = body["end"]["timeZone"] = tz_name()
     else:
         body["start"] = {"date": d.isoformat()}
         body["end"] = {"date": (d + timedelta(days=1)).isoformat()}
+    if repeat:
+        body["recurrence"] = [rules[repeat]]
     created = api("POST", "/calendars/primary/events", body=body)
     out({"ok": True, "id": created.get("id", "")})
 
@@ -330,7 +387,7 @@ def main():
         elif a[0] == "list" and len(a) >= 3:
             cmd_list(date.fromisoformat(a[1]), date.fromisoformat(a[2]))
         elif a[0] == "add" and len(a) >= 4:
-            cmd_add(*a[1:5])
+            cmd_add(*a[1:])
         elif a[0] == "delete" and len(a) >= 3:
             cmd_delete(a[1], a[2])
         elif a[0] == "disconnect":

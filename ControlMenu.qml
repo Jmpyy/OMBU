@@ -12,6 +12,7 @@ DropPopup {
     signal openDevices
     signal openFocus
     signal openWalls
+    signal openPayments
 
     // Botón: el ícono va en un círculo que se pinta de violeta cuando está activo
     component Tile: Rectangle {
@@ -170,6 +171,16 @@ DropPopup {
                 title: "Dispositivos"
                 subtitle: Disks.removable.length > 0 ? Disks.removable.length + (Disks.removable.length === 1 ? " conectado" : " conectados") : "Discos"
                 onClicked: root.openDevices()
+            }
+
+            Tile {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                icon: "payments"
+                title: "Pagos"
+                subtitle: Subs.upcoming.length > 0 ? Subs.upcoming[0].sub.name + " · " + (Subs.upcoming[0].days <= 0 ? "hoy" : (Subs.upcoming[0].days === 1 ? "mañana" : Subs.upcoming[0].days + " d")) : "Sin suscripciones"
+                on: Subs.upcoming.length > 0 && Subs.upcoming[0].days <= 1
+                onClicked: root.openPayments()
             }
 
             Tile {

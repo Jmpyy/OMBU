@@ -17,6 +17,7 @@ ShellRoot {
         Idle.start();
         // Nombrarlo arranca la agenda: feriados, Google Calendar y los recordatorios con hora
         Agenda.check();
+        Subs.list;
     }
 
     // Historial del portapapeles (lo usa Super+V, ver bin/clip.sh)
@@ -113,10 +114,28 @@ ShellRoot {
         target: "keys"
     }
 
+    // qs -c ombu ipc call subs add Netflix 11850 ARS 6 mama "Mercado Pago"  -> sumar un pago mensual
+    //   (moneda ARS o USD; día 1-31, o -1 para el último del mes; quien paga: yo o mama)
+    IpcHandler {
+        function add(name: string, amount: string, currency: string, day: string, payer: string, method: string): string {
+            return Subs.add(name, parseFloat(amount), currency, parseInt(day), payer, method);
+        }
+
+        function remove(name: string): string {
+            return Subs.remove(name);
+        }
+
+        function list(): string {
+            return Subs.upcoming.map(u => u.sub.name + ": " + Subs.money(u.sub.amount, u.sub.currency) + ", " + Subs.whenText(u.days).toLowerCase() + " (" + (u.sub.payer === "mama" ? "paga mamá" : "pagás vos") + ")").join("\n");
+        }
+
+        target: "subs"
+    }
+
     // qs -c ombu ipc call agenda add 2026-10-20 19:00 "Examen"  -> anotar un evento
     IpcHandler {
-        function add(day: string, time: string, title: string): void {
-            Agenda.add(day, time, title);
+        function add(day: string, time: string, title: string, remind: string): void {
+            Agenda.add(day, time, title, "", remind === "" ? [0] : remind.split(",").map(x => parseInt(x)), undefined);
         }
 
         function remove(title: string): void {
@@ -130,6 +149,11 @@ ShellRoot {
 
         function reminders(): void {
             Agenda.check();
+        }
+
+        // ipc call agenda destination google|local  -> adónde van los eventos nuevos
+        function destination(where: string): void {
+            Agenda.setCreateInGoogle(where === "google");
         }
 
         target: "agenda"
@@ -180,6 +204,11 @@ ShellRoot {
             if (!item)
                 return;
             const key = "tray-" + item.id + "@" + (Hyprland.focusedMonitor?.name ?? "");
+            Ui.popup = Ui.popup === key ? "" : key;
+        }
+
+        function payments(): void {
+            const key = "payments@" + (Hyprland.focusedMonitor?.name ?? "");
             Ui.popup = Ui.popup === key ? "" : key;
         }
 

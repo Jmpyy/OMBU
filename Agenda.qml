@@ -54,8 +54,20 @@ Singleton {
         };
         for (const d in holidays)
             mark(d, "holiday");
-        for (const e of local)
-            mark(e.date, "local");
+        for (const e of local) {
+            if (!e.repeat) {
+                mark(e.date, "local");
+                continue;
+            }
+            // Repetidos: se marcan los próximos 14 meses
+            const start = parseDay(e.date);
+            for (let i = 0; i < 430; i++) {
+                const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i, 12);
+                const day = ymd(d);
+                if (localMatches(e, day))
+                    mark(day, "local");
+            }
+        }
         for (const e of google)
             mark(e.date, "google");
         for (const d in Focus.history) {
@@ -63,6 +75,24 @@ Singleton {
                 mark(d, "study");
         }
         return map;
+    }
+
+    // ¿Un evento propio cae en este día? Los que se repiten: cada mes el mismo día, el último día de
+    // cada mes o cada año
+    function localMatches(e: var, day: string): bool {
+        if (!e.repeat)
+            return e.date === day;
+        if (day < e.date)
+            return false;
+        const d = parseDay(day);
+        const b = parseDay(e.date);
+        if (e.repeat === "monthly")
+            return d.getDate() === b.getDate();
+        if (e.repeat === "monthly-last")
+            return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() === d.getDate();
+        if (e.repeat === "yearly")
+            return d.getDate() === b.getDate() && d.getMonth() === b.getMonth();
+        return false;
     }
 
     function ymd(d: date): string {
@@ -91,19 +121,23 @@ Singleton {
                     calendarId: e.calendarId ?? "",
                     mine: e.mine ?? false,
                     meet: e.meet ?? "",
+                    series: e.series ?? "",
+                    reminders: e.reminders ?? [10],
                     time: e.time,
                     end: e.end,
                     title: e.title
                 });
         }
         for (const e of local) {
-            if (e.date === day)
+            if (localMatches(e, day))
                 (e.time ? timed : out).push({
                     kind: "local",
                     id: e.id,
                     time: e.time,
                     title: e.title,
-                    done: e.done
+                    done: e.repeat ? false : e.done,
+                    repeat: e.repeat ?? "",
+                    reminders: e.reminders ?? [0]
                 });
         }
         timed.sort((a, b) => a.time < b.time ? -1 : (a.time > b.time ? 1 : 0));
@@ -140,7 +174,8 @@ Singleton {
         return Focus.history[day] ?? 0;
     }
 
-    function add(day: string, time: string, title: string): void {
+    // extra (opcional): {note, tag, done(respuesta)}; tag marca el evento para reconocerlo después
+    function add(day: string, time: string, title: string, repeat: string, reminders: var, extra: var): void {
         const t = title.trim();
         if (t === "")
             return;
@@ -149,23 +184,43 @@ Singleton {
         if (m && parseInt(m[1]) < 24 && parseInt(m[2]) < 60)
             hhmm = m[1].padStart(2, "0") + ":" + m[2];
         if (apiConnected && createInGoogle) {
-            gcal(["add", day, hhmm, t], r => {
+            const args = ["add", day, hhmm, t, "30"];
+            if (repeat)
+                args.push("--repeat", repeat);
+            if (reminders && !(reminders.length === 1 && reminders[0] === 0))
+                args.push("--remind", reminders.join(","));
+            if (extra?.note)
+                args.push("--note", extra.note);
+            if (extra?.tag)
+                args.push("--tag", extra.tag);
+            gcal(args, r => {
                 if (r.error)
                     googleError = r.error;
+                if (extra?.done)
+                    extra.done(r);
                 refreshGoogle(true);
             });
             return;
         }
+        const localId = Date.now() + "-" + Math.floor(Math.random() * 1000);
         local = local.concat([
             {
-                id: Date.now() + "-" + Math.floor(Math.random() * 1000),
+                id: localId,
+                tag: extra?.tag ?? "",
                 date: day,
                 time: hhmm,
                 title: t,
-                done: false
+                done: false,
+                repeat: repeat ?? "",
+                reminders: reminders ?? [0]
             }
         ]);
         saveLocal();
+        if (extra?.done)
+            extra.done({
+                id: localId,
+                local: true
+            });
     }
 
     function toggle(id: string): void {
@@ -292,23 +347,32 @@ Singleton {
         fetcher.running = true;
     }
 
-    // Recordatorios: los propios suenan a la hora; los de Google, 10 minutos antes
+    // Recordatorios: cada evento con hora trae sus avisos (minutos antes). Los propios suenan a la hora,
+    // los de Google usan los suyos (10 minutos por defecto). Se miran hoy y los dos días que siguen,
+    // porque un aviso puede ser "el día antes".
     function check(): void {
         now = new Date();
-        const day = ymd(now);
-        const minutes = now.getHours() * 60 + now.getMinutes();
-        for (const it of itemsFor(day)) {
-            if (!it.time || it.done || it.kind === "holiday")
-                continue;
-            const key = day + "|" + it.kind + "|" + it.time + "|" + it.title;
-            if (fired[key])
-                continue;
-            const at = parseInt(it.time.slice(0, 2)) * 60 + parseInt(it.time.slice(3));
-            const lead = it.kind === "google" ? 10 : 0;
-            if (minutes >= at - lead && minutes <= at + 5) {
-                fired[key] = true;
-                const left = at - minutes;
-                Quickshell.execDetached(["notify-send", "-a", "Agenda", "-i", "appointment-soon", it.title, left > 0 ? "Empieza en " + left + " min (" + it.time + ")" : "Es ahora (" + it.time + ")"]);
+        const stamp = now.getTime();
+        for (let off = 0; off < 3; off++) {
+            const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + off, 12);
+            const day = ymd(date);
+            for (const it of itemsFor(day)) {
+                if (!it.time || it.done || it.kind === "holiday")
+                    continue;
+                const at = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(it.time.slice(0, 2)), parseInt(it.time.slice(3)));
+                for (const m of (it.reminders ?? (it.kind === "google" ? [10] : [0]))) {
+                    const fireAt = at.getTime() - m * 60000;
+                    const key = day + "|" + it.kind + "|" + it.time + "|" + it.title + "|" + m;
+                    if (fired[key] || stamp < fireAt || stamp > fireAt + 5 * 60000)
+                        continue;
+                    fired[key] = true;
+                    let body = "Es ahora (" + it.time + ")";
+                    if (m >= 1440)
+                        body = (m < 2880 ? "Mañana" : "En " + Math.round(m / 1440) + " días") + " a las " + it.time;
+                    else if (m > 0)
+                        body = "Empieza en " + m + " min (" + it.time + ")";
+                    Quickshell.execDetached(["notify-send", "-a", "Agenda", "-i", "appointment-soon", it.title, body]);
+                }
             }
         }
     }
