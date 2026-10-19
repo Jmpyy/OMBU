@@ -3,12 +3,14 @@
 mientras el sistema arranca y, al terminar, sube por el hilo. Usa los colores del tema de ombu.
 
 Uso: make-plymouth.py CARPETA [--accent #e23b32] [--cream #efe8dc] [--shadow #8c231e] [--ink #0a0708]
-Escribe CARPETA/ombu-spidey.plymouth y los cuadros (throbber-NN.png en bucle, animation-NN.png al terminar).
+Escribe CARPETA/ombu-spidey.plymouth, los cuadros (throbber-NN.png en bucle, animation-NN.png al terminar) y las
+imágenes obligatorias del diálogo de contraseña (copiadas del tema spinner del sistema).
 Necesita ImageMagick (`magick`) y la fuente Bangers (~/.local/share/fonts/ombu) para el nombre; sin ella
 se usa la fuente por defecto. No toca el sistema: instalarlo es cosa de install-plymouth.sh."""
 import argparse
 import math
 import os
+import shutil
 import subprocess
 import sys
 
@@ -18,6 +20,20 @@ FADE = 220                # el hilo aparece en degradé desde arriba: sin borde 
 S = 2
 LOOP, END = 24, 18
 FONT = os.path.expanduser("~/.local/share/fonts/ombu/Bangers-Regular.ttf")
+
+# El tema `two-step` de Plymouth EXIGE estas imágenes del diálogo de contraseña aunque no se use: si falta una,
+# el tema entero no carga y Plymouth cae al tema por defecto (logo de la placa + nombre del sistema). Se toman
+# de los temas que trae el sistema.
+REQUIRED = ["bullet.png", "entry.png", "lock.png", "keyboard.png", "capslock.png", "keymap-render.png"]
+SYSTEM_THEMES = ["/usr/share/plymouth/themes/spinner", "/usr/share/plymouth/themes/cachyos-bootanimation"]
+
+
+def copy_required(out):
+    for name in REQUIRED:
+        src = next((os.path.join(d, name) for d in SYSTEM_THEMES if os.path.isfile(os.path.join(d, name))), None)
+        if src is None:
+            sys.exit("Falta %s en los temas del sistema (%s): el tema no cargaría." % (name, ", ".join(SYSTEM_THEMES)))
+        shutil.copy(src, os.path.join(out, name))
 
 # Patas de la araña del logo de la barra (caja de 64x64), lado izquierdo; la derecha es el espejo
 LEGS = [[(28, 22), (14, 8), (6, 14)], [(27, 27), (8, 22), (3, 32)], [(27, 34), (8, 38), (4, 50)], [(28, 42), (14, 54), (10, 62)]]
@@ -94,6 +110,7 @@ def main():
         u = i / (END - 1)
         # sube por el hilo cada vez más rápido y se desvanece
         frame(os.path.join(a.out, "animation-%02d.png" % i), CY - (CY + 120) * u * u, u * 8, 0, 1 - u * u, a, label=True)
+    copy_required(a.out)
     with open(os.path.join(a.out, "ombu-spidey.plymouth"), "w", encoding="utf-8") as f:
         f.write(PLYMOUTH)
     print("tema en", a.out)

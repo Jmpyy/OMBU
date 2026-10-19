@@ -7,7 +7,9 @@ SHARE="${OMBU_SHARE:-/usr/share/ombu-greeter}"
 RT="${OMBU_GREETER_RT:-/tmp/ombu-greeter}"
 
 rm -f "$RT/ready" "$RT/done"
-quickshell -p "$SHARE" &
+# El registro de la interfaz queda en $RT/quickshell.log (legible, en /tmp/ombu-greeter): sin esto no queda
+# ningún rastro de por qué el greeter se vio de cierta manera
+quickshell -p "$SHARE" >"$RT/quickshell.log" 2>&1 &
 QS=$!
 
 i=0

@@ -48,6 +48,10 @@ loop=$(ls "$STAGE/$THEME"/throbber-*.png 2>/dev/null | wc -l)
 end=$(ls "$STAGE/$THEME"/animation-*.png 2>/dev/null | wc -l)
 [ "$loop" -ge 10 ] && [ "$end" -ge 10 ] || { echo "Faltan cuadros ($loop de bucle, $end finales): no se tocó nada." >&2; exit 1; }
 grep -q "^ModuleName=two-step" "$STAGE/$THEME/$THEME.plymouth"
+# Plymouth exige estas imágenes: sin una sola, el tema no carga y se usa el de emergencia
+for f in bullet entry lock keyboard capslock keymap-render; do
+    [ -s "$STAGE/$THEME/$f.png" ] || { echo "Falta $f.png en el tema: no cargaría. No se tocó nada." >&2; exit 1; }
+done
 echo "Tema listo: $loop cuadros de bucle y $end finales."
 if [ "$TEST" = "1" ]; then
     echo "Modo de prueba: no se instaló nada. Tema generado en $STAGE/$THEME (se borra al terminar)."
