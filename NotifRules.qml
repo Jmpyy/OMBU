@@ -57,6 +57,40 @@ Singleton {
         return rule !== null && !!rule.hideWhenVisible && isVisible(rule.hideWhenVisible);
     }
 
+    // Nombres de botones que las apps mandan en inglés (Discord manda «View»). Se comparan sin
+    // distinguir mayúsculas y valen para todas las apps; lo que no está en la lista queda igual.
+    readonly property var actionNames: ({
+            "view": "Ver",
+            "view message": "Ver mensaje",
+            "reply": "Responder",
+            "open": "Abrir",
+            "open in browser": "Abrir en el navegador",
+            "show": "Mostrar",
+            "dismiss": "Descartar",
+            "close": "Cerrar",
+            "mark as read": "Marcar como leído",
+            "snooze": "Posponer",
+            "delete": "Borrar",
+            "archive": "Archivar",
+            "mute": "Silenciar",
+            "ignore": "Ignorar",
+            "accept": "Aceptar",
+            "decline": "Rechazar",
+            "answer": "Contestar",
+            "join": "Unirse",
+            "later": "Más tarde",
+            "cancel": "Cancelar",
+            "copy": "Copiar",
+            "undo": "Deshacer",
+            "retry": "Reintentar",
+            "details": "Detalles",
+            "settings": "Ajustes"
+        })
+
+    function translateAction(text: string): string {
+        return actionNames[text.trim().toLowerCase()] ?? text;
+    }
+
     // Texto traducido de un campo (o el mismo si ninguna regla le toca)
     function translate(n: var, text: string): string {
         const rule = ruleFor(n);

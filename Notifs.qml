@@ -71,7 +71,7 @@ Singleton {
             expireSeconds = n.expireTimeout;
             actionList = Array.from(n.actions).map(a => ({
                         identifier: a.identifier,
-                        text: a.text
+                        text: NotifRules.translateAction(a.text)
                     }));
         }
 
