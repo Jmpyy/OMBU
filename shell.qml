@@ -140,6 +140,10 @@ ShellRoot {
             Media.previous();
         }
 
+        function cycle(): void {
+            Media.cycle();
+        }
+
         function status(): string {
             return Media.describe();
         }

@@ -13,20 +13,44 @@ Singleton {
 
     readonly property var all: Array.from(Mpris.players.values)
 
-    // El último que se puso a sonar. Antes se elegía «el que suena o, si ninguno, el primero»: al
-    // pausar Sung la tarjeta saltaba a otro reproductor (Zen con YouTube) y los botones dejaban de
-    // controlarlo; y con dos sonando a la vez controlaba el que no era.
-    property var lastActive: null
+    // El reproductor elegido, que se mantiene aunque se pause. Reglas:
+    //  - el que acaba de ponerse a sonar pasa a ser el elegido;
+    //  - si el elegido se pausa y otro sigue sonando, pasa a ese;
+    //  - si ninguno suena, se queda el último que se pausó, así «play» lo reanuda a él.
+    // (Antes se elegía «el que suena o, si ninguno, el primero»: al pausar Sung saltaba a Zen. Y con
+    // «el último que arrancó», al pausar dos reproductores «play» siempre volvía al mismo.)
+    // Con cycle() se elige a mano y la elección vale hasta que alguno se ponga a sonar.
+    property var selected: null
+    property bool pinned: false
 
-    // Si suena alguno, el que suena (el último que arrancó si suenan varios); si ninguno suena, el
-    // último que sonó, aunque esté en pausa, para poder reanudarlo
-    readonly property var player: {
-        const sounding = all.filter(p => p.isPlaying);
-        if (sounding.length > 0)
-            return sounding.includes(lastActive) ? lastActive : sounding[0];
-        return all.includes(lastActive) ? lastActive : (all[0] ?? null);
-    }
+    readonly property var player: all.includes(selected) ? selected : (all.find(p => p.isPlaying) ?? all[0] ?? null)
     readonly property bool playing: player?.isPlaying ?? false
+    readonly property int count: all.length
+    readonly property int index: Math.max(0, all.indexOf(player))
+
+    // Se llama cada vez que un reproductor empieza o deja de sonar
+    function reselect(started: var): void {
+        if (started) {
+            selected = started;
+            pinned = false;
+            return;
+        }
+        if (pinned && all.includes(selected))
+            return;
+        const sounding = all.filter(p => p.isPlaying);
+        if (!all.includes(selected))
+            selected = sounding[0] ?? all[0] ?? null;
+        else if (!selected.isPlaying && sounding.length > 0)
+            selected = sounding[0];
+    }
+
+    // Pasa al siguiente reproductor (para controlar el otro cuando hay más de uno)
+    function cycle(): void {
+        if (all.length < 2)
+            return;
+        selected = all[(index + 1) % all.length];
+        pinned = true;
+    }
 
     Instantiator {
         model: Mpris.players
@@ -35,10 +59,9 @@ Singleton {
             required property var modelData
             readonly property bool sounding: modelData.isPlaying
 
-            onSoundingChanged: if (sounding)
-                root.lastActive = modelData
-            Component.onCompleted: if (sounding && root.lastActive === null)
-                root.lastActive = modelData
+            onSoundingChanged: root.reselect(sounding ? modelData : null)
+            Component.onCompleted: if (sounding && root.selected === null)
+                root.selected = modelData
         }
     }
 
@@ -85,6 +108,6 @@ Singleton {
     function describe(): string {
         if (!player)
             return "sin reproductor (" + all.length + " en total)";
-        return player.identity + " [" + busName() + "]: reproduciendo=" + player.isPlaying + " canControl=" + player.canControl + " canPlay=" + player.canPlay + " canPause=" + player.canPause + " canTogglePlaying=" + player.canTogglePlaying + " canGoNext=" + player.canGoNext;
+        return (index + 1) + "/" + count + " " + player.identity + " [" + busName() + "]: reproduciendo=" + player.isPlaying + " canControl=" + player.canControl + " canPlay=" + player.canPlay + " canPause=" + player.canPause + " canTogglePlaying=" + player.canTogglePlaying + " canGoNext=" + player.canGoNext;
     }
 }

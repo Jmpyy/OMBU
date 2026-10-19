@@ -83,10 +83,39 @@ Rectangle {
 
             Text {
                 width: parent.width
-                text: root.player?.trackArtist || root.player?.identity || ""
+                // Con más de un reproductor se aclara de cuál es
+                text: (root.player?.trackArtist || "") + (Media.count > 1 ? ((root.player?.trackArtist ? " · " : "") + (root.player?.identity ?? "")) : (root.player?.trackArtist ? "" : (root.player?.identity ?? "")))
                 elide: Text.ElideRight
                 color: Theme.textDim
                 font.pixelSize: 11
+            }
+        }
+
+        // Cambiar de reproductor (solo aparece si hay más de uno)
+        Rectangle {
+            visible: Media.count > 1
+            Layout.preferredWidth: switchText.implicitWidth + 14
+            Layout.preferredHeight: 22
+            radius: 7
+            color: switchHover.hovered ? Theme.hover : Theme.track
+
+            Text {
+                id: switchText
+
+                anchors.centerIn: parent
+                text: (Media.index + 1) + "/" + Media.count
+                color: Theme.textDim
+                font.pixelSize: 11
+                font.weight: Font.DemiBold
+            }
+
+            HoverHandler {
+                id: switchHover
+
+                cursorShape: Qt.PointingHandCursor
+            }
+            TapHandler {
+                onTapped: Media.cycle()
             }
         }
 
