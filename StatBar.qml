@@ -11,6 +11,8 @@ ColumnLayout {
     property string detail
     // 0 a 1; negativo = sin barra
     property real fraction: -1
+    // Color de la barra cuando el uso es normal
+    property color tint: Theme.accent
 
     spacing: 4
 
@@ -46,15 +48,17 @@ ColumnLayout {
     Rectangle {
         visible: root.fraction >= 0
         Layout.fillWidth: true
-        Layout.preferredHeight: 6
-        radius: 3
+        Layout.preferredHeight: Theme.comic ? 9 : 6
+        radius: Theme.comic ? 3 : 3
         color: Theme.track
+        border.width: Theme.comic ? 1.5 : 0
+        border.color: Theme.ink
 
         Rectangle {
             width: parent.width * Math.max(0, Math.min(1, root.fraction))
             height: parent.height
             radius: 3
-            color: root.fraction > 0.9 ? Theme.danger : (root.fraction > 0.75 ? Theme.warn : Theme.accent)
+            color: root.fraction > 0.9 ? Theme.danger : (root.fraction > 0.75 ? Theme.warn : root.tint)
 
             Behavior on width {
                 NumberAnimation {

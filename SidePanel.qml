@@ -254,32 +254,24 @@ PanelWindow {
                             }
                         }
 
+                        readonly property var todays: Agenda.itemsFor(Agenda.ymd(Chrono.date))
+                        readonly property var next: Agenda.upcoming(4)
+
                         // Hoy
-                        ColumnLayout {
-                            readonly property var todays: Agenda.itemsFor(Agenda.ymd(Chrono.date))
-                            readonly property var next: Agenda.upcoming(4)
-
+                        ComicCard {
                             Layout.fillWidth: true
-                            spacing: 6
+                            title: "Hoy"
+                            tint: Theme.accent
 
                             Text {
-                                text: "HOY"
-                                color: Theme.comic ? Theme.accent : Theme.textDim
-                                font.family: Theme.displayFont || Qt.application.font.family
-                                font.pixelSize: Theme.comic ? 15 : 11
-                                font.weight: Theme.comic ? Font.Normal : Font.DemiBold
-                                font.letterSpacing: Theme.comic ? 1.5 : 0.8
-                            }
-
-                            Text {
-                                visible: parent.todays.length === 0
+                                visible: summary.todays.length === 0
                                 text: Agenda.googleLoading ? "Cargando agenda…" : "Nada agendado para hoy"
                                 color: Theme.textDim
                                 font.pixelSize: 13
                             }
 
                             Repeater {
-                                model: parent.todays.slice(0, 5)
+                                model: summary.todays.slice(0, 5)
 
                                 RowLayout {
                                     required property var modelData
@@ -310,20 +302,17 @@ PanelWindow {
                                     }
                                 }
                             }
+                        }
 
-                            Text {
-                                visible: parent.next.length > 0
-                                Layout.topMargin: 6
-                                text: "PRÓXIMOS"
-                                color: Theme.comic ? Theme.accent : Theme.textDim
-                                font.family: Theme.displayFont || Qt.application.font.family
-                                font.pixelSize: Theme.comic ? 15 : 11
-                                font.weight: Theme.comic ? Font.Normal : Font.DemiBold
-                                font.letterSpacing: Theme.comic ? 1.5 : 0.8
-                            }
+                        // Lo que viene
+                        ComicCard {
+                            visible: summary.next.length > 0
+                            Layout.fillWidth: true
+                            title: "Próximos"
+                            tint: Themes.active.border2 ?? Theme.accent
 
                             Repeater {
-                                model: parent.next
+                                model: summary.next
 
                                 RowLayout {
                                     required property var modelData
@@ -351,19 +340,11 @@ PanelWindow {
                         }
 
                         // Pagos que se vienen
-                        ColumnLayout {
+                        ComicCard {
                             visible: Subs.upcoming.length > 0
                             Layout.fillWidth: true
-                            spacing: 6
-
-                            Text {
-                                text: "PAGOS"
-                                color: Theme.comic ? Theme.accent : Theme.textDim
-                                font.family: Theme.displayFont || Qt.application.font.family
-                                font.pixelSize: Theme.comic ? 15 : 11
-                                font.weight: Theme.comic ? Font.Normal : Font.DemiBold
-                                font.letterSpacing: Theme.comic ? 1.5 : 0.8
-                            }
+                            title: "Pagos"
+                            tint: Theme.warn
 
                             Repeater {
                                 model: Subs.upcoming.slice(0, 3)
@@ -399,57 +380,49 @@ PanelWindow {
                         }
 
                         // Estudio
-                        RowLayout {
+                        ComicCard {
                             Layout.fillWidth: true
-                            spacing: 8
+                            title: "Estudio"
+                            tint: "#6f9bf0"
 
-                            Rectangle {
+                            RowLayout {
                                 Layout.fillWidth: true
-                                Layout.preferredWidth: 1
-                                implicitHeight: 52
-                                radius: Theme.controlRadius
-                                color: Theme.surface
+                                spacing: 8
 
                                 Column {
-                                    anchors.centerIn: parent
+                                    Layout.fillWidth: true
+                                    Layout.preferredWidth: 1
 
                                     Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
                                         text: Focus.minutesText(Focus.studyToday)
                                         color: Theme.text
-                                        font.pixelSize: 15
-                                        font.weight: Font.DemiBold
+                                        font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
+                                        font.pixelSize: Theme.comic ? 24 : 16
+                                        font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                        font.letterSpacing: Theme.comic ? 1 : 0
                                     }
 
                                     Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
                                         text: "estudiado hoy"
                                         color: Theme.textDim
                                         font.pixelSize: 11
                                     }
                                 }
-                            }
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                Layout.preferredWidth: 1
-                                implicitHeight: 52
-                                radius: Theme.controlRadius
-                                color: Theme.surface
 
                                 Column {
-                                    anchors.centerIn: parent
+                                    Layout.fillWidth: true
+                                    Layout.preferredWidth: 1
 
                                     Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
                                         text: String(Focus.streak)
                                         color: Theme.text
-                                        font.pixelSize: 15
-                                        font.weight: Font.DemiBold
+                                        font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
+                                        font.pixelSize: Theme.comic ? 24 : 16
+                                        font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                        font.letterSpacing: Theme.comic ? 1 : 0
                                     }
 
                                     Text {
-                                        anchors.horizontalCenter: parent.horizontalCenter
                                         text: Focus.streak === 1 ? "día de racha" : "días de racha"
                                         color: Theme.textDim
                                         font.pixelSize: 11
@@ -615,28 +588,11 @@ PanelWindow {
                                         spacing: 8
 
                                         // Sticker de la categoría
-                                        Rectangle {
+                                        Sticker {
                                             anchors.verticalCenter: parent.verticalCenter
                                             visible: (row.modelData.category ?? "") !== ""
-                                            width: tag.implicitWidth + 12
-                                            height: tag.implicitHeight + 4
-                                            radius: Theme.comic ? 3 : height / 2
-                                            color: row.cc
-                                            border.width: Theme.comic ? 1.5 : 0
-                                            border.color: Theme.ink
-                                            rotation: Theme.comic ? -2 : 0
-
-                                            Text {
-                                                id: tag
-
-                                                anchors.centerIn: parent
-                                                text: (row.modelData.category ?? "").toUpperCase()
-                                                color: win.onColor(row.cc)
-                                                font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
-                                                font.pixelSize: Theme.comic ? 13 : 10
-                                                font.letterSpacing: Theme.comic ? 1 : 0.6
-                                                font.weight: Theme.comic ? Font.Normal : Font.Bold
-                                            }
+                                            text: row.modelData.category ?? ""
+                                            tint: row.cc
                                         }
 
                                         Text {
@@ -740,7 +696,7 @@ PanelWindow {
                         readonly property var d: SysStat.data
 
                         width: parent.width
-                        spacing: 16
+                        spacing: 6
 
                         Text {
                             visible: stats.d.cpu === undefined
@@ -749,69 +705,97 @@ PanelWindow {
                             font.pixelSize: 13
                         }
 
-                        StatBar {
+                        ComicCard {
                             visible: stats.d.cpu !== undefined
                             Layout.fillWidth: true
-                            label: "Procesador"
-                            value: Math.round(stats.d.cpu ?? 0) + " %"
-                            detail: stats.d.cpuTemp ? Math.round(stats.d.cpuTemp) + " °C" : ""
-                            fraction: (stats.d.cpu ?? 0) / 100
-                        }
-
-                        StatBar {
-                            visible: stats.d.memTotal !== undefined
-                            Layout.fillWidth: true
-                            label: "Memoria"
-                            value: win.gb(stats.d.memUsed ?? 0)
-                            detail: "de " + win.gb(stats.d.memTotal ?? 0)
-                            fraction: (stats.d.memTotal ?? 0) > 0 ? stats.d.memUsed / stats.d.memTotal : 0
-                        }
-
-                        StatBar {
-                            visible: !!stats.d.gpu
-                            Layout.fillWidth: true
-                            label: "Placa de video"
-                            value: Math.round(stats.d.gpu?.usage ?? 0) + " %"
-                            detail: Math.round(stats.d.gpu?.temp ?? 0) + " °C" + (stats.d.gpu?.power ? " · " + Math.round(stats.d.gpu.power) + " W" : "")
-                            fraction: (stats.d.gpu?.usage ?? 0) / 100
-                        }
-
-                        StatBar {
-                            visible: !!stats.d.gpu
-                            Layout.fillWidth: true
-                            label: "Memoria de video"
-                            value: win.gb(stats.d.gpu?.memUsed ?? 0)
-                            detail: "de " + win.gb(stats.d.gpu?.memTotal ?? 0)
-                            fraction: (stats.d.gpu?.memTotal ?? 0) > 0 ? stats.d.gpu.memUsed / stats.d.gpu.memTotal : 0
-                        }
-
-                        Repeater {
-                            model: stats.d.disks ?? []
+                            title: "Procesador y memoria"
+                            tint: Theme.accent
 
                             StatBar {
-                                required property var modelData
-
                                 Layout.fillWidth: true
-                                label: modelData.name
-                                value: win.gb(modelData.used)
-                                detail: "de " + win.gb(modelData.total)
-                                fraction: modelData.total > 0 ? modelData.used / modelData.total : 0
+                                label: "Procesador"
+                                value: Math.round(stats.d.cpu ?? 0) + " %"
+                                detail: stats.d.cpuTemp ? Math.round(stats.d.cpuTemp) + " °C" : ""
+                                fraction: (stats.d.cpu ?? 0) / 100
+                            }
+
+                            StatBar {
+                                visible: stats.d.memTotal !== undefined
+                                Layout.fillWidth: true
+                                label: "Memoria"
+                                value: win.gb(stats.d.memUsed ?? 0)
+                                detail: "de " + win.gb(stats.d.memTotal ?? 0)
+                                fraction: (stats.d.memTotal ?? 0) > 0 ? stats.d.memUsed / stats.d.memTotal : 0
                             }
                         }
 
-                        StatBar {
-                            visible: stats.d.netDown !== undefined
+                        ComicCard {
+                            visible: !!stats.d.gpu
                             Layout.fillWidth: true
-                            label: "Red"
-                            value: "↓ " + win.rate(stats.d.netDown ?? 0)
-                            detail: "↑ " + win.rate(stats.d.netUp ?? 0)
+                            title: "Video"
+                            tint: Theme.warn
+
+                            StatBar {
+                                Layout.fillWidth: true
+                                tint: Theme.warn
+                                label: "Placa de video"
+                                value: Math.round(stats.d.gpu?.usage ?? 0) + " %"
+                                detail: Math.round(stats.d.gpu?.temp ?? 0) + " °C" + (stats.d.gpu?.power ? " · " + Math.round(stats.d.gpu.power) + " W" : "")
+                                fraction: (stats.d.gpu?.usage ?? 0) / 100
+                            }
+
+                            StatBar {
+                                Layout.fillWidth: true
+                                tint: Theme.warn
+                                label: "Memoria de video"
+                                value: win.gb(stats.d.gpu?.memUsed ?? 0)
+                                detail: "de " + win.gb(stats.d.gpu?.memTotal ?? 0)
+                                fraction: (stats.d.gpu?.memTotal ?? 0) > 0 ? stats.d.gpu.memUsed / stats.d.gpu.memTotal : 0
+                            }
                         }
 
-                        StatBar {
-                            visible: stats.d.uptime !== undefined
+                        ComicCard {
+                            visible: (stats.d.disks ?? []).length > 0
                             Layout.fillWidth: true
-                            label: "Encendida hace"
-                            value: win.uptimeText(stats.d.uptime ?? 0)
+                            title: "Almacenamiento"
+                            tint: "#6f9bf0"
+
+                            Repeater {
+                                model: stats.d.disks ?? []
+
+                                StatBar {
+                                    required property var modelData
+
+                                    Layout.fillWidth: true
+                                    tint: "#6f9bf0"
+                                    label: modelData.name
+                                    value: win.gb(modelData.used)
+                                    detail: "de " + win.gb(modelData.total)
+                                    fraction: modelData.total > 0 ? modelData.used / modelData.total : 0
+                                }
+                            }
+                        }
+
+                        ComicCard {
+                            visible: stats.d.netDown !== undefined || stats.d.uptime !== undefined
+                            Layout.fillWidth: true
+                            title: "Red y tiempo"
+                            tint: Themes.active.border2 ?? Theme.accent
+
+                            StatBar {
+                                visible: stats.d.netDown !== undefined
+                                Layout.fillWidth: true
+                                label: "Red"
+                                value: "↓ " + win.rate(stats.d.netDown ?? 0)
+                                detail: "↑ " + win.rate(stats.d.netUp ?? 0)
+                            }
+
+                            StatBar {
+                                visible: stats.d.uptime !== undefined
+                                Layout.fillWidth: true
+                                label: "Encendida hace"
+                                value: win.uptimeText(stats.d.uptime ?? 0)
+                            }
                         }
                     }
                 }
