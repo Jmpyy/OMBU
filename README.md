@@ -10,6 +10,14 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
   <img src="docs/screenshots/welcome.png" width="640" alt="Bienvenida al iniciar sesión">
 </p>
 
+<p align="center">
+  <a href="docs/ombu-teaser.mp4">
+    <img src="docs/screenshots/teaser.jpg" width="640" alt="Teaser de ombu (38 s, con música): tocá para verlo">
+  </a>
+  <br>
+  <sub>▶ Teaser de 38 s: barra, menús, launcher, modo foco y ventanas. Es una animación hecha aparte con HTML, <a href="https://motion.dev">Motion</a> y ffmpeg, no una grabación del escritorio.</sub>
+</p>
+
 ## Qué incluye
 
 **Barra superior** integrada al borde del monitor, con esquinas cóncavas. Los menús crecen desde el botón que los abre.
