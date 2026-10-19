@@ -59,16 +59,19 @@ stop)
                 took="$secs s"
             fi
 
-            (
-                choice=$(notify-send -a "$name" -u normal \
-                    -t 8000 \
+            # El que espera el clic tiene que sobrevivir al hook: Claude Code cierra los procesos que
+            # quedan al terminar, y con ellos moría el botón. Por eso va en una sesión propia, sin
+            # las tuberías del hook, y con un tope de 2 minutos para no dejar procesos colgados.
+            # (Aunque falle, ombu lleva a la terminal solo con tocar el aviso: ver Notifs.focusApp.)
+            setsid -f bash -c '
+                choice=$(timeout 120 notify-send -a "$1" -u normal -t 8000 \
                     -A "default=Ir a la consola" \
                     -A "focus=Ir a la consola" \
-                    "$name terminó" "Tardó $took" 2>/dev/null)
+                    "$1 terminó" "Tardó $2" 2>/dev/null)
                 if [ "$choice" = "default" ] || [ "$choice" = "focus" ]; then
-                    hyprctl dispatch 'hl.dsp.focus({ window = "class:kitty" })' >/dev/null 2>&1
+                    hyprctl dispatch "hl.dsp.focus({ window = \"class:kitty\" })" >/dev/null 2>&1
                 fi
-            ) &
+            ' _ "$name" "$took" </dev/null >/dev/null 2>&1
         fi
     fi
     ;;

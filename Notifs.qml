@@ -179,6 +179,12 @@ Singleton {
     // Lleva al frente la ventana de la app que mandó el aviso. Muchas apps (Discord, por ejemplo)
     // reciben «Ver» o «Responder» y no hacen nada: así el botón siempre te lleva a la app.
     function focusApp(entry): void {
+        // Los agentes de IA de la terminal (bin/agent-notify.sh) no tienen ventana propia: el aviso
+        // lleva a la consola
+        if (/^(claude code|antigravity)$/i.test(entry.appName)) {
+            Hyprland.dispatch("hl.dsp.focus({ window = \"class:kitty\" })");
+            return;
+        }
         const name = entry.appName.toLowerCase();
         const key = (entry.desktopEntry || entry.appName).toLowerCase();
         const de = DesktopEntries.heuristicLookup(entry.desktopEntry || entry.appName);
