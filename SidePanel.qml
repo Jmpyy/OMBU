@@ -324,7 +324,7 @@ PanelWindow {
                             }
                         }
 
-                        readonly property var todays: Agenda.itemsFor(Agenda.ymd(Chrono.date))
+                        readonly property var todays: Agenda.itemsFor(Agenda.ymd(Chrono.date), true)
                         readonly property var next: Agenda.upcoming(4)
 
                         // Hoy

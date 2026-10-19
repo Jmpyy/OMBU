@@ -38,6 +38,11 @@ Singleton {
     // Calendarios de la cuenta [{id, name, role, primary}] y los que se ocultan (ids)
     property var calendars: []
     property var hidden: []
+    // Calendarios «en silencio»: se ven en el calendario pero no salen en el Resumen, en «Próximos» ni
+    // mandan avisos (salvo los recordatorios de pagos, que llevan la etiqueta «sub:»). null = nunca se
+    // configuró: por defecto el de la familia.
+    property var quiet: null
+    readonly property var quietIds: quiet !== null ? quiet : (familyCalendarId !== "" ? [familyCalendarId] : [])
     // El calendario compartido de la familia, si existe y se puede escribir en él
     readonly property string familyCalendarId: {
         const c = calendars.find(x => /famili/i.test(x.name) && (x.role === "owner" || x.role === "writer"));
@@ -113,8 +118,13 @@ Singleton {
         return new Date(s + "T12:00:00");
     }
 
-    // Todo lo de un día, en orden: feriado, eventos de todo el día y los que tienen hora
-    function itemsFor(day: string): var {
+    function isQuiet(e: var): bool {
+        return quietIds.includes(e.calendarId ?? "") && !(e.tag ?? "").startsWith("sub:");
+    }
+
+    // Todo lo de un día, en orden: feriado, eventos de todo el día y los que tienen hora. Con
+    // summary = true se saltean los calendarios en silencio (Resumen, «Próximos» y avisos).
+    function itemsFor(day: string, summary): var {
         const out = [];
         if (holidays[day])
             out.push({
@@ -124,11 +134,12 @@ Singleton {
             });
         const timed = [];
         for (const e of google) {
-            if (e.date === day && !hidden.includes(e.calendarId))
+            if (e.date === day && !hidden.includes(e.calendarId) && !(summary === true && isQuiet(e)))
                 (e.time ? timed : out).push({
                     kind: "google",
                     id: e.id ?? "",
                     calendarId: e.calendarId ?? "",
+                    tag: e.tag ?? "",
                     mine: e.mine ?? false,
                     meet: e.meet ?? "",
                     series: e.series ?? "",
@@ -162,7 +173,7 @@ Singleton {
         for (let i = 0; i < 60 && out.length < count; i++) {
             const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 12);
             const day = ymd(d);
-            for (const it of itemsFor(day)) {
+            for (const it of itemsFor(day, true)) {
                 if (it.kind === "holiday" || it.done)
                     continue;
                 if (day === todayStr && it.time && it.time < hhmm)
@@ -275,6 +286,12 @@ Singleton {
         saveConfig();
     }
 
+    // Poner o sacar un calendario del Resumen y de los avisos (se recuerda)
+    function toggleQuiet(id: string): void {
+        quiet = quietIds.includes(id) ? quietIds.filter(x => x !== id) : quietIds.concat([id]);
+        saveConfig();
+    }
+
     function setCreateInGoogle(on: bool): void {
         createInGoogle = on;
         saveConfig();
@@ -284,7 +301,8 @@ Singleton {
         configFile.setText(JSON.stringify({
             url: googleUrl,
             createInGoogle: createInGoogle,
-            hidden: hidden
+            hidden: hidden,
+            quiet: quiet
         }));
         // La dirección es un secreto: el archivo solo lo lee el usuario
         Quickshell.execDetached(["sh", "-c", "sleep 1; chmod 600 \"$1\"", "permisos", configFile.path]);
@@ -379,7 +397,7 @@ Singleton {
         for (let off = 0; off < 3; off++) {
             const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + off, 12);
             const day = ymd(date);
-            for (const it of itemsFor(day)) {
+            for (const it of itemsFor(day, true)) {
                 if (!it.time || it.done || it.kind === "holiday")
                     continue;
                 const at = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(it.time.slice(0, 2)), parseInt(it.time.slice(3)));
@@ -412,7 +430,7 @@ Singleton {
     function summaryLines(): var {
         const lines = [];
         const day = ymd(now);
-        const items = itemsFor(day);
+        const items = itemsFor(day, true);
         // Los pagos van en su propia línea (ver más abajo): acá no se repiten
         const mine = items.filter(it => !/^(Pagar|Avisar a mamá)/.test(it.title));
         const holiday = mine.find(it => it.kind === "holiday");
@@ -595,6 +613,8 @@ Singleton {
                 createInGoogle = cfg.createInGoogle;
             if (Array.isArray(cfg.hidden))
                 hidden = cfg.hidden;
+            if (Array.isArray(cfg.quiet))
+                quiet = cfg.quiet;
         } catch (e) {}
         try {
             const sd = JSON.parse(summaryFile.text());

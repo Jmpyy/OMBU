@@ -278,11 +278,20 @@ DropPopup {
                 Text {
                     Layout.fillWidth: true
                     visible: Agenda.apiConnected && Agenda.calendars.length > 1
-                    text: "CALENDARIOS A MOSTRAR"
+                    text: "CALENDARIOS"
                     color: Theme.textDim
                     font.pixelSize: 10
                     font.weight: Font.DemiBold
                     font.letterSpacing: 0.8
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    visible: Agenda.apiConnected && Agenda.calendars.length > 1
+                    text: "El interruptor muestra u oculta el calendario. La campana lo deja en el Resumen y en los avisos; apagada, solo se ve acá."
+                    wrapMode: Text.Wrap
+                    color: Theme.textDim
+                    font.pixelSize: 11
                 }
 
                 Repeater {
@@ -320,6 +329,35 @@ DropPopup {
                                 font.pixelSize: 12
                             }
 
+                            // Campana: ¿sale en el Resumen y avisa?
+                            Rectangle {
+                                id: bell
+
+                                readonly property bool on: !Agenda.quietIds.includes(calRow.modelData.id)
+
+                                visible: calRow.shown
+                                implicitWidth: 24
+                                implicitHeight: 22
+                                radius: 6
+                                color: bellHover.hovered ? Theme.hover : "transparent"
+
+                                MIcon {
+                                    anchors.centerIn: parent
+                                    name: bell.on ? "notifications_active" : "notifications_off"
+                                    color: bell.on ? Theme.accent : Theme.textDim
+                                    font.pixelSize: 16
+                                }
+
+                                HoverHandler {
+                                    id: bellHover
+
+                                    cursorShape: Qt.PointingHandCursor
+                                }
+                                TapHandler {
+                                    onTapped: Agenda.toggleQuiet(calRow.modelData.id)
+                                }
+                            }
+
                             Rectangle {
                                 implicitWidth: 32
                                 implicitHeight: 18
@@ -350,7 +388,8 @@ DropPopup {
                             cursorShape: Qt.PointingHandCursor
                         }
                         TapHandler {
-                            onTapped: Agenda.toggleCalendar(calRow.modelData.id)
+                            onTapped: if (!bellHover.hovered)
+                                Agenda.toggleCalendar(calRow.modelData.id)
                         }
                     }
                 }

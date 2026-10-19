@@ -254,7 +254,8 @@ def normalize(ev, cal, since, until_day):
     base = {"title": title, "calendar": cal.get("summary", ""), "calendarId": cal["id"], "id": ev.get("id", ""),
             "reminders": reminders if (reminders or not rem.get("useDefault", True)) else [10],
             "series": ev.get("recurringEventId", ""),
-            "mine": ((ev.get("extendedProperties") or {}).get("private") or {}).get("ombu") == "1", "meet": meet}
+            "mine": ((ev.get("extendedProperties") or {}).get("private") or {}).get("ombu") == "1", "meet": meet,
+            "tag": ((ev.get("extendedProperties") or {}).get("private") or {}).get("tag", "")}
     s, e = ev.get("start", {}), ev.get("end", {})
     res = []
     if "date" in s:
