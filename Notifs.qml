@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Services.Notifications
 
 // Servidor de notificaciones (org.freedesktop.Notifications). Reemplaza a swaync.
@@ -175,6 +176,38 @@ Singleton {
             dismiss(e);
     }
 
+    // Lleva al frente la ventana de la app que mandó el aviso. Muchas apps (Discord, por ejemplo)
+    // reciben «Ver» o «Responder» y no hacen nada: así el botón siempre te lleva a la app.
+    function focusApp(entry): void {
+        const name = entry.appName.toLowerCase();
+        const key = (entry.desktopEntry || entry.appName).toLowerCase();
+        const de = DesktopEntries.heuristicLookup(entry.desktopEntry || entry.appName);
+        const wins = Apps.windows.filter(t => {
+            const app = (t.wayland?.appId ?? "").toLowerCase();
+            if (app === "")
+                return false;
+            return app === key || app === name || (de && (app === de.id.toLowerCase() || app === (de.startupClass ?? "").toLowerCase() || DesktopEntries.heuristicLookup(app)?.id === de.id));
+        });
+        if (wins.length === 0)
+            return;
+        const t = wins[0];
+        const address = "address:0x" + t.address;
+        if (t.workspace?.name === "special:minimized") {
+            // Minimizada: se trae al escritorio actual
+            let here = Hyprland.focusedWorkspace?.id ?? 1;
+            if (here < 1)
+                here = 1;
+            Hyprland.dispatch("function() hl.dispatch(hl.dsp.focus({ window = \"" + address + "\" })); hl.dispatch(hl.dsp.window.move({ workspace = \"" + here + "\" })) end");
+        } else {
+            Hyprland.dispatch("hl.dsp.focus({ window = \"" + address + "\" })");
+        }
+    }
+
+    // Acciones que significan «ir a la app»; las demás (silenciar, posponer...) no enfocan nada
+    function opensApp(action: var): bool {
+        return action.identifier === "default" || /\b(ver|abrir|responder|mostrar|ir|open|view|reply|show)\b/i.test(action.text ?? "");
+    }
+
     // Ejecuta una acción por su identificador y cierra la notificación
     function invokeAction(entry, identifier: string): void {
         const n = entry.n;
@@ -183,6 +216,9 @@ Singleton {
         const action = Array.from(n.actions).find(a => a.identifier === identifier);
         if (action)
             action.invoke();
+        const info = entry.actionList.find(a => a.identifier === identifier);
+        if (entry.kind !== "confirm" && (identifier === "default" || (info && opensApp(info))))
+            focusApp(entry);
         if (!n.resident)
             dismiss(entry);
     }
@@ -199,6 +235,9 @@ Singleton {
             invokeAction(entry, action.identifier);
         else
             dismiss(entry);
+        // Un clic en la tarjeta siempre lleva a la app, aunque no traiga acciones
+        if (entry.kind !== "confirm")
+            focusApp(entry);
     }
 
     function invokeLatest(): void {
