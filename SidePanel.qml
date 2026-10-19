@@ -115,6 +115,8 @@ PanelWindow {
             if (win.tab === "noticias")
                 News.load(false);
             Focus.recordHistory();
+            Estacion.load();
+            summaryFlick.contentY = 0;
         }
     }
 
@@ -222,6 +224,8 @@ PanelWindow {
 
                 // ---------------- Resumen ----------------
                 Flickable {
+                    id: summaryFlick
+
                     visible: win.tab === "resumen"
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -235,22 +239,88 @@ PanelWindow {
                         width: parent.width
                         spacing: 14
 
-                        ColumnLayout {
-                            spacing: 0
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 10
 
-                            Text {
-                                text: Qt.formatTime(Chrono.date, "HH:mm")
-                                color: Theme.text
-                                font.family: Theme.displayFont || Qt.application.font.family
-                                font.pixelSize: Theme.comic ? 52 : 44
-                                font.weight: Theme.comic ? Font.Normal : Font.Light
-                                font.letterSpacing: Theme.comic ? 2 : 0
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 0
+
+                                Text {
+                                    text: Estacion.greeting(Chrono.date) + ", " + Estacion.displayName
+                                    color: Theme.accent
+                                    font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
+                                    font.pixelSize: Theme.comic ? 17 : 13
+                                    font.letterSpacing: Theme.comic ? 1.5 : 0
+                                    font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    text: Qt.formatTime(Chrono.date, "HH:mm")
+                                    color: Theme.text
+                                    font.family: Theme.displayFont || Qt.application.font.family
+                                    font.pixelSize: Theme.comic ? 52 : 44
+                                    font.weight: Theme.comic ? Font.Normal : Font.Light
+                                    font.letterSpacing: Theme.comic ? 2 : 0
+                                }
+
+                                Text {
+                                    text: Chrono.capitalize(Chrono.date.toLocaleDateString(Chrono.locale, "dddd d 'de' MMMM"))
+                                    color: Theme.textDim
+                                    font.pixelSize: 14
+                                }
                             }
 
-                            Text {
-                                text: Chrono.capitalize(Chrono.date.toLocaleDateString(Chrono.locale, "dddd d 'de' MMMM"))
-                                color: Theme.textDim
-                                font.pixelSize: 14
+                            // Clima
+                            ColumnLayout {
+                                visible: Estacion.weather !== null
+                                Layout.alignment: Qt.AlignTop | Qt.AlignRight
+                                spacing: 0
+
+                                RowLayout {
+                                    Layout.alignment: Qt.AlignRight
+                                    spacing: 4
+
+                                    MIcon {
+                                        name: Estacion.weather?.icon ?? "cloud"
+                                        color: Theme.warn
+                                        font.pixelSize: 26
+                                    }
+
+                                    Text {
+                                        text: (Estacion.weather?.temp ?? 0) + "°"
+                                        color: Theme.text
+                                        font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
+                                        font.pixelSize: Theme.comic ? 30 : 24
+                                        font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                    }
+                                }
+
+                                Text {
+                                    Layout.alignment: Qt.AlignRight
+                                    text: Estacion.weather?.desc ?? ""
+                                    color: Theme.text
+                                    font.pixelSize: 12
+                                }
+
+                                Text {
+                                    Layout.alignment: Qt.AlignRight
+                                    text: (Estacion.weather?.min ?? 0) + "° / " + (Estacion.weather?.max ?? 0) + "°"
+                                    color: Theme.textDim
+                                    font.pixelSize: 11
+                                }
+
+                                Text {
+                                    visible: (Estacion.weather?.rain ?? 0) >= 40
+                                    Layout.alignment: Qt.AlignRight
+                                    text: "Lluvia " + (Estacion.weather?.rain ?? 0) + " %"
+                                    color: Theme.warn
+                                    font.pixelSize: 11
+                                    font.weight: Font.DemiBold
+                                }
                             }
                         }
 
@@ -322,7 +392,7 @@ PanelWindow {
 
                                     Text {
                                         Layout.preferredWidth: 96
-                                        text: Qt.formatDate(Agenda.parseDay(modelData.day), "ddd d MMM") + (modelData.time !== "" ? " " + modelData.time : "")
+                                        text: Chrono.capitalize(Agenda.parseDay(modelData.day).toLocaleDateString(Chrono.locale, "ddd d MMM")) + (modelData.time !== "" ? " " + modelData.time : "")
                                         color: Theme.textDim
                                         font.pixelSize: 12
                                         elide: Text.ElideRight
@@ -379,6 +449,70 @@ PanelWindow {
                             }
                         }
 
+                        // Dólar
+                        ComicCard {
+                            visible: Estacion.dolar !== null
+                            Layout.fillWidth: true
+                            title: "Dólar"
+                            tint: "#5fb98a"
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Repeater {
+                                    model: [
+                                        {
+                                            key: "oficial",
+                                            name: "Oficial"
+                                        },
+                                        {
+                                            key: "blue",
+                                            name: "Blue"
+                                        },
+                                        {
+                                            key: "cripto",
+                                            name: "Cripto"
+                                        }
+                                    ]
+
+                                    Column {
+                                        required property var modelData
+
+                                        Layout.fillWidth: true
+                                        Layout.preferredWidth: 1
+
+                                        Text {
+                                            text: Estacion.dolar?.[modelData.key] ? Estacion.money(Estacion.dolar[modelData.key].venta) : "—"
+                                            color: Theme.text
+                                            font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
+                                            font.pixelSize: Theme.comic ? 22 : 15
+                                            font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                            font.letterSpacing: Theme.comic ? 1 : 0
+                                        }
+
+                                        Text {
+                                            text: modelData.name
+                                            color: Theme.textDim
+                                            font.pixelSize: 11
+                                        }
+                                    }
+                                }
+                            }
+
+                            // El próximo pago en dólares, en pesos al blue
+                            Text {
+                                readonly property var usd: Subs.upcoming.find(u => u.sub.currency === "USD") ?? null
+
+                                visible: usd !== null && !!Estacion.dolar?.blue
+                                Layout.fillWidth: true
+                                text: usd && Estacion.dolar?.blue ? usd.sub.name + " (" + Subs.money(usd.sub.amount, "USD") + ") ≈ " + Estacion.money(usd.sub.amount * Estacion.dolar.blue.venta) + " al blue" : ""
+                                elide: Text.ElideRight
+                                color: Theme.textDim
+                                font.pixelSize: 11
+                            }
+                        }
+
                         // Estudio
                         ComicCard {
                             Layout.fillWidth: true
@@ -426,6 +560,170 @@ PanelWindow {
                                         text: Focus.streak === 1 ? "día de racha" : "días de racha"
                                         color: Theme.textDim
                                         font.pixelSize: 11
+                                    }
+                                }
+                            }
+
+                            StatBar {
+                                readonly property int mins: Math.floor(Focus.studyToday / 60)
+
+                                Layout.fillWidth: true
+                                tint: "#6f9bf0"
+                                label: mins >= Estacion.goal ? "Meta cumplida" : "Meta de hoy"
+                                value: mins + " / " + Estacion.goal + " min"
+                                fraction: Math.min(1, mins / Estacion.goal)
+                            }
+
+                            // Los últimos 7 días
+                            Row {
+                                id: week
+
+                                readonly property var days: {
+                                    const out = [];
+                                    for (let i = 6; i >= 0; i--) {
+                                        const d = new Date(Chrono.date);
+                                        d.setDate(d.getDate() - i);
+                                        const m = i === 0 ? Math.max(Math.floor(Focus.studyToday / 60), Focus.history[Agenda.ymd(d)] ?? 0) : (Focus.history[Agenda.ymd(d)] ?? 0);
+                                        out.push({
+                                            letter: ["D", "L", "M", "M", "J", "V", "S"][d.getDay()],
+                                            mins: m,
+                                            today: i === 0
+                                        });
+                                    }
+                                    return out;
+                                }
+                                readonly property real peak: Math.max(Estacion.goal, ...days.map(x => x.mins))
+
+                                Layout.fillWidth: true
+                                spacing: 6
+
+                                Repeater {
+                                    model: week.days
+
+                                    Column {
+                                        required property var modelData
+
+                                        width: (week.width - 36) / 7
+                                        spacing: 3
+
+                                        Item {
+                                            width: parent.width
+                                            height: 34
+
+                                            Rectangle {
+                                                anchors.bottom: parent.bottom
+                                                width: parent.width
+                                                height: Math.max(3, parent.height * modelData.mins / week.peak)
+                                                radius: Theme.comic ? 2 : 3
+                                                color: modelData.today ? Theme.accent : (modelData.mins >= Estacion.goal ? "#6f9bf0" : Theme.track)
+                                                border.width: Theme.comic ? 1.5 : 0
+                                                border.color: Theme.ink
+                                            }
+                                        }
+
+                                        Text {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            text: modelData.letter
+                                            color: modelData.today ? Theme.text : Theme.textDim
+                                            font.pixelSize: 10
+                                            font.weight: modelData.today ? Font.Bold : Font.Normal
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Cajón de ideas
+                        ComicCard {
+                            visible: Focus.ideas.length > 0
+                            Layout.fillWidth: true
+                            title: "Cajón de ideas"
+                            tint: Themes.active.border2 ?? Theme.accent
+
+                            Repeater {
+                                model: Focus.ideas.slice(0, 3)
+
+                                RowLayout {
+                                    required property var modelData
+
+                                    Layout.fillWidth: true
+                                    spacing: 8
+
+                                    Text {
+                                        text: modelData.date.slice(8) + "/" + modelData.date.slice(5, 7)
+                                        color: Theme.textDim
+                                        font.pixelSize: 11
+                                    }
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: modelData.text
+                                        elide: Text.ElideRight
+                                        color: Theme.text
+                                        font.pixelSize: 13
+                                    }
+                                }
+                            }
+
+                            Text {
+                                visible: Focus.ideas.length > 3
+                                text: "y " + (Focus.ideas.length - 3) + " más…"
+                                color: Theme.textDim
+                                font.pixelSize: 11
+                            }
+                        }
+
+                        // Proyectos: lo último que tocaste
+                        ComicCard {
+                            visible: Estacion.projects.length > 0
+                            Layout.fillWidth: true
+                            title: "Proyectos"
+                            tint: "#ee8b4f"
+
+                            Repeater {
+                                model: Estacion.projects
+
+                                ColumnLayout {
+                                    required property var modelData
+
+                                    Layout.fillWidth: true
+                                    spacing: 0
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 8
+
+                                        Text {
+                                            text: modelData.name
+                                            color: Theme.text
+                                            font.pixelSize: 13
+                                            font.weight: Font.DemiBold
+                                        }
+
+                                        Text {
+                                            visible: modelData.dirty > 0
+                                            text: "● " + modelData.dirty + " sin guardar"
+                                            color: Theme.warn
+                                            font.pixelSize: 11
+                                        }
+
+                                        Item {
+                                            Layout.fillWidth: true
+                                        }
+
+                                        Text {
+                                            text: win.ago(modelData.when) === "ahora" ? "ahora" : "hace " + win.ago(modelData.when)
+                                            color: Theme.textDim
+                                            font.pixelSize: 11
+                                        }
+                                    }
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: modelData.subject
+                                        elide: Text.ElideRight
+                                        color: Theme.textDim
+                                        font.pixelSize: 12
                                     }
                                 }
                             }
