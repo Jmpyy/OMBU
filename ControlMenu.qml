@@ -10,8 +10,9 @@ DropPopup {
     readonly property var sink: Pipewire.defaultAudioSink
 
     signal openDevices
+    signal openFocus
 
-    // Botón grande: ícono y dos líneas de texto; resaltado cuando está activo
+    // Botón: el ícono va en un círculo que se pinta de violeta cuando está activo
     component Tile: Rectangle {
         id: tile
 
@@ -22,9 +23,9 @@ DropPopup {
 
         signal clicked
 
-        implicitHeight: 54
-        radius: 12
-        color: on ? Theme.accent : (area.containsMouse ? Theme.hover : Theme.surface)
+        implicitHeight: 58
+        radius: 14
+        color: area.containsMouse ? Theme.hover : Theme.surface
 
         Behavior on color {
             ColorAnimation {
@@ -34,14 +35,28 @@ DropPopup {
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 12
+            anchors.leftMargin: 10
             anchors.rightMargin: 10
             spacing: 10
 
-            MIcon {
-                name: tile.icon
-                font.pixelSize: 22
-                color: tile.on ? "#14131a" : Theme.text
+            Rectangle {
+                Layout.preferredWidth: 38
+                Layout.preferredHeight: 38
+                radius: 19
+                color: tile.on ? Theme.accent : Theme.track
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 120
+                    }
+                }
+
+                MIcon {
+                    anchors.centerIn: parent
+                    name: tile.icon
+                    font.pixelSize: 20
+                    color: tile.on ? "#14131a" : Theme.text
+                }
             }
 
             Column {
@@ -52,7 +67,7 @@ DropPopup {
                     width: parent.width
                     text: tile.title
                     elide: Text.ElideRight
-                    color: tile.on ? "#14131a" : Theme.text
+                    color: Theme.text
                     font.pixelSize: 13
                     font.weight: Font.DemiBold
                 }
@@ -61,7 +76,7 @@ DropPopup {
                     width: parent.width
                     text: tile.subtitle
                     elide: Text.ElideRight
-                    color: tile.on ? "#14131a" : Theme.textDim
+                    color: tile.on ? Theme.accent : Theme.textDim
                     font.pixelSize: 11
                 }
             }
@@ -77,51 +92,6 @@ DropPopup {
         }
     }
 
-    // Fila con ícono, slider y porcentaje
-    component SliderRow: RowLayout {
-        id: row
-
-        property string icon
-        property real value
-        property bool muted: false
-        property string text
-
-        signal moved(real value)
-        signal iconClicked
-
-        spacing: 12
-
-        MouseArea {
-            Layout.preferredWidth: 24
-            Layout.preferredHeight: 24
-            cursorShape: Qt.PointingHandCursor
-            onClicked: row.iconClicked()
-
-            MIcon {
-                anchors.centerIn: parent
-                name: row.icon
-                font.pixelSize: 22
-                color: row.muted ? Theme.danger : Theme.text
-            }
-        }
-
-        MixerSlider {
-            Layout.fillWidth: true
-            value: row.value
-            muted: row.muted
-            onMoved: v => row.moved(v)
-        }
-
-        Text {
-            Layout.preferredWidth: 38
-            horizontalAlignment: Text.AlignRight
-            text: row.text
-            color: row.muted ? Theme.textDim : Theme.text
-            font.pixelSize: 13
-            font.weight: Font.Medium
-        }
-    }
-
     bodyWidth: 340
     bodyHeight: column.implicitHeight + 26
 
@@ -131,23 +101,22 @@ DropPopup {
         x: 16
         y: 2
         width: root.bodyWidth - 32
-        spacing: 14
+        spacing: 10
 
-        SliderRow {
+        PillSlider {
             Layout.fillWidth: true
             visible: Brightness.available
             icon: "brightness_6"
             value: Brightness.level
-            text: Math.round(Brightness.level * 100) + "%"
             onMoved: v => Brightness.setLevel(v)
         }
 
-        SliderRow {
+        PillSlider {
             Layout.fillWidth: true
+            iconClickable: true
             icon: (root.sink?.audio?.muted ?? false) || (root.sink?.audio?.volume ?? 0) <= 0 ? "volume_off" : ((root.sink?.audio?.volume ?? 0) < 0.5 ? "volume_down" : "volume_up")
             value: root.sink?.audio?.volume ?? 0
             muted: root.sink?.audio?.muted ?? false
-            text: muted ? "Mute" : Math.round(value * 100) + "%"
             onMoved: v => {
                 if (root.sink?.audio)
                     root.sink.audio.volume = v;
@@ -171,6 +140,16 @@ DropPopup {
                 title: "Teclado"
                 subtitle: Keyboard.code
                 onClicked: Keyboard.toggle()
+            }
+
+            Tile {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                icon: Focus.running ? (Focus.phase === "estudio" ? "school" : "coffee") : "timer"
+                title: "Modo foco"
+                subtitle: Focus.running ? Focus.clock(Focus.remaining) : "Apagado"
+                on: Focus.running
+                onClicked: root.openFocus()
             }
 
             Tile {

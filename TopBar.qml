@@ -524,6 +524,7 @@ PanelWindow {
         open: controlButton.isOpen
 
         onOpenDevices: win.togglePopup("devices")
+        onOpenFocus: win.togglePopup("focus")
         onDismissed: {
             win.dismissedControl = Date.now();
             if (controlButton.isOpen)
