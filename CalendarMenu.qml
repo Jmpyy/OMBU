@@ -270,6 +270,87 @@ DropPopup {
                     font.pixelSize: 11
                 }
 
+                // Qué calendarios de Google se muestran (por ejemplo, ocultar el de la familia)
+                Text {
+                    Layout.fillWidth: true
+                    visible: Agenda.apiConnected && Agenda.calendars.length > 1
+                    text: "CALENDARIOS A MOSTRAR"
+                    color: Theme.textDim
+                    font.pixelSize: 10
+                    font.weight: Font.DemiBold
+                    font.letterSpacing: 0.8
+                }
+
+                Repeater {
+                    model: Agenda.apiConnected && Agenda.calendars.length > 1 ? Agenda.calendars : []
+
+                    Rectangle {
+                        id: calRow
+
+                        required property var modelData
+                        readonly property bool shown: !Agenda.hidden.includes(modelData.id)
+
+                        Layout.fillWidth: true
+                        implicitHeight: 30
+                        radius: 8
+                        color: calHover.hovered ? Theme.hover : "transparent"
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 4
+                            anchors.rightMargin: 4
+                            spacing: 8
+
+                            Rectangle {
+                                Layout.preferredWidth: 8
+                                Layout.preferredHeight: 8
+                                radius: 4
+                                color: calRow.shown ? Agenda.googleColor : Theme.track
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: calRow.modelData.name
+                                elide: Text.ElideRight
+                                color: calRow.shown ? Theme.text : Theme.textDim
+                                font.pixelSize: 12
+                            }
+
+                            Rectangle {
+                                implicitWidth: 32
+                                implicitHeight: 18
+                                radius: 9
+                                color: calRow.shown ? Theme.accent : Theme.track
+
+                                Rectangle {
+                                    x: calRow.shown ? parent.width - width - 2 : 2
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 14
+                                    height: 14
+                                    radius: 7
+                                    color: calRow.shown ? "#14131a" : Theme.text
+
+                                    Behavior on x {
+                                        NumberAnimation {
+                                            duration: 120
+                                            easing.type: Easing.OutCubic
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        HoverHandler {
+                            id: calHover
+
+                            cursorShape: Qt.PointingHandCursor
+                        }
+                        TapHandler {
+                            onTapped: Agenda.toggleCalendar(calRow.modelData.id)
+                        }
+                    }
+                }
+
                 // Con credenciales guardadas: un botón abre el navegador para dar permiso
                 Text {
                     Layout.fillWidth: true

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Google Calendar para ombu, por la API oficial (OAuth de aplicación de escritorio).
 
-Uso: gcal.py status | auth | list DESDE HASTA | add DIA HORA TITULO [MINUTOS] [opciones] | delete CAL ID | disconnect
+Uso: gcal.py status | auth | calendars | list DESDE HASTA | add DIA HORA TITULO [MINUTOS] [opciones] | delete CAL ID | disconnect
   status      ¿hay credenciales y sesión? -> {"client": bool, "connected": bool}
   auth        abre el navegador para dar permiso y guarda el token
+  calendars   tus calendarios -> {"calendars": [{id, name, role, primary}], "error": null | "texto"}
   list        eventos entre dos fechas (YYYY-MM-DD) de todos tus calendarios, con las repeticiones
               ya expandidas por Google -> {"events": [...], "error": null | "texto"}
   add         crea un evento en el calendario principal (HORA vacía = todo el día). Opciones:
@@ -11,6 +12,7 @@ Uso: gcal.py status | auth | list DESDE HASTA | add DIA HORA TITULO [MINUTOS] [o
                 --remind 1440,0                        avisos en minutos antes (por defecto los del calendario)
                 --note TEXTO                           descripción del evento
                 --tag ETIQUETA                         marca privada para reconocerlo después
+                --calendar ID                          calendario donde crearlo (por defecto el principal)
   delete      borra un evento que creó ombu (los ajenos no se tocan)
   disconnect  borra el token y lo revoca en Google
 
@@ -273,7 +275,8 @@ def normalize(ev, cal, since, until_day):
     return res
 
 
-def cmd_list(since, until_day):
+def visible_calendars():
+    """Calendarios que se muestran, sin los de feriados de Google (ombu trae los suyos)"""
     try:
         cals = [c for c in api("GET", "/users/me/calendarList").get("items", []) if c.get("selected", True) and not c.get("deleted")]
     except Fail as e:
@@ -282,12 +285,18 @@ def cmd_list(since, until_day):
         if "venció" in str(e) or "Sin conexión" in str(e):
             raise
         cals = []
-    # Los feriados ya los trae ombu aparte (bin/feriados.sh): los calendarios de feriados de Google duplicarían
     cals = [c for c in cals if not c.get("id", "").endswith("#holiday@group.v.calendar.google.com")]
-    if not cals:
-        cals = [{"id": "primary", "summary": "Principal"}]
+    return cals or [{"id": "primary", "summary": "Principal"}]
+
+
+def cmd_calendars():
+    out({"calendars": [{"id": c["id"], "name": c.get("summaryOverride") or c.get("summary", ""), "role": c.get("accessRole", ""),
+                        "primary": bool(c.get("primary"))} for c in visible_calendars()], "error": None})
+
+
+def cmd_list(since, until_day):
     events = []
-    for cal in cals:
+    for cal in visible_calendars():
         page = None
         while True:
             params = {"timeMin": rfc3339(since), "timeMax": rfc3339(until_day, True), "singleEvents": "true",
@@ -349,8 +358,9 @@ def cmd_add(day, hhmm, title, *rest):
         body["end"] = {"date": (d + timedelta(days=1)).isoformat()}
     if repeat:
         body["recurrence"] = [rules[repeat]]
-    created = api("POST", "/calendars/primary/events", body=body)
-    out({"ok": True, "id": created.get("id", "")})
+    cal = opts.get("calendar") or "primary"
+    created = api("POST", "/calendars/%s/events" % urllib.parse.quote(cal, safe=""), body=body)
+    out({"ok": True, "id": created.get("id", ""), "calendarId": cal})
 
 
 def cmd_delete(cal, event_id):
@@ -384,6 +394,8 @@ def main():
             cmd_status()
         elif a[0] == "auth":
             cmd_auth()
+        elif a[0] == "calendars":
+            cmd_calendars()
         elif a[0] == "list" and len(a) >= 3:
             cmd_list(date.fromisoformat(a[1]), date.fromisoformat(a[2]))
         elif a[0] == "add" and len(a) >= 4:

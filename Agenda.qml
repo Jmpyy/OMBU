@@ -35,6 +35,14 @@ Singleton {
     property bool sessionNotified: false
     // Al anotar un evento, ¿va a Google (y al celular) o queda solo en ombu?
     property bool createInGoogle: true
+    // Calendarios de la cuenta [{id, name, role, primary}] y los que se ocultan (ids)
+    property var calendars: []
+    property var hidden: []
+    // El calendario compartido de la familia, si existe y se puede escribir en él
+    readonly property string familyCalendarId: {
+        const c = calendars.find(x => /famili/i.test(x.name) && (x.role === "owner" || x.role === "writer"));
+        return c ? c.id : "";
+    }
     readonly property bool googleOn: apiConnected || googleUrl !== ""
     property string googleError: ""
     property bool googleLoading: false
@@ -68,8 +76,10 @@ Singleton {
                     mark(day, "local");
             }
         }
-        for (const e of google)
-            mark(e.date, "google");
+        for (const e of google) {
+            if (!hidden.includes(e.calendarId))
+                mark(e.date, "google");
+        }
         for (const d in Focus.history) {
             if (Focus.history[d] >= 5)
                 mark(d, "study");
@@ -114,7 +124,7 @@ Singleton {
             });
         const timed = [];
         for (const e of google) {
-            if (e.date === day)
+            if (e.date === day && !hidden.includes(e.calendarId))
                 (e.time ? timed : out).push({
                     kind: "google",
                     id: e.id ?? "",
@@ -193,6 +203,8 @@ Singleton {
                 args.push("--note", extra.note);
             if (extra?.tag)
                 args.push("--tag", extra.tag);
+            if (extra?.calendar)
+                args.push("--calendar", extra.calendar);
             gcal(args, r => {
                 if (r.error)
                     googleError = r.error;
@@ -257,6 +269,12 @@ Singleton {
         refreshGoogle(true);
     }
 
+    // Mostrar u ocultar un calendario de Google (se recuerda)
+    function toggleCalendar(id: string): void {
+        hidden = hidden.includes(id) ? hidden.filter(x => x !== id) : hidden.concat([id]);
+        saveConfig();
+    }
+
     function setCreateInGoogle(on: bool): void {
         createInGoogle = on;
         saveConfig();
@@ -265,7 +283,8 @@ Singleton {
     function saveConfig(): void {
         configFile.setText(JSON.stringify({
             url: googleUrl,
-            createInGoogle: createInGoogle
+            createInGoogle: createInGoogle,
+            hidden: hidden
         }));
         // La dirección es un secreto: el archivo solo lo lee el usuario
         Quickshell.execDetached(["sh", "-c", "sleep 1; chmod 600 \"$1\"", "permisos", configFile.path]);
@@ -287,6 +306,10 @@ Singleton {
             if (apiConnected) {
                 sessionNotified = false;
                 refreshGoogle(true);
+                gcal(["calendars"], c => {
+                    if (!c.error)
+                        calendars = c.calendars ?? [];
+                });
             }
         });
     }
@@ -496,6 +519,8 @@ Singleton {
                 googleUrl = cfg.url;
             if (typeof cfg.createInGoogle === "boolean")
                 createInGoogle = cfg.createInGoogle;
+            if (Array.isArray(cfg.hidden))
+                hidden = cfg.hidden;
         } catch (e) {}
         loadHolidays(now.getFullYear());
         loadHolidays(now.getFullYear() + 1);

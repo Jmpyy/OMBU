@@ -22,15 +22,16 @@ class H(http.server.BaseHTTPRequestHandler):
             if f["refresh_token"][0] != "RT-secret": return self.send(400, {"error": "invalid_grant"})
             return self.send(200, {"access_token": "AT-%d" % TOK["n"], "expires_in": 3600})
         if not self.auth_ok(): return self.send(401, {"error": {"message": "bad token"}})
-        if re.fullmatch(r"/calendars/primary/events", self.path):
-            body = json.loads(raw); LOG.append(("insert", body)); body["id"] = "new1"; EVENTS["primary"]["new1"] = body
+        mm = re.fullmatch(r"/calendars/([^/]+)/events", self.path)
+        if mm:
+            body = json.loads(raw); LOG.append(("insert", body, mm.group(1))); body["id"] = "new1"; EVENTS["primary"]["new1"] = body
             return self.send(200, body)
         self.send(404, {})
     def do_GET(self):
         if not self.auth_ok(): return self.send(401, {"error": {"message": "bad token"}})
         u = urllib.parse.urlparse(self.path); q = urllib.parse.parse_qs(u.query)
         if u.path == "/users/me/calendarList":
-            return self.send(200, {"items": [{"id": "primary", "summary": "Juan", "selected": True, "defaultReminders": [{"method": "popup", "minutes": 30}]}, {"id": "clases", "summary": "UPE", "selected": True}, {"id": "oculto", "summary": "Oculto", "selected": False}, {"id": "es.ar#holiday@group.v.calendar.google.com", "summary": "Feriados", "selected": True}]})
+            return self.send(200, {"items": [{"id": "primary", "summary": "Juan", "selected": True, "defaultReminders": [{"method": "popup", "minutes": 30}]}, {"id": "clases", "summary": "UPE", "selected": True, "accessRole": "writer"}, {"id": "oculto", "summary": "Oculto", "selected": False}, {"id": "es.ar#holiday@group.v.calendar.google.com", "summary": "Feriados", "selected": True}]})
         m = re.fullmatch(r"/calendars/([^/]+)/events", u.path)
         if m:
             LOG.append(("list", m.group(1), q))
@@ -120,6 +121,12 @@ o, _ = run("add", "2026-11-30", "", "Fin de mes", "--repeat", "monthly-last")
 ins = [l[1] for l in LOG if l[0] == "insert"][-1]
 check("último día en un evento de todo el día", ins["start"] == {"date": "2026-11-30"} and ins["recurrence"] == ["RRULE:FREQ=MONTHLY;BYMONTHDAY=-1"], ins)
 o, _ = run("add", "2026-11-30", "", "x", "--repeat", "semanal"); check("rechaza una repetición desconocida", "error" in o, o)
+# 5c) calendarios y creación en uno compartido
+o, _ = run("calendars")
+check("lista los calendarios con su rol, sin el oculto ni el de feriados", [(c["id"], c["role"]) for c in o["calendars"]] == [("primary", ""), ("clases", "writer")], o)
+o, _ = run("add", "2026-11-06", "09:00", "Pagar Netflix", "30", "--calendar", "clases")
+ins = [l for l in LOG if l[0] == "insert"][-1]
+check("crea en el calendario elegido y avisa cuál", ins[2] == "clases" and o.get("calendarId") == "clases", (ins[2], o))
 # 6) borrar
 o, _ = run("delete", "primary", "d"); check("borra uno creado por ombu", o.get("ok") is True and any(l[0] == "delete" for l in LOG), o)
 o, _ = run("delete", "primary", "a"); check("se niega a borrar uno ajeno", "error" in o and not any(l[0] == "delete" and l[1].endswith("/a") for l in LOG), o)

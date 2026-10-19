@@ -74,8 +74,13 @@ Singleton {
         return "En " + days + " días";
     }
 
-    function eventTitle(s: var): string {
-        return (s.payer === "mama" ? "Avisar a mamá: " : "Pagar ") + s.name + " — " + money(s.amount, s.currency);
+    // En el calendario de la familia el evento es para ella ("Pagar Netflix"); en el propio, un
+    // recordatorio para vos ("Avisar a mamá: Netflix")
+    function eventTitle(s: var, family: bool): string {
+        const base = s.name + " — " + money(s.amount, s.currency);
+        if (s.payer !== "mama")
+            return "Pagar " + base;
+        return family ? "Pagar " + base + (s.method !== "" ? " (" + s.method + ")" : "") : "Avisar a mamá: " + base;
     }
 
     function find(name: string): var {
@@ -110,17 +115,21 @@ Singleton {
         save();
         // El evento arranca en el próximo vencimiento, a las 9, con aviso el día antes y ese día
         const first = nextDue(sub, new Date());
-        const note = [sub.method !== "" ? "Se paga con " + sub.method : "", sub.payer === "mama" ? "Lo paga mamá: avisarle antes" : ""].filter(x => x !== "").join(". ");
-        Agenda.add(Agenda.ymd(first), "09:00", eventTitle(sub), day === -1 || day === 31 ? "monthly-last" : "monthly", [1440, 0], {
+        // Lo que paga mamá va al calendario de la familia (si hay) para que ella también lo vea
+        const family = sub.payer === "mama" && Agenda.apiConnected && Agenda.createInGoogle && Agenda.familyCalendarId !== "";
+        const note = [sub.method !== "" ? "Se paga con " + sub.method : "", sub.payer === "mama" ? "Lo paga mamá; Juan le avisa" : ""].filter(x => x !== "").join(". ");
+        Agenda.add(Agenda.ymd(first), "09:00", eventTitle(sub, family), day === -1 || day === 31 ? "monthly-last" : "monthly", [1440, 0], {
             note: note,
             tag: "sub:" + sub.id,
+            calendar: family ? Agenda.familyCalendarId : "",
             done: r => {
                 if (r.error)
                     return;
                 list = list.map(s => s.id === sub.id ? Object.assign({}, s, {
                         ref: {
                             kind: r.local ? "local" : "google",
-                            id: r.id
+                            id: r.id,
+                            calendarId: r.calendarId ?? "primary"
                         }
                     }) : s);
                 save();
@@ -137,7 +146,7 @@ Singleton {
         list = list.filter(x => x.id !== s.id);
         save();
         if (s.ref?.kind === "google")
-            Agenda.removeGoogle("primary", s.ref.id);
+            Agenda.removeGoogle(s.ref.calendarId ?? "primary", s.ref.id);
         else if (s.ref?.kind === "local")
             Agenda.remove(s.ref.id);
         return "ok";
