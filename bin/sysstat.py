@@ -2,7 +2,7 @@
 """Estado de la PC para el panel lateral de ombu: una línea de JSON cada tanto con procesador,
 memoria, placa de video, discos, red y tiempo encendida.
 
-Uso: sysstat.py [--watch SEGUNDOS]   (sin --watch imprime una sola medición y termina)
+Uso: sysstat.py [--watch SEGUNDOS] [--light]   (sin --watch imprime una sola medición y termina)
 Solo mide mientras está corriendo: el panel lo lanza al abrirse y lo cierra al cerrarse, así que
 cerrado no consume nada. Solo biblioteca estándar (y nvidia-smi si hay placa NVIDIA)."""
 import glob
@@ -92,6 +92,10 @@ def disks():
     return out
 
 
+# --light: solo procesador, memoria y red (lo que usa el chip de la barra); sin nvidia-smi ni temperaturas
+LIGHT = "--light" in sys.argv
+
+
 class Sampler:
     def __init__(self):
         self.idle, self.total = cpu_times()
@@ -108,9 +112,9 @@ class Sampler:
         m = meminfo()
         up = float(read("/proc/uptime").split()[0] or 0)
         out = {
-            "cpu": round(cpu, 1), "cpuTemp": cpu_temp(),
+            "cpu": round(cpu, 1), "cpuTemp": None if LIGHT else cpu_temp(),
             "memUsed": m.get("MemTotal", 0) - m.get("MemAvailable", 0), "memTotal": m.get("MemTotal", 0),
-            "gpu": gpu(), "disks": disks(),
+            "gpu": None if LIGHT else gpu(), "disks": [] if LIGHT else disks(),
             "netDown": (rx - self.rx) / dt, "netUp": (tx - self.tx) / dt,
             "uptime": up, "load": [float(x) for x in read("/proc/loadavg").split()[:3]],
         }

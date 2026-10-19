@@ -49,7 +49,7 @@ Row {
             radius: Theme.comic ? 5 : 11
             color: active ? Theme.accent : (area.containsMouse ? Theme.hover : (Theme.comic && occupied ? Qt.rgba(1, 1, 1, 0.05) : "transparent"))
             border.width: Theme.comic ? (active ? 1.5 : (occupied ? 1 : 0)) : 0
-            border.color: Theme.comic ? (active ? "#0a0708" : (area.containsMouse ? Theme.accent : (occupied ? Qt.rgba(0, 0, 0, 0.5) : "transparent"))) : "transparent"
+            border.color: Theme.comic ? (active ? Theme.ink : (area.containsMouse ? Theme.accent : (occupied ? Qt.rgba(0, 0, 0, 0.5) : "transparent"))) : "transparent"
 
             Behavior on width {
                 NumberAnimation {

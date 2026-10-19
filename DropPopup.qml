@@ -155,9 +155,11 @@ PopupWindow {
 
         interval: 100
         onTriggered: {
-            if (root.open && root.entered && !root.pointerInside) {
+            // No se cierra si hay algo escrito en un campo de texto del menú: se perdería el borrador
+            const f = root.activeFocusItem;
+            const typing = f && f.cursorPosition !== undefined && typeof f.text === "string" && f.text.length > 0;
+            if (root.open && root.entered && !root.pointerInside && !typing)
                 root.dismissed();
-            }
         }
     }
 

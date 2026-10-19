@@ -129,7 +129,7 @@ PanelWindow {
             radius: Theme.comic ? 8 : Theme.cardRadius
             color: Theme.bg
             border.width: Theme.comic ? 2 : 1
-            border.color: Theme.comic ? "#0a0708" : Theme.border
+            border.color: Theme.comic ? Theme.ink : Theme.border
             opacity: win.p
             scale: 0.90 + 0.10 * win.p
 
@@ -176,7 +176,7 @@ PanelWindow {
                         radius: Theme.comic ? 8 : 20
                         color: isArmed ? (isDanger ? Theme.danger : Theme.accent) : (tileArea.containsMouse ? Theme.hover : Qt.rgba(1, 1, 1, 0.04))
                         border.width: Theme.comic ? 1.5 : 0
-                        border.color: Theme.comic ? (tile.isArmed ? (tile.isDanger ? Theme.danger : Theme.accent) : (tileArea.containsMouse ? Theme.accent : "#0a0708")) : "transparent"
+                        border.color: Theme.comic ? (tile.isArmed ? (tile.isDanger ? Theme.danger : Theme.accent) : (tileArea.containsMouse ? Theme.accent : Theme.ink)) : "transparent"
 
                         Behavior on color {
                             ColorAnimation {

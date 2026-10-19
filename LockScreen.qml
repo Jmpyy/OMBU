@@ -158,7 +158,7 @@ Item {
                 radius: Theme.comic ? 10 : 27
                 color: Theme.bg
                 border.width: Theme.comic ? 2 : 1
-                border.color: Auth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : (Theme.comic ? "#0a0708" : Theme.border))
+                border.color: Auth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : (Theme.comic ? Theme.ink : Theme.border))
                 transform: Translate {
                     x: root.shakeX
                 }
@@ -271,7 +271,7 @@ Item {
                         radius: Theme.comic ? 8 : 19
                         color: input.text.length > 0 ? Theme.accent : Theme.surface
                         border.width: Theme.comic ? 1.5 : 0
-                        border.color: Theme.comic ? "#0a0708" : "transparent"
+                        border.color: Theme.comic ? Theme.ink : "transparent"
 
                         Behavior on color {
                             ColorAnimation {

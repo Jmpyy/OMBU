@@ -429,7 +429,7 @@ PanelWindow {
         radius: Theme.cardRadius
         color: Theme.bg
         border.width: Theme.comic ? 2 : 1
-        border.color: Theme.comic ? "#0a0708" : Theme.outline
+        border.color: Theme.comic ? Theme.ink : Theme.outline
         opacity: win.p
         scale: 0.90 + 0.10 * win.p
         transformOrigin: Item.Top
@@ -550,7 +550,7 @@ PanelWindow {
                     radius: Theme.comic ? 6 : 10
                     color: current ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.08) : Theme.surface) : "transparent"
                     border.width: Theme.comic && current ? 1.5 : 0
-                    border.color: Theme.comic ? "#0a0708" : "transparent"
+                    border.color: Theme.comic ? Theme.ink : "transparent"
 
                     HoverHandler {
                         onHoveredChanged: if (hovered)

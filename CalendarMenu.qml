@@ -683,7 +683,7 @@ DropPopup {
                             radius: Theme.comic ? 6 : 17
                             color: day.model.today ? Theme.accent : (dayHover.hovered && day.inMonth ? Theme.hover : "transparent")
                             border.width: Theme.comic && day.model.today ? 1.5 : (day.selected && !day.model.today ? 1.5 : 0)
-                            border.color: Theme.comic && day.model.today ? "#0a0708" : Theme.accent
+                            border.color: Theme.comic && day.model.today ? Theme.ink : Theme.accent
                         }
 
                         Text {

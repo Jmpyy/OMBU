@@ -17,7 +17,7 @@ Item {
         anchors.leftMargin: 6
         anchors.topMargin: 6
         radius: card.radius
-        color: Theme.shadow.a > 0 ? Theme.shadow : "#0a0708"
+        color: Theme.shadow.a > 0 ? Theme.shadow : Theme.ink
         rotation: card.rotation
         opacity: 0.85
     }
@@ -30,7 +30,7 @@ Item {
         radius: 8
         color: "#f6f4ee"
         border.width: 2
-        border.color: "#0a0708"
+        border.color: Theme.ink
         rotation: -2.5
         clip: true
 
@@ -43,7 +43,7 @@ Item {
                 height: 46
                 color: root.alert ? Theme.danger : Theme.accent
                 border.width: 2
-                border.color: "#0a0708"
+                border.color: Theme.ink
 
                 Behavior on color {
                     ColorAnimation {
@@ -109,7 +109,7 @@ Item {
                         radius: 4
                         color: Theme.danger
                         border.width: 1.5
-                        border.color: "#0a0708"
+                        border.color: Theme.ink
                         rotation: 12
 
                         Text {

@@ -133,7 +133,7 @@ PanelWindow {
             // Filo sutil abajo, para separar la barra del escritorio
             ShapePath {
                 fillColor: "transparent"
-                strokeColor: Theme.comic ? "#0a0708" : Theme.outline
+                strokeColor: Theme.comic ? Theme.ink : Theme.outline
                 strokeWidth: Theme.comic ? 2 : 1
                 startX: 0
                 startY: win.fullHeight
@@ -182,7 +182,7 @@ PanelWindow {
                     radius: Theme.comic ? 6 : 12
                     color: logoArea.containsMouse || Ui.sysMenuOpen ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.12) : Theme.hover) : "transparent"
                     border.width: Theme.comic ? 1.5 : 0
-                    border.color: Theme.comic ? (logoArea.containsMouse || Ui.sysMenuOpen ? Theme.accent : "#0a0708") : "transparent"
+                    border.color: Theme.comic ? (logoArea.containsMouse || Ui.sysMenuOpen ? Theme.accent : Theme.ink) : "transparent"
 
                     // El logo de CachyOS, o el del tema (araña, reactor) cuando hay uno
                     Image {
@@ -293,7 +293,7 @@ PanelWindow {
                     radius: Theme.comic ? 6 : 12
                     color: Theme.accent
                     border.width: Theme.comic ? 1.5 : 0
-                    border.color: Theme.comic ? "#0a0708" : "transparent"
+                    border.color: Theme.comic ? Theme.ink : "transparent"
 
                     Text {
                         id: submapText
@@ -314,7 +314,7 @@ PanelWindow {
                     radius: Theme.comic ? 8 : 14
                     color: Theme.surface
                     border.width: Theme.comic ? 1.5 : 0
-                    border.color: Theme.comic ? "#0a0708" : "transparent"
+                    border.color: Theme.comic ? Theme.ink : "transparent"
 
                     Row {
                         id: cluster
@@ -355,7 +355,7 @@ PanelWindow {
                             radius: Theme.comic ? 6 : height / 2
                             color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, isOpen || chipArea.containsMouse ? 0.28 : 0.16)
                             border.width: Theme.comic ? 1.5 : 1
-                            border.color: Theme.comic ? "#0a0708" : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, Focus.running ? 0.45 : 0.2)
+                            border.color: Theme.comic ? Theme.ink : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, Focus.running ? 0.45 : 0.2)
 
                             onProgressChanged: chipRing.requestPaint()
                             onToneChanged: chipRing.requestPaint()

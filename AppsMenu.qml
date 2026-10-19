@@ -149,7 +149,7 @@ DropPopup {
                         radius: Theme.comic ? 6 : 12
                         color: rowHover.hovered ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.08) : Theme.hover) : "transparent"
                         border.width: Theme.comic && rowHover.hovered ? 1.5 : 0
-                        border.color: Theme.comic ? "#0a0708" : "transparent"
+                        border.color: Theme.comic ? Theme.ink : "transparent"
 
                         RowLayout {
                             anchors.fill: parent

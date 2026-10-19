@@ -54,7 +54,7 @@ PanelWindow {
     // Lo que se mide o se baja depende de la pestaña abierta
     Binding {
         target: SysStat
-        property: "active"
+        property: "full"
         value: Ui.sideOpen && win.tab === "sistema"
         when: win.activeOnScreen
     }

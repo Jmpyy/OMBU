@@ -31,6 +31,8 @@ Singleton {
     readonly property bool comic: shadow.a > 0
     readonly property string displayFont: Themes.active.display ?? ""
     readonly property color accentText: Themes.active.onAccent ?? "#14131a"
+    // El negro cálido de los bordes de tinta de los temas de cómic
+    readonly property color ink: "#0a0708"
     readonly property color hover: Qt.rgba(1, 1, 1, 0.09)
     readonly property color border: Qt.rgba(1, 1, 1, 0.08)
     // Contorno de la barra y de los menús que cuelgan de ella: se nota sobre una terminal oscura

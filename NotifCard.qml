@@ -135,7 +135,7 @@ Rectangle {
     radius: 14
     color: floating ? Theme.bg : Theme.surface
     border.width: floating ? (Theme.comic ? 2 : 1) : (Theme.comic ? 1 : 0)
-    border.color: hover.hovered ? (Theme.comic ? Theme.accent : Qt.rgba(1, 1, 1, 0.32)) : (Theme.comic ? "#0a0708" : Theme.outline)
+    border.color: hover.hovered ? (Theme.comic ? Theme.accent : Qt.rgba(1, 1, 1, 0.32)) : (Theme.comic ? Theme.ink : Theme.outline)
 
     Behavior on border.color {
         ColorAnimation {
@@ -231,7 +231,7 @@ Rectangle {
             radius: Theme.comic ? 8 : Theme.controlRadius
             color: root.confirm ? Qt.rgba(root.confirmColor.r, root.confirmColor.g, root.confirmColor.b, 0.16) : (Theme.comic && !icon.visible ? Theme.accent : (root.floating ? Theme.surface : Theme.bg))
             border.width: Theme.comic ? 2 : 0
-            border.color: "#0a0708"
+            border.color: Theme.ink
             rotation: Theme.comic ? -6 : 0
             transform: Translate {
                 x: Theme.comic ? -4 : 0
@@ -245,7 +245,7 @@ Rectangle {
                 width: parent.width
                 height: parent.height
                 radius: parent.radius
-                color: "#0a0708"
+                color: Theme.ink
             }
 
             Image {
@@ -292,7 +292,7 @@ Rectangle {
                     color: root.badgeColor
                     radius: 4
                     border.width: 1.5
-                    border.color: "#0a0708"
+                    border.color: Theme.ink
                     rotation: -2
                     implicitWidth: badgeLabel.implicitWidth + 10
                     implicitHeight: badgeLabel.implicitHeight + 4

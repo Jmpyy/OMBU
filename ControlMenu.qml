@@ -29,7 +29,7 @@ DropPopup {
         radius: Theme.controlRadius
         color: area.containsMouse ? Theme.hover : Theme.surface
         border.width: Theme.comic ? 1.5 : 0
-        border.color: Theme.comic ? (tile.on ? Theme.accent : "#0a0708") : "transparent"
+        border.color: Theme.comic ? (tile.on ? Theme.accent : Theme.ink) : "transparent"
 
         Behavior on color {
             ColorAnimation {
@@ -49,7 +49,7 @@ DropPopup {
                 radius: Theme.comic ? 6 : 8
                 color: tile.on ? Theme.accent : Theme.track
                 border.width: Theme.comic ? 1.5 : 0
-                border.color: Theme.comic ? "#0a0708" : "transparent"
+                border.color: Theme.comic ? Theme.ink : "transparent"
 
                 Behavior on color {
                     ColorAnimation {

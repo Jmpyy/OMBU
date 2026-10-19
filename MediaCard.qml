@@ -15,7 +15,7 @@ Rectangle {
     radius: Theme.controlRadius
     color: Theme.surface
     border.width: Theme.comic ? 1.5 : 0
-    border.color: Theme.comic ? "#0a0708" : "transparent"
+    border.color: Theme.comic ? Theme.ink : "transparent"
 
     RowLayout {
         anchors.fill: parent

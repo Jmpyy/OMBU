@@ -72,7 +72,7 @@ Shape {
     // Contorno: solo los lados y el fondo; arriba se funde con la barra, que ya trae el suyo
     ShapePath {
         fillColor: "transparent"
-        strokeColor: Theme.comic ? "#0a0708" : Theme.outline
+        strokeColor: Theme.comic ? Theme.ink : Theme.outline
         strokeWidth: Theme.comic ? 2 : 1
         startX: 0
         startY: 0
