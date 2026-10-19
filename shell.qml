@@ -126,6 +126,27 @@ ShellRoot {
         target: "keys"
     }
 
+    // qs -c ombu ipc call media toggle|next|previous|status  -> el reproductor de música
+    IpcHandler {
+        function toggle(): void {
+            Media.toggle();
+        }
+
+        function next(): void {
+            Media.next();
+        }
+
+        function previous(): void {
+            Media.previous();
+        }
+
+        function status(): string {
+            return Media.describe();
+        }
+
+        target: "media"
+    }
+
     // qs -c ombu ipc call menu toggle  -> menú del sistema (Super+Alt+Espacio)
     IpcHandler {
         function toggle(): void {

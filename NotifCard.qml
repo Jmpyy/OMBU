@@ -60,7 +60,7 @@ Rectangle {
         if (!src.startsWith("image://icon/"))
             return src;
         const name = src.slice("image://icon/".length);
-        return name.startsWith("/") ? "file://" + name : Quickshell.iconPath(name, true);
+        return name.startsWith("/") ? "file://" + name : Icons.themed(name);
     }
 
     readonly property string iconSource: {

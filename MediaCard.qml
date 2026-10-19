@@ -1,16 +1,14 @@
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
-import Quickshell.Services.Mpris
 
 // Lo que suena ahora (música, un video del navegador...) en versión compacta para el centro de
 // control: portada, título, artista y los tres controles. Solo aparece si hay algún reproductor.
 Rectangle {
     id: root
 
-    readonly property var all: Array.from(Mpris.players.values)
-    // El que está sonando; si ninguno, el primero (por ejemplo uno en pausa)
-    readonly property var player: all.find(p => p.isPlaying) ?? all[0] ?? null
+    // El reproductor lo elige Media.qml (el último que sonó, aunque esté en pausa)
+    readonly property var player: Media.player
 
     visible: player !== null
     implicitHeight: 60
@@ -96,20 +94,20 @@ Rectangle {
             model: [
                 {
                     icon: "skip_previous",
-                    can: root.player?.canGoPrevious ?? false,
-                    run: () => root.player.previous(),
+                    can: root.player !== null,
+                    run: () => Media.previous(),
                     main: false
                 },
                 {
                     icon: root.player?.isPlaying ? "pause" : "play_arrow",
-                    can: root.player?.canTogglePlaying ?? false,
-                    run: () => root.player.togglePlaying(),
+                    can: root.player !== null,
+                    run: () => Media.toggle(),
                     main: true
                 },
                 {
                     icon: "skip_next",
-                    can: root.player?.canGoNext ?? false,
-                    run: () => root.player.next(),
+                    can: root.player !== null,
+                    run: () => Media.next(),
                     main: false
                 }
             ]

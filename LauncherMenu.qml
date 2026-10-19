@@ -312,7 +312,7 @@ PanelWindow {
         const icon = entry.icon ?? "";
         if (!icon)
             return "";
-        return icon.startsWith("/") ? "file://" + icon : Quickshell.iconPath(icon, true);
+        return icon.startsWith("/") ? "file://" + icon : Icons.themed(icon);
     }
 
     // Ejecuta una fila: abrir la app, copiar un resultado, abrir un archivo o buscar en la web
@@ -362,6 +362,7 @@ PanelWindow {
             if (Hyprland.focusedMonitor?.name === win.modelData.name)
                 win.activeOnScreen = true;
             input.text = Ui.launcherPrefill;
+            Icons.rescan();
             list.currentIndex = 0;
             grid.currentIndex = 0;
             Qt.callLater(() => input.forceActiveFocus());
