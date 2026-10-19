@@ -90,6 +90,18 @@ ShellRoot {
     // qs -c ombu ipc call bar mixer   -> abrir/cerrar la mezcladora (monitor con foco)
     // qs -c ombu ipc call bar apps    -> abrir/cerrar las apps abiertas (monitor con foco)
     IpcHandler {
+        function set(path: string): void {
+            Walls.set(path);
+        }
+
+        function current(): string {
+            return Walls.current;
+        }
+
+        target: "wallpaper"
+    }
+
+    IpcHandler {
         function up(): void {
             Brightness.step(5);
         }
@@ -127,6 +139,11 @@ ShellRoot {
 
         function control(): void {
             const key = "control@" + (Hyprland.focusedMonitor?.name ?? "");
+            Ui.popup = Ui.popup === key ? "" : key;
+        }
+
+        function walls(): void {
+            const key = "walls@" + (Hyprland.focusedMonitor?.name ?? "");
             Ui.popup = Ui.popup === key ? "" : key;
         }
 

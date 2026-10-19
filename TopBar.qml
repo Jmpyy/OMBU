@@ -611,9 +611,23 @@ PanelWindow {
 
         onOpenDevices: win.togglePopup("devices")
         onOpenFocus: win.togglePopup("focus")
+        onOpenWalls: win.togglePopup("walls")
         onDismissed: {
             win.dismissedControl = Date.now();
             if (controlButton.isOpen)
+                Ui.popup = "";
+        }
+    }
+
+    WallpaperMenu {
+        readonly property bool isOpen: Ui.popup === win.popupKey("walls")
+
+        barWindow: win
+        anchorItem: controlButton
+        open: isOpen
+
+        onDismissed: {
+            if (isOpen)
                 Ui.popup = "";
         }
     }

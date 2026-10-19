@@ -167,7 +167,7 @@ Cada vez que cambies algo del diseño que usa el greeter (colores, bloqueo), vol
 
 Todo el aspecto sale de [`Theme.qml`](Theme.qml): colores, radios, tamaños de la barra, tiempos de inactividad y del salvapantallas.
 
-- **Fondo de pantalla:** `Theme.wallpaper` apunta a un fondo de CachyOS; cambialo por el tuyo.
+- **Fondo de pantalla:** se elige desde el centro de control (tile "Fondo"): una cuadrícula con las imágenes de `~/Imágenes/Fondos` (las tuyas, primero), `~/Imágenes`, `~/Pictures/Wallpapers` y los de CachyOS. El elegido se recuerda y también se usa en el bloqueo. `Theme.wallpaper` es el de por defecto.
 - **Inactividad:** `idleLockSeconds` (bloqueo, 5 min) e `idleScreenOffSeconds` (monitores, 30 min).
 - **Idioma:** los textos están en español y la fecha usa `es_AR` (`Chrono.qml`).
 - **Launcher:** las favoritas de fábrica y lo que se oculta están en [`Launch.qml`](Launch.qml); lo que abrís y fijás se guarda en `~/.local/share/ombu/launcher.json`.

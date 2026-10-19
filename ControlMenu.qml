@@ -11,6 +11,7 @@ DropPopup {
 
     signal openDevices
     signal openFocus
+    signal openWalls
 
     // Botón: el ícono va en un círculo que se pinta de violeta cuando está activo
     component Tile: Rectangle {
@@ -169,6 +170,15 @@ DropPopup {
                 title: "Dispositivos"
                 subtitle: Disks.removable.length > 0 ? Disks.removable.length + (Disks.removable.length === 1 ? " conectado" : " conectados") : "Discos"
                 onClicked: root.openDevices()
+            }
+
+            Tile {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                icon: "wallpaper"
+                title: "Fondo"
+                subtitle: Walls.list.length + " imágenes"
+                onClicked: root.openWalls()
             }
         }
     }

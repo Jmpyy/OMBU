@@ -28,7 +28,7 @@ Item {
         id: wallpaper
 
         anchors.fill: parent
-        source: "file://" + Theme.wallpaper
+        source: "file://" + Walls.current
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         visible: false
