@@ -45,9 +45,11 @@ Row {
 
             anchors.verticalCenter: parent.verticalCenter
             height: 22
-            width: active ? content.implicitWidth + 18 : (occupied ? 26 : 16)
-            radius: 11
-            color: active ? Theme.accent : (area.containsMouse ? Theme.hover : "transparent")
+            width: active ? content.implicitWidth + (Theme.comic ? 16 : 18) : (occupied ? (Theme.comic ? 28 : 26) : 16)
+            radius: Theme.comic ? 5 : 11
+            color: active ? Theme.accent : (area.containsMouse ? Theme.hover : (Theme.comic && occupied ? Qt.rgba(1, 1, 1, 0.05) : "transparent"))
+            border.width: Theme.comic ? (active ? 1.5 : (occupied ? 1 : 0)) : 0
+            border.color: Theme.comic ? (active ? "#0a0708" : (area.containsMouse ? Theme.accent : (occupied ? Qt.rgba(0, 0, 0, 0.5) : "transparent"))) : "transparent"
 
             Behavior on width {
                 NumberAnimation {
@@ -62,22 +64,29 @@ Row {
                 }
             }
 
-            // Escritorio vacío y sin foco: solo un punto
+            // Escritorio vacío y sin foco: rombo/punto de semitono de imprenta
             Rectangle {
                 anchors.centerIn: parent
                 visible: !ws.active && !ws.occupied
-                width: 6
-                height: 6
-                radius: 3
-                color: Theme.textDim
+                width: Theme.comic ? 5 : 6
+                height: Theme.comic ? 5 : 6
+                radius: Theme.comic ? 1 : 3
+                rotation: Theme.comic ? 45 : 0
+                color: area.containsMouse ? Theme.accent : Theme.textDim
                 opacity: area.containsMouse ? 1 : 0.5
+
+                Behavior on rotation {
+                    NumberAnimation {
+                        duration: 150
+                    }
+                }
             }
 
             Row {
                 id: content
 
                 anchors.centerIn: parent
-                spacing: 5
+                spacing: Theme.comic ? 6 : 5
                 visible: ws.active || ws.occupied
 
                 MIcon {
@@ -93,7 +102,9 @@ Row {
                     visible: ws.active && ws.wsId > 0
                     text: ws.wsId
                     color: Theme.accentText
-                    font.pixelSize: 12
+                    font.family: (Theme.comic && Theme.displayFont) ? Theme.displayFont : Qt.application.font.family
+                    font.pixelSize: Theme.comic ? 15 : 12
+                    font.letterSpacing: Theme.comic ? 1 : 0
                     font.weight: Font.Bold
                 }
 
