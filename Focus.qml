@@ -423,6 +423,49 @@ Singleton {
         save();
     }
 
+    // Ideas guardadas, de la más nueva a la más vieja: [{line, date, text}]. Se leen de ideas.md.
+    property var ideas: []
+
+    function readIdeas(): void {
+        const out = [];
+        for (const line of (ideasFile.text() ?? "").split("\n")) {
+            const m = line.match(/^- (\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) (.*)$/);
+            if (m)
+                out.push({
+                    line: line,
+                    date: m[1],
+                    time: m[2],
+                    text: m[3]
+                });
+            else if (line.startsWith("- ") && line.length > 2)
+                out.push({
+                    line: line,
+                    date: "",
+                    time: "",
+                    text: line.slice(2)
+                });
+        }
+        ideas = out.reverse();
+    }
+
+    // Borra una idea reescribiendo el archivo sin su renglón
+    function deleteIdea(line: string): void {
+        const keep = (ideasFile.text() ?? "").split("\n").filter(l => l !== "" && l !== line);
+        ideasFile.setText(keep.length > 0 ? keep.join("\n") + "\n" : "");
+        ideas = ideas.filter(i => i.line !== line);
+    }
+
+    FileView {
+        id: ideasFile
+
+        path: root.dataDir + "/ideas.md"
+        blockLoading: true
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: root.readIdeas()
+    }
+
     // Anota una idea sin salir del estudio: queda en ~/.local/share/ombu/ideas.md
     function saveIdea(text: string): void {
         const t = text.trim();

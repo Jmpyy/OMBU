@@ -288,6 +288,15 @@ ShellRoot {
             Focus.saveIdea(text);
         }
 
+        // ipc call focus ideaDelete "texto"  -> borra la idea con ese texto
+        function ideaDelete(text: string): string {
+            const found = Focus.ideas.find(i => i.text === text);
+            if (!found)
+                return "no encontrada";
+            Focus.deleteIdea(found.line);
+            return "borrada";
+        }
+
         function status(): string {
             return Focus.mode + " " + (Focus.running ? Focus.phase + " " + Focus.clock(Focus.remaining) : "parado") + " | hoy " + Focus.minutesText(Focus.studyToday) + ", " + Focus.cycles + " bloques, racha " + Focus.streak + " | bloqueo " + (Focus.blocking ? "activo" : "inactivo");
         }

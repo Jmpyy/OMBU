@@ -53,6 +53,9 @@ DropPopup {
         }
     }
 
+    // Mostrar la lista de ideas guardadas
+    property bool showIdeas: false
+
     bodyWidth: 340
     bodyHeight: column.implicitHeight + 26
 
@@ -321,6 +324,100 @@ DropPopup {
             }
         }
 
+        // Minutos de los últimos 7 días (de Focus.history); hoy en violeta
+        ColumnLayout {
+            id: weekBox
+
+            Layout.fillWidth: true
+            spacing: 6
+
+            readonly property var days: {
+                const out = [];
+                const now = new Date();
+                let total = 0;
+                let max = 30;
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i, 12);
+                    const key = Qt.formatDate(d, "yyyy-MM-dd");
+                    const m = Focus.history[key] ?? 0;
+                    total += m;
+                    max = Math.max(max, m);
+                    out.push({
+                        label: Qt.locale("es_AR").dayName(d.getDay(), Locale.ShortFormat).charAt(0).toUpperCase(),
+                        minutes: m,
+                        today: i === 0
+                    });
+                }
+                return {
+                    list: out,
+                    total: total,
+                    max: max
+                };
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+
+                Text {
+                    text: "ÚLTIMOS 7 DÍAS"
+                    color: Theme.textDim
+                    font.pixelSize: 11
+                    font.weight: Font.DemiBold
+                    font.letterSpacing: 0.8
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    text: weekBox.days.total > 0 ? Focus.minutesText(weekBox.days.total * 60) : "Sin datos"
+                    color: Theme.textDim
+                    font.pixelSize: 11
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 56
+                spacing: 6
+
+                Repeater {
+                    model: weekBox.days.list
+
+                    Item {
+                        id: bar
+
+                        required property var modelData
+
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        Rectangle {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: dayLabel.top
+                            anchors.bottomMargin: 3
+                            width: Math.min(parent.width, 26)
+                            height: bar.modelData.minutes > 0 ? Math.max(4, (parent.height - 18) * bar.modelData.minutes / weekBox.days.max) : 3
+                            radius: 4
+                            color: bar.modelData.minutes === 0 ? Theme.track : (bar.modelData.today ? Theme.accent : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.45))
+                        }
+
+                        Text {
+                            id: dayLabel
+
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            text: bar.modelData.label
+                            color: bar.modelData.today ? Theme.text : Theme.textDim
+                            font.pixelSize: 10
+                            font.weight: bar.modelData.today ? Font.DemiBold : Font.Normal
+                        }
+                    }
+                }
+            }
+        }
+
         // Aviso del bloqueo y salida con fricción
         Rectangle {
             visible: Focus.mode === "estudio" && Focus.running && Focus.phase === "estudio"
@@ -406,6 +503,34 @@ DropPopup {
                     }
                 }
 
+                // Ver las ideas guardadas
+                Rectangle {
+                    visible: Focus.ideas.length > 0
+                    Layout.preferredWidth: countText.implicitWidth + 16
+                    Layout.preferredHeight: 24
+                    radius: 7
+                    color: root.showIdeas ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22) : (countHover.hovered ? Theme.hover : Theme.track)
+
+                    Text {
+                        id: countText
+
+                        anchors.centerIn: parent
+                        text: Focus.ideas.length + (root.showIdeas ? " ▴" : " ▾")
+                        color: root.showIdeas ? Theme.accent : Theme.textDim
+                        font.pixelSize: 11
+                        font.weight: Font.DemiBold
+                    }
+
+                    HoverHandler {
+                        id: countHover
+
+                        cursorShape: Qt.PointingHandCursor
+                    }
+                    TapHandler {
+                        onTapped: root.showIdeas = !root.showIdeas
+                    }
+                }
+
                 // Solo guarda el estado de "recién guardada"; el aviso se muestra en el campo
                 Item {
                     id: savedNote
@@ -417,6 +542,88 @@ DropPopup {
 
                         interval: 2500
                         onTriggered: savedNote.opacity = 0
+                    }
+                }
+            }
+        }
+
+        // Ideas guardadas: las más nuevas arriba; la X de cada una la borra
+        Rectangle {
+            visible: root.showIdeas && Focus.ideas.length > 0
+            Layout.fillWidth: true
+            implicitHeight: Math.min(ideaList.contentHeight, 196) + 12
+            radius: Theme.controlRadius
+            color: Theme.surface
+
+            ListView {
+                id: ideaList
+
+                anchors.fill: parent
+                anchors.margins: 6
+                clip: true
+                spacing: 2
+                model: Focus.ideas
+                boundsBehavior: Flickable.StopAtBounds
+
+                delegate: Rectangle {
+                    id: ideaRow
+
+                    required property var modelData
+
+                    width: ListView.view.width
+                    height: ideaText.implicitHeight + 14
+                    radius: 8
+                    color: rowHover.hovered ? Theme.hover : "transparent"
+
+                    HoverHandler {
+                        id: rowHover
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 8
+                        anchors.rightMargin: 6
+                        spacing: 8
+
+                        Column {
+                            Layout.fillWidth: true
+                            spacing: 1
+
+                            Text {
+                                id: ideaText
+
+                                width: parent.width
+                                text: ideaRow.modelData.text
+                                wrapMode: Text.Wrap
+                                maximumLineCount: 3
+                                elide: Text.ElideRight
+                                color: Theme.text
+                                font.pixelSize: 13
+                            }
+
+                            Text {
+                                visible: ideaRow.modelData.date !== ""
+                                text: ideaRow.modelData.date.slice(8, 10) + "/" + ideaRow.modelData.date.slice(5, 7) + " " + ideaRow.modelData.time
+                                color: Theme.textDim
+                                font.pixelSize: 10
+                            }
+                        }
+
+                        MIcon {
+                            Layout.alignment: Qt.AlignTop
+                            Layout.topMargin: 2
+                            opacity: rowHover.hovered ? 1 : 0
+                            name: "close"
+                            font.pixelSize: 16
+                            color: Theme.textDim
+
+                            TapHandler {
+                                onTapped: Focus.deleteIdea(ideaRow.modelData.line)
+                            }
+                            HoverHandler {
+                                cursorShape: Qt.PointingHandCursor
+                            }
+                        }
                     }
                 }
             }
