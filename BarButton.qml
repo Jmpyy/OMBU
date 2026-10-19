@@ -30,9 +30,7 @@ Rectangle {
     implicitWidth: content.implicitWidth + 20
     implicitHeight: 22
     radius: Theme.comic ? 6 : height / 2
-    color: area.containsMouse || active ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.12) : Theme.hover) : "transparent"
-    border.width: Theme.comic && (area.containsMouse || active) ? 1 : 0
-    border.color: Theme.comic ? Theme.accent : "transparent"
+    color: area.containsMouse || active ? Theme.hover : "transparent"
 
     Behavior on color {
         ColorAnimation {
