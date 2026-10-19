@@ -37,4 +37,14 @@ PanelWindow {
             }
         }
     }
+
+    // Trama de puntos Ben-Day de imprenta retro sobre el fondo
+    Image {
+        anchors.fill: parent
+        visible: Theme.comic
+        source: "assets/halftone.png"
+        fillMode: Image.Tile
+        opacity: 0.08
+        smooth: false
+    }
 }

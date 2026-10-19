@@ -168,6 +168,31 @@ def starship_text(text, c, on_accent, logo):
     return re.sub(r"@([A-Z]+)@", lambda m: values.get(m.group(1), m.group(0)), text)
 
 
+def gtk_css(colors, on_accent):
+    return (
+        f"@define-color accent_color {colors['accent']};\n"
+        f"@define-color accent_fg_color {on_accent};\n"
+        f"@define-color accent_bg_color {colors['accent']};\n"
+        f"@define-color window_bg_color {colors['bg']};\n"
+        f"@define-color window_fg_color {colors['text']};\n"
+        f"@define-color headerbar_bg_color {colors['surface']};\n"
+        f"@define-color headerbar_fg_color {colors['text']};\n"
+        f"@define-color popover_bg_color {colors['surface']};\n"
+        f"@define-color popover_fg_color {colors['text']};\n"
+        f"@define-color view_bg_color {colors['bg']};\n"
+        f"@define-color view_fg_color {colors['text']};\n"
+        f"@define-color card_bg_color {colors['surface']};\n"
+        f"@define-color card_fg_color {colors['text']};\n"
+        f"@define-color sidebar_bg_color {colors['bg']};\n"
+        f"@define-color sidebar_fg_color {colors['text']};\n"
+        f"@define-color sidebar_border_color {colors['surface']};\n"
+        f"@define-color sidebar_backdrop_color {colors['bg']};\n"
+        f"@define-color theme_selected_bg_color {colors['accent']};\n"
+        f"@define-color theme_selected_fg_color {on_accent};\n\n"
+        "@import \"thunar.css\";\n"
+    )
+
+
 def write(path, content, backup):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if backup and os.path.exists(path) and not os.path.exists(path + ".pre-temas"):
@@ -205,6 +230,12 @@ def main():
         if dst.endswith("kitty/themes/ombu.conf") and a.logo:
             out += kitty_comic(colors, on_accent, a.logo, a.accent2)
         write(dst, out, backup=not a.out)
+    # GTK 3 & GTK 4: hoja de estilos para aplicaciones GTK
+    gtk_text = gtk_css(colors, on_accent)
+    for gdir in [".config/gtk-3.0", ".config/gtk-4.0"]:
+        gpath = os.path.join(root, gdir, "gtk.css")
+        if os.path.exists(os.path.join(root, gdir)):
+            write(gpath, gtk_text, backup=not a.out)
     # Prompt (starship): lee el archivo en cada línea nueva, así que cambia sin reiniciar nada
     with open(os.path.join(EXTRAS, "starship", "starship.toml"), encoding="utf-8") as f:
         write(os.path.join(root, ".config/starship.toml"), starship_text(f.read(), colors, on_accent, a.logo), backup=not a.out)
@@ -220,7 +251,7 @@ def main():
         subprocess.run(["pkill", "-USR1", "-x", "kitty"], check=False)
         subprocess.run([sys.executable, os.path.join(EXTRAS, "icons", "make-ombu-icons.py"), a.folder],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
-    print("tema aplicado a las apps Qt" + (" (prueba en %s)" % root if a.out else ""))
+    print("tema aplicado a las apps Qt y GTK" + (" (prueba en %s)" % root if a.out else ""))
 
 
 if __name__ == "__main__":

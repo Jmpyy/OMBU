@@ -214,7 +214,17 @@ Singleton {
         const c1 = "rgba(" + String(active.accent).replace("#", "") + "ff)";
         // Con un segundo color el borde es un degradé en diagonal (en Lua, una tabla con colors y angle); si no, liso
         const value = active.border2 ? "{ colors = { \"" + c1 + "\", \"rgba(" + String(active.border2).replace("#", "") + "ff)\" }, angle = 45 }" : "\"" + c1 + "\"";
-        Quickshell.execDetached(["hyprctl", "eval", "hl.config({ general = { col = { active_border = " + value + " } } })"]);
+        const isComic = Boolean(active.shadow);
+        const inact = isComic ? "\"rgba(0a0708ff)\"" : "\"rgba(ffffff14)\"";
+        const rnd = isComic ? 8 : 14;
+        const shRange = isComic ? 8 : 24;
+        const shPwr = isComic ? 4 : 3;
+        const shOff = isComic ? "{ 5, 5 }" : "{ 0, 0 }";
+        const shCol = isComic ? "\"rgba(0a0708f0)\"" : "\"rgba(00000070)\"";
+        Quickshell.execDetached([
+            "hyprctl", "eval",
+            "hl.config({ general = { col = { active_border = " + value + ", inactive_border = " + inact + " } }, decoration = { rounding = " + rnd + ", shadow = { offset = " + shOff + ", range = " + shRange + ", render_power = " + shPwr + ", color = " + shCol + " } } })"
+        ]);
     }
 
     FileView {

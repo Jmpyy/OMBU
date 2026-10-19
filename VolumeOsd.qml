@@ -51,45 +51,59 @@ PanelWindow {
     // Región vacía: los clics lo atraviesan
     mask: Region {}
 
+    HardShadow {
+        target: box
+        offset: 4
+    }
+
     Rectangle {
+        id: box
+
         anchors.centerIn: parent
-        width: 280
+        width: 290
         height: 52
-        radius: height / 2
+        radius: Theme.comic ? 8 : (height / 2)
         color: Theme.bg
-        border.width: 1
-        border.color: Theme.border
+        border.width: Theme.comic ? 2 : 1
+        border.color: Theme.comic ? Theme.ink : Theme.border
         opacity: win.p
         scale: 0.92 + 0.08 * win.p
+
+        Halftone {
+            strength: 0.05
+            anchors.margins: 4
+        }
 
         RowLayout {
             anchors.fill: parent
             anchors.leftMargin: 18
-            anchors.rightMargin: 20
+            anchors.rightMargin: 18
             spacing: 14
 
             MIcon {
                 name: Osd.icon
                 font.pixelSize: 22
-                color: Osd.showMuted ? Theme.danger : Theme.text
+                color: Osd.showMuted ? Theme.danger : (Theme.comic ? Theme.accent : Theme.text)
             }
 
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 6
+                Layout.preferredHeight: 8
 
                 Rectangle {
                     id: track
 
                     anchors.fill: parent
-                    radius: 3
+                    radius: Theme.comic ? 4 : 3
                     color: Theme.track
+                    border.width: Theme.comic ? 1 : 0
+                    border.color: Theme.comic ? Theme.ink : "transparent"
 
                     Rectangle {
                         width: track.width * Math.min(1, Osd.level)
                         height: parent.height
                         radius: parent.radius
-                        color: Osd.showMuted ? Theme.textDim : Theme.accent
+                        color: Osd.showMuted ? Theme.danger : Theme.accent
 
                         Behavior on width {
                             NumberAnimation {
@@ -102,12 +116,13 @@ PanelWindow {
             }
 
             Text {
-                Layout.preferredWidth: 40
+                Layout.preferredWidth: Theme.comic ? 56 : 40
                 horizontalAlignment: Text.AlignRight
-                text: Osd.showMuted ? "Mute" : Math.round(Osd.level * 100) + "%"
-                color: Osd.showMuted ? Theme.textDim : Theme.text
-                font.pixelSize: 13
-                font.weight: Font.Medium
+                text: Osd.showMuted ? (Theme.comic ? "¡MUTE!" : "Mute") : Math.round(Osd.level * 100) + "%"
+                color: Osd.showMuted ? Theme.danger : Theme.text
+                font.family: Theme.comic ? Theme.displayFont : Theme.font
+                font.pixelSize: Theme.comic ? 16 : 13
+                font.weight: Theme.comic ? Font.Normal : Font.Medium
             }
         }
     }
