@@ -77,11 +77,11 @@ Rectangle {
     // Los avisos con cuenta regresiva llevan una barra de tiempo abajo
     readonly property bool timed: floating && entry.hasTimer
 
-    implicitHeight: content.implicitHeight + (timed ? 34 : 26)
-    radius: 18
+    implicitHeight: content.implicitHeight + (timed ? 32 : 26)
+    radius: 14
     color: floating ? Theme.bg : Theme.surface
     border.width: floating ? 1 : 0
-    border.color: hover.hovered ? Qt.rgba(1, 1, 1, 0.24) : Theme.border
+    border.color: hover.hovered ? Qt.rgba(1, 1, 1, 0.32) : Theme.outline
 
     Behavior on border.color {
         ColorAnimation {
@@ -135,13 +135,13 @@ Rectangle {
         visible: root.timed
         anchors.left: parent.left
         anchors.bottom: parent.bottom
-        anchors.leftMargin: 18
-        anchors.bottomMargin: 9
-        height: 3
-        radius: 1.5
-        width: (parent.width - 36) * root.entry.remaining
+        anchors.leftMargin: 14
+        anchors.bottomMargin: 8
+        height: 2
+        radius: 1
+        width: (parent.width - 28) * root.entry.remaining
         color: root.entry.critical ? Theme.danger : Theme.accent
-        opacity: hover.hovered ? 1 : 0.7
+        opacity: hover.hovered ? 0.9 : 0.5
 
         Behavior on opacity {
             NumberAnimation {
@@ -163,9 +163,9 @@ Rectangle {
 
         Rectangle {
             Layout.alignment: Qt.AlignTop
-            Layout.preferredWidth: 40
-            Layout.preferredHeight: 40
-            radius: 12
+            Layout.preferredWidth: 38
+            Layout.preferredHeight: 38
+            radius: Theme.controlRadius
             color: root.confirm ? Qt.rgba(root.confirmColor.r, root.confirmColor.g, root.confirmColor.b, 0.16) : (root.floating ? Theme.surface : Theme.bg)
 
             Image {
@@ -348,9 +348,9 @@ Rectangle {
                             readonly property bool danger: modelData.identifier === "deny"
 
                             Layout.fillWidth: primary || danger
-                            Layout.preferredHeight: 34
+                            Layout.preferredHeight: 32
                             Layout.preferredWidth: primary || danger ? 1 : label.implicitWidth + 28
-                            radius: 17
+                            radius: Theme.controlRadius
                             color: btn.primary ? (btnArea.containsMouse ? Qt.lighter(Theme.accent, 1.12) : Theme.accent) : (btn.danger && btnArea.containsMouse ? Theme.danger : (btnArea.containsMouse ? Theme.hover : "transparent"))
                             border.width: btn.primary ? 0 : 1
                             border.color: btn.danger ? Theme.danger : Theme.border
@@ -428,8 +428,8 @@ Rectangle {
                         required property var modelData
 
                         width: label.implicitWidth + 24
-                        height: 28
-                        radius: 14
+                        height: 26
+                        radius: 8
                         color: pillArea.containsMouse ? Theme.accent : Theme.track
 
                         Text {
@@ -461,9 +461,9 @@ Rectangle {
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 8
-        width: 24
-        height: 24
-        radius: 12
+        width: 22
+        height: 22
+        radius: 7
         opacity: hover.hovered ? 1 : 0
         visible: opacity > 0.01
         color: closeArea.containsMouse ? Theme.danger : Theme.track

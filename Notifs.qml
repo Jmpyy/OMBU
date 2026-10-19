@@ -79,8 +79,11 @@ Singleton {
             leave.restart();
         }
 
-        // Segundos que indica la app; sin indicación, 6. Las críticas no se van solas.
-        readonly property bool hasTimer: expireSeconds > 0 || !critical
+        // Todo aviso se va solo, menos la confirmación de un comando de un agente (esa espera a que
+        // decidas). Segundos: los que indica la app; sin indicación, 6 y, si es crítico, 30 (muchas
+        // apps marcan todo como crítico y se quedaban para siempre).
+        readonly property bool hasTimer: kind !== "confirm"
+        readonly property real seconds: expireSeconds > 0 ? expireSeconds : (critical ? 30 : 6)
 
         // La cuenta regresiva es una animación: se pausa con el mouse encima y la barra
         // de progreso de la tarjeta la sigue sin desfasarse.
@@ -89,10 +92,18 @@ Singleton {
             property: "remaining"
             from: 1
             to: 0
-            duration: entry.expireSeconds > 0 ? entry.expireSeconds * 1000 : 6000
+            duration: entry.seconds * 1000
             running: entry.shown && entry.hasTimer
             paused: entry.hovered
             onFinished: entry.hide()
+        }
+
+        // Tope: con el mouse quieto encima el contador se pausaba para siempre. Pasado este tiempo
+        // el aviso se va aunque lo tengas debajo.
+        readonly property Timer hardLimit: Timer {
+            interval: Math.max(entry.seconds * 4, 30) * 1000
+            running: entry.shown && entry.hasTimer
+            onTriggered: entry.hide()
         }
 
         // Deja terminar la animación de salida antes de sacarlo de la lista
