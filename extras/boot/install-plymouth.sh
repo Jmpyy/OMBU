@@ -32,6 +32,8 @@ done
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 chmod 755 "$STAGE"
+# La carpeta la crea root: el tema se genera con tu usuario, así que tiene que poder escribir ahí
+[ "$TEST" = "1" ] || chown "$USERNAME" "$STAGE"
 
 echo "Generando el tema (unos segundos)..."
 if [ "$TEST" = "1" ]; then
