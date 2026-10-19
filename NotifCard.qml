@@ -220,12 +220,34 @@ Rectangle {
         anchors.rightMargin: 12
         spacing: 12
 
+        // En los temas de cómic el ícono es un sticker: inclinado, con borde de tinta y sombra dura,
+        // y se sale un poco de la esquina de la tarjeta
         Rectangle {
+            id: iconBox
+
             Layout.alignment: Qt.AlignTop
-            Layout.preferredWidth: 38
-            Layout.preferredHeight: 38
-            radius: Theme.controlRadius
-            color: root.confirm ? Qt.rgba(root.confirmColor.r, root.confirmColor.g, root.confirmColor.b, 0.16) : (root.floating ? Theme.surface : Theme.bg)
+            Layout.preferredWidth: Theme.comic ? 42 : 38
+            Layout.preferredHeight: Theme.comic ? 42 : 38
+            radius: Theme.comic ? 8 : Theme.controlRadius
+            color: root.confirm ? Qt.rgba(root.confirmColor.r, root.confirmColor.g, root.confirmColor.b, 0.16) : (Theme.comic && !icon.visible ? Theme.accent : (root.floating ? Theme.surface : Theme.bg))
+            border.width: Theme.comic ? 2 : 0
+            border.color: "#0a0708"
+            rotation: Theme.comic ? -6 : 0
+            transform: Translate {
+                x: Theme.comic ? -5 : 0
+                y: Theme.comic ? -6 : 0
+            }
+
+            Rectangle {
+                visible: Theme.comic
+                z: -1
+                x: 3
+                y: 3
+                width: parent.width
+                height: parent.height
+                radius: parent.radius
+                color: "#0a0708"
+            }
 
             Image {
                 id: icon
@@ -244,7 +266,7 @@ Rectangle {
                 anchors.centerIn: parent
                 visible: root.confirm || !icon.visible
                 name: root.confirm ? (root.entry.risky ? "warning" : "terminal") : (root.entry.kind === "summary" ? "wb_sunny" : (root.entry.appName === "Capturas" ? "photo_camera" : "notifications"))
-                color: root.confirm ? root.confirmColor : Theme.textDim
+                color: root.confirm ? root.confirmColor : (Theme.comic ? Theme.accentText : Theme.textDim)
             }
         }
 
