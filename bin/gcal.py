@@ -247,6 +247,8 @@ def cmd_list(since, until_day):
         cals = [c for c in api("GET", "/users/me/calendarList").get("items", []) if c.get("selected", True) and not c.get("deleted")]
     except Fail:
         cals = []
+    # Los feriados ya los trae ombu aparte (bin/feriados.sh): los calendarios de feriados de Google duplicarían
+    cals = [c for c in cals if not c.get("id", "").endswith("#holiday@group.v.calendar.google.com")]
     if not cals:
         cals = [{"id": "primary", "summary": "Principal"}]
     events = []

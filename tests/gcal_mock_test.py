@@ -30,7 +30,7 @@ class H(http.server.BaseHTTPRequestHandler):
         if not self.auth_ok(): return self.send(401, {"error": {"message": "bad token"}})
         u = urllib.parse.urlparse(self.path); q = urllib.parse.parse_qs(u.query)
         if u.path == "/users/me/calendarList":
-            return self.send(200, {"items": [{"id": "primary", "summary": "Juan", "selected": True}, {"id": "clases", "summary": "UPE", "selected": True}, {"id": "oculto", "summary": "Oculto", "selected": False}]})
+            return self.send(200, {"items": [{"id": "primary", "summary": "Juan", "selected": True}, {"id": "clases", "summary": "UPE", "selected": True}, {"id": "oculto", "summary": "Oculto", "selected": False}, {"id": "es.ar#holiday@group.v.calendar.google.com", "summary": "Feriados", "selected": True}]})
         m = re.fullmatch(r"/calendars/([^/]+)/events", u.path)
         if m:
             LOG.append(("list", m.group(1), q))
@@ -92,6 +92,7 @@ titles = [(e["date"], e["time"], e["title"]) for e in ev]
 print(titles)
 check("pagina y junta calendarios (sin el oculto ni el cancelado)", sorted(set(e["title"] for e in ev)) == ["Mío", "Programación I", "Reunión", "Viaje"])
 check("evento de todo el día de varios días se reparte (23, 24 y 25)", [e["date"] for e in ev if e["title"] == "Viaje"] == ["2026-10-23", "2026-10-24", "2026-10-25"])
+check("no repite los calendarios de feriados de Google", len([e for e in ev if e["title"] == "Programación I"]) == 1, titles)
 check("UTC pasa a hora local (22:00Z -> 19:00)", ("2026-10-19", "19:00", "Programación I") in titles)
 check("trae el link de Meet y la marca 'mío'", any(e["meet"].startswith("https://meet.google.com") for e in ev) and [e["mine"] for e in ev if e["title"] == "Mío"] == [True])
 # 4) renovación: el access token vence y se renueva solo
