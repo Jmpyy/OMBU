@@ -48,7 +48,33 @@ PanelWindow {
         if (newsCategory === "todo")
             return News.all;
         const c = News.categories.find(x => x.id === newsCategory);
-        return c ? c.items : [];
+        return c ? c.items.map(it => Object.assign({}, it, {
+                category: c.name,
+                categoryId: c.id
+            })) : [];
+    }
+
+    // Cada categoría de noticias tiene su color (el sticker de cada titular y su botón)
+    function catColor(id: string): color {
+        switch (id) {
+        case "argentina":
+            return Theme.accent;
+        case "economia":
+            return Theme.warn;
+        case "tecnologia":
+            return Themes.active.border2 ?? "#5fb0ae";
+        case "seguridad":
+            return Theme.danger;
+        case "programacion":
+            return "#6f9bf0";
+        default:
+            return Theme.accent;
+        }
+    }
+
+    // Texto legible sobre un color: tinta sobre los claros, crema sobre los oscuros
+    function onColor(c: color): color {
+        return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) > 0.5 ? Theme.ink : Theme.accentText;
     }
 
     // Lo que se mide o se baja depende de la pestaña abierta
@@ -466,19 +492,25 @@ PanelWindow {
                                 required property var modelData
                                 readonly property bool on: win.newsCategory === modelData.id
 
+                                readonly property color cc: win.catColor(modelData.id)
+
                                 width: chipText.implicitWidth + 20
-                                height: 26
-                                radius: 8
-                                color: on ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22) : (chipHover.hovered ? Theme.hover : Theme.surface)
+                                height: 28
+                                radius: Theme.comic ? 5 : 8
+                                color: on ? (Theme.comic ? cc : Qt.rgba(cc.r, cc.g, cc.b, 0.22)) : (chipHover.hovered ? Theme.hover : Theme.surface)
+                                border.width: Theme.comic ? 1.5 : 0
+                                border.color: Theme.comic ? (on ? Theme.ink : Qt.rgba(chip.cc.r, chip.cc.g, chip.cc.b, 0.55)) : "transparent"
 
                                 Text {
                                     id: chipText
 
                                     anchors.centerIn: parent
                                     text: chip.modelData.name
-                                    color: chip.on ? Theme.accent : Theme.textDim
-                                    font.pixelSize: 12
-                                    font.weight: Font.DemiBold
+                                    color: chip.on ? (Theme.comic ? win.onColor(chip.cc) : chip.cc) : Theme.textDim
+                                    font.family: Theme.displayFont && Theme.comic ? Theme.displayFont : Qt.application.font.family
+                                    font.pixelSize: Theme.comic ? 14 : 12
+                                    font.letterSpacing: Theme.comic ? 1 : 0
+                                    font.weight: Theme.comic ? Font.Normal : Font.DemiBold
                                 }
 
                                 HoverHandler {
@@ -516,46 +548,119 @@ PanelWindow {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         clip: true
-                        spacing: 2
+                        spacing: 0
                         model: win.newsItems
                         boundsBehavior: Flickable.StopAtBounds
 
-                        delegate: Rectangle {
+                        delegate: Item {
                             id: row
 
                             required property var modelData
+                            required property int index
+                            readonly property color cc: win.catColor(modelData.categoryId ?? "")
+                            readonly property bool seen: News.seen[modelData.link] === true
+                            readonly property bool lead: index === 0
 
                             width: ListView.view.width
-                            height: titleText.implicitHeight + metaText.implicitHeight + 16
-                            radius: 9
-                            color: rowHover.hovered ? Theme.surface : "transparent"
+                            height: card.height + 10
 
-                            Column {
-                                anchors.fill: parent
-                                anchors.margins: 8
-                                anchors.topMargin: 6
-                                spacing: 2
+                            // Sombra dura de viñeta (solo temas de cómic)
+                            Rectangle {
+                                visible: Theme.comic
+                                x: card.x + 3
+                                y: card.y + 3
+                                width: card.width
+                                height: card.height
+                                radius: card.radius
+                                color: Theme.shadow
+                                opacity: row.seen ? 0.5 : 1
+                            }
 
-                                Text {
-                                    id: titleText
+                            Rectangle {
+                                id: card
 
-                                    width: parent.width
-                                    text: row.modelData.title
-                                    wrapMode: Text.Wrap
-                                    maximumLineCount: 3
-                                    elide: Text.ElideRight
-                                    color: Theme.text
-                                    font.pixelSize: 13
+                                x: 0
+                                width: parent.width - 4
+                                height: body.implicitHeight + 20
+                                radius: Theme.comic ? 6 : 10
+                                color: rowHover.hovered ? Qt.lighter(Theme.surface, 1.25) : Theme.surface
+                                border.width: Theme.comic ? 2 : 1
+                                border.color: Theme.comic ? Theme.ink : Theme.border
+                                opacity: row.seen ? 0.55 : 1
+
+                                // Franja del color de la categoría
+                                Rectangle {
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    anchors.bottom: parent.bottom
+                                    anchors.margins: Theme.comic ? 2 : 1
+                                    width: 4
+                                    radius: 2
+                                    color: row.cc
                                 }
 
-                                Text {
-                                    id: metaText
+                                Column {
+                                    id: body
 
-                                    width: parent.width
-                                    text: row.modelData.source + (row.modelData.category ? " · " + row.modelData.category : "") + " · " + win.ago(row.modelData.time)
-                                    elide: Text.ElideRight
-                                    color: Theme.textDim
-                                    font.pixelSize: 11
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.top: parent.top
+                                    anchors.leftMargin: 16
+                                    anchors.rightMargin: 10
+                                    anchors.topMargin: 9
+                                    spacing: 6
+
+                                    Row {
+                                        width: parent.width
+                                        spacing: 8
+
+                                        // Sticker de la categoría
+                                        Rectangle {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            visible: (row.modelData.category ?? "") !== ""
+                                            width: tag.implicitWidth + 12
+                                            height: tag.implicitHeight + 4
+                                            radius: Theme.comic ? 3 : height / 2
+                                            color: row.cc
+                                            border.width: Theme.comic ? 1.5 : 0
+                                            border.color: Theme.ink
+                                            rotation: Theme.comic ? -2 : 0
+
+                                            Text {
+                                                id: tag
+
+                                                anchors.centerIn: parent
+                                                text: (row.modelData.category ?? "").toUpperCase()
+                                                color: win.onColor(row.cc)
+                                                font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
+                                                font.pixelSize: Theme.comic ? 13 : 10
+                                                font.letterSpacing: Theme.comic ? 1 : 0.6
+                                                font.weight: Theme.comic ? Font.Normal : Font.Bold
+                                            }
+                                        }
+
+                                        Text {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            width: parent.width - (parent.children[0].visible ? parent.children[0].width + 8 : 0)
+                                            text: row.modelData.source + " · " + win.ago(row.modelData.time)
+                                            elide: Text.ElideRight
+                                            color: Theme.textDim
+                                            font.pixelSize: 11
+                                        }
+                                    }
+
+                                    Text {
+                                        id: titleText
+
+                                        width: parent.width
+                                        text: row.modelData.title
+                                        wrapMode: Text.Wrap
+                                        maximumLineCount: row.lead ? 4 : 3
+                                        elide: Text.ElideRight
+                                        color: row.seen ? Theme.textDim : Theme.text
+                                        font.pixelSize: row.lead ? 15 : 13
+                                        font.weight: row.lead ? Font.DemiBold : Font.Medium
+                                    }
                                 }
                             }
 
@@ -566,6 +671,7 @@ PanelWindow {
                             }
                             TapHandler {
                                 onTapped: {
+                                    News.markSeen(row.modelData.link);
                                     Quickshell.execDetached(["xdg-open", row.modelData.link]);
                                     Ui.sideOpen = false;
                                 }

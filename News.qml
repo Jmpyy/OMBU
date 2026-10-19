@@ -16,13 +16,23 @@ Singleton {
     property bool loading: false
     property string error: ""
 
+    // Titulares que ya abriste (por su dirección). Solo vive mientras el shell: se apagan en la lista.
+    property var seen: ({})
+
+    function markSeen(link: string): void {
+        seen = Object.assign({}, seen, {
+            [link]: true
+        });
+    }
+
     // Todas juntas, lo más nuevo primero (para la pestaña «Todo»)
     readonly property var all: {
         const out = [];
         for (const c of categories)
             for (const it of c.items)
                 out.push(Object.assign({}, it, {
-                    category: c.name
+                    category: c.name,
+                    categoryId: c.id
                 }));
         return out.sort((a, b) => b.time - a.time).slice(0, 40);
     }
