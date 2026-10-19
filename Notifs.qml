@@ -84,7 +84,7 @@ Singleton {
         // decidas). Segundos: los que indica la app; sin indicación, 6 y, si es crítico, 30 (muchas
         // apps marcan todo como crítico y se quedaban para siempre).
         readonly property bool hasTimer: kind !== "confirm"
-        readonly property real seconds: expireSeconds > 0 ? expireSeconds : (critical ? 30 : 6)
+        readonly property real seconds: expireSeconds > 0 ? expireSeconds : (kind === "summary" ? 25 : (critical ? 30 : 6))
 
         // La cuenta regresiva es una animación: se pausa con el mouse encima y la barra
         // de progreso de la tarjeta la sigue sin desfasarse.

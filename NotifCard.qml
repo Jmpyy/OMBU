@@ -198,7 +198,7 @@ Rectangle {
             MIcon {
                 anchors.centerIn: parent
                 visible: root.confirm || !icon.visible
-                name: root.confirm ? (root.entry.risky ? "warning" : "terminal") : (root.entry.appName === "Capturas" ? "photo_camera" : "notifications")
+                name: root.confirm ? (root.entry.risky ? "warning" : "terminal") : (root.entry.kind === "summary" ? "wb_sunny" : (root.entry.appName === "Capturas" ? "photo_camera" : "notifications"))
                 color: root.confirm ? root.confirmColor : Theme.textDim
             }
         }
@@ -243,7 +243,7 @@ Rectangle {
                 text: root.entry.body
                 textFormat: Text.PlainText
                 wrapMode: Text.Wrap
-                maximumLineCount: 3
+                maximumLineCount: root.entry.kind === "summary" ? 9 : 3
                 elide: Text.ElideRight
                 color: Qt.rgba(1, 1, 1, 0.72)
                 font.pixelSize: 13

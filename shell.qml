@@ -151,6 +151,11 @@ ShellRoot {
             Agenda.check();
         }
 
+        // ipc call agenda summary  -> muestra el resumen del día ahora
+        function summary(): void {
+            Agenda.showSummary();
+        }
+
         // ipc call agenda destination google|local  -> adónde van los eventos nuevos
         function destination(where: string): void {
             Agenda.setCreateInGoogle(where === "google");

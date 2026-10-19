@@ -400,6 +400,80 @@ Singleton {
         }
     }
 
+    // ---- Resumen del día: una notificación al prender la compu, una vez por día ----
+    property string summaryDay: ""
+
+    function greeting(): string {
+        const h = new Date().getHours();
+        return h < 12 ? "Buen día" : (h < 20 ? "Buenas tardes" : "Buenas noches");
+    }
+
+    // Líneas del resumen: lo de hoy, los pagos de los próximos días y el estudio
+    function summaryLines(): var {
+        const lines = [];
+        const day = ymd(now);
+        const items = itemsFor(day);
+        // Los pagos van en su propia línea (ver más abajo): acá no se repiten
+        const mine = items.filter(it => !/^(Pagar|Avisar a mamá)/.test(it.title));
+        const holiday = mine.find(it => it.kind === "holiday");
+        if (holiday)
+            lines.push("Feriado: " + holiday.title);
+        const rest = mine.filter(it => it.kind !== "holiday");
+        for (const it of rest.slice(0, 5))
+            lines.push(it.time ? it.time + "  " + it.title : "Todo el día: " + it.title);
+        if (rest.length > 5)
+            lines.push("+" + (rest.length - 5) + " más");
+        if (rest.length === 0 && !holiday)
+            lines.push("Nada agendado para hoy");
+
+        const due = Subs.upcoming.filter(u => u.days <= 3);
+        if (due.length > 0)
+            lines.push("Pagos: " + due.map(u => u.sub.name + " " + Subs.money(u.sub.amount, u.sub.currency) + " (" + Subs.whenText(u.days).toLowerCase() + ")").join(", "));
+
+        if (Focus.streak > 0)
+            lines.push("Racha de estudio: " + Focus.streak + (Focus.streak === 1 ? " día" : " días"));
+        return lines;
+    }
+
+    function showSummary(): void {
+        summaryDay = ymd(new Date());
+        summaryFile.setText(JSON.stringify({
+            day: summaryDay
+        }));
+        Quickshell.execDetached(["notify-send", "-a", "Resumen del día", "-h", "string:x-ombu-kind:summary", greeting(), summaryLines().join("\n")]);
+    }
+
+    // Al arrancar espera a que carguen Google y los pagos (hasta ~45 s) y avisa si hoy no lo hizo
+    function maybeSummary(): void {
+        if (summaryDay === ymd(new Date()))
+            return;
+        const ready = !googleOn || googleAt > 0;
+        if (!ready && summaryWait < 9) {
+            summaryWait += 1;
+            summaryTimer.restart();
+            return;
+        }
+        showSummary();
+    }
+
+    property int summaryWait: 0
+
+    FileView {
+        id: summaryFile
+
+        path: root.dataDir + "/resumen.json"
+        blockLoading: true
+        printErrors: false
+    }
+
+    Timer {
+        id: summaryTimer
+
+        interval: 5000
+        running: true
+        onTriggered: root.maybeSummary()
+    }
+
     function loadHolidays(year: int): void {
         const proc = holidayComponent.createObject(root, {
             command: [ombuDir + "/bin/feriados.sh", String(year)]
@@ -521,6 +595,11 @@ Singleton {
                 createInGoogle = cfg.createInGoogle;
             if (Array.isArray(cfg.hidden))
                 hidden = cfg.hidden;
+        } catch (e) {}
+        try {
+            const sd = JSON.parse(summaryFile.text());
+            if (typeof sd.day === "string")
+                summaryDay = sd.day;
         } catch (e) {}
         loadHolidays(now.getFullYear());
         loadHolidays(now.getFullYear() + 1);
