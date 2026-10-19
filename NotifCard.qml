@@ -12,7 +12,21 @@ Rectangle {
     // En los avisos emergentes la tarjeta lleva fondo y borde propios
     property bool floating: false
 
-    readonly property var extraActions: entry.actionList.filter(a => a.identifier !== "default")
+    // Botones que se muestran: todas las acciones (también la principal, que antes quedaba escondida
+    // detrás del clic en la tarjeta), sin repetir textos
+    readonly property var extraActions: {
+        const seen = {};
+        return entry.actionList.filter(a => {
+            const t = (a.text ?? "").trim();
+            if (t === "" || seen[t])
+                return false;
+            seen[t] = true;
+            return true;
+        });
+    }
+    // ¿La app que mandó el aviso tiene una ventana a la que ir? Si ninguna acción ya dice «ver» o
+    // «abrir», se agrega un botón «Ir a la app»
+    readonly property bool canGo: !confirm && Notifs.windowFor(entry) !== null && !extraActions.some(a => Notifs.opensApp(a))
 
     // Confirmación de un comando de un agente (bin/agent-confirm.py)
     readonly property bool confirm: entry.kind === "confirm"
@@ -416,8 +430,51 @@ Rectangle {
             Flow {
                 Layout.fillWidth: true
                 Layout.topMargin: 6
-                visible: root.extraActions.length > 0 && !root.confirm
+                visible: (root.extraActions.length > 0 || root.canGo) && !root.confirm
                 spacing: 6
+
+                // Ir a la app (cuando el aviso no trae un botón propio para eso)
+                Rectangle {
+                    visible: root.canGo
+                    width: goRow.implicitWidth + 24
+                    height: 26
+                    radius: 8
+                    color: goArea.containsMouse ? Theme.accent : Theme.track
+
+                    Row {
+                        id: goRow
+
+                        anchors.centerIn: parent
+                        spacing: 5
+
+                        MIcon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            name: "open_in_new"
+                            font.pixelSize: 14
+                            color: goArea.containsMouse ? "#14131a" : Theme.text
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Ir a la app"
+                            color: goArea.containsMouse ? "#14131a" : Theme.text
+                            font.pixelSize: 12
+                            font.weight: Font.Medium
+                        }
+                    }
+
+                    MouseArea {
+                        id: goArea
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            Notifs.focusApp(root.entry);
+                            Notifs.dismiss(root.entry);
+                        }
+                    }
+                }
 
                 Repeater {
                     model: root.extraActions

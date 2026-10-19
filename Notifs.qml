@@ -141,7 +141,9 @@ Singleton {
         n.closed.connect(() => root.remove(entry));
         received(entry);
 
-        if (!dnd || entry.critical) {
+        // Las que sobreviven a una recarga del shell (lastGeneration) ya se vieron: solo van al
+        // historial. Antes reaparecían como nuevas cada vez que se recargaba.
+        if ((!dnd || entry.critical) && !n.lastGeneration) {
             toasts = [entry, ...toasts];
             entry.shown = true;
             // Máximo 5 avisos a la vez; los más viejos se van (siguen en el historial)
@@ -176,27 +178,28 @@ Singleton {
             dismiss(e);
     }
 
-    // Lleva al frente la ventana de la app que mandó el aviso. Muchas apps (Discord, por ejemplo)
-    // reciben «Ver» o «Responder» y no hacen nada: así el botón siempre te lleva a la app.
-    function focusApp(entry): void {
-        // Los agentes de IA de la terminal (bin/agent-notify.sh) no tienen ventana propia: el aviso
-        // lleva a la consola
-        if (/^(claude code|antigravity)$/i.test(entry.appName)) {
-            Hyprland.dispatch("hl.dsp.focus({ window = \"class:kitty\" })");
-            return;
-        }
+    // La ventana de la app que mandó el aviso (null si no tiene). Los agentes de IA de la terminal
+    // (bin/agent-notify.sh) no tienen ventana propia: su aviso lleva a la consola.
+    function windowFor(entry): var {
+        if (/^(claude code|antigravity)$/i.test(entry.appName))
+            return Apps.windows.find(t => (t.wayland?.appId ?? "") === "kitty") ?? null;
         const name = entry.appName.toLowerCase();
         const key = (entry.desktopEntry || entry.appName).toLowerCase();
         const de = DesktopEntries.heuristicLookup(entry.desktopEntry || entry.appName);
-        const wins = Apps.windows.filter(t => {
+        return Apps.windows.find(t => {
             const app = (t.wayland?.appId ?? "").toLowerCase();
             if (app === "")
                 return false;
             return app === key || app === name || (de && (app === de.id.toLowerCase() || app === (de.startupClass ?? "").toLowerCase() || DesktopEntries.heuristicLookup(app)?.id === de.id));
-        });
-        if (wins.length === 0)
+        }) ?? null;
+    }
+
+    // Lleva al frente la ventana de esa app. Muchas apps (Discord, por ejemplo) reciben «Ver» o
+    // «Responder» y no hacen nada: así el botón siempre te lleva a la app.
+    function focusApp(entry): void {
+        const t = windowFor(entry);
+        if (!t)
             return;
-        const t = wins[0];
         const address = "address:0x" + t.address;
         if (t.workspace?.name === "special:minimized") {
             // Minimizada: se trae al escritorio actual
