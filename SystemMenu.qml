@@ -15,14 +15,26 @@ PanelWindow {
 
     readonly property int maxListHeight: 460
 
-    // Camino de secciones por el que se entró (la última es la que se está viendo)
+    // Camino de secciones por el que se entró, como nombres ("Estilo", "Tema"). Se guardan los
+    // nombres y no los objetos: el árbol se recalcula al cambiar el tema o el teclado, y una
+    // sección guardada quedaba con las marcas viejas (la tilde no se movía).
     property var path: []
     // Fila que pidió confirmación (apagar, reiniciar, cerrar sesión): se ejecuta con un segundo Enter
     property string armed: ""
     // Acción que espera a que el menú termine de cerrarse
     property var pending: null
 
-    readonly property var section: path.length > 0 ? path[path.length - 1] : null
+    readonly property var section: {
+        let list = tree;
+        let node = null;
+        for (const name of path) {
+            node = list.find(x => x.children && x.name === name) ?? null;
+            if (!node)
+                return null;
+            list = node.children;
+        }
+        return node;
+    }
     readonly property string query: input.text.trim().toLowerCase()
 
     // Abre un menú de la barra (calendario, mezcladora...) en el monitor con foco
@@ -253,7 +265,7 @@ PanelWindow {
 
     readonly property var currentRow: list.currentIndex >= 0 && list.currentIndex < rows.length ? rows[list.currentIndex] : null
 
-    // De un camino como "Estilo>Tema" a la lista de secciones por las que entrar
+    // De un camino como "Estilo>Tema" a los nombres de las secciones por las que entrar
     function resolve(start: string): var {
         const out = [];
         let list = tree;
@@ -261,7 +273,7 @@ PanelWindow {
             const n = list.find(x => x.children && x.name.toLowerCase() === name.toLowerCase());
             if (!n)
                 break;
-            out.push(n);
+            out.push(n.name);
             list = n.children;
         }
         return out;
@@ -269,7 +281,7 @@ PanelWindow {
 
     function open_(item: var): void {
         // Esc o Retroceso vuelven; al salir de Tema la vista previa se deshace sola (ver Binding)
-        path = path.concat([item]);
+        path = path.concat([item.name]);
         input.text = "";
         armed = "";
         list.currentIndex = 0;

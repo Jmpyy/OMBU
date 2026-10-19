@@ -166,7 +166,7 @@ PanelWindow {
             width: parent.width
             height: Theme.barHeight
 
-            // Izquierda: logo (abre el menú de energía) + workspaces
+            // Izquierda: logo (abre el menú del sistema) + workspaces
             Row {
                 anchors.left: parent.left
                 anchors.leftMargin: win.sideMargin
@@ -180,7 +180,7 @@ PanelWindow {
                     width: 30
                     height: 24
                     radius: 12
-                    color: logoArea.containsMouse || Ui.powerOpen ? Theme.hover : "transparent"
+                    color: logoArea.containsMouse || Ui.sysMenuOpen ? Theme.hover : "transparent"
 
                     Image {
                         anchors.centerIn: parent
@@ -198,7 +198,16 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: Ui.powerOpen = !Ui.powerOpen
+                        onClicked: {
+                            // El menú del sistema (el de energía sigue en Super+Esc y en Sistema)
+                            Ui.powerOpen = false;
+                            Ui.launcherOpen = false;
+                            Ui.clipOpen = false;
+                            Ui.keysOpen = false;
+                            Ui.popup = "";
+                            Ui.sysMenuStart = "";
+                            Ui.sysMenuOpen = !Ui.sysMenuOpen;
+                        }
                     }
                 }
 
