@@ -129,7 +129,7 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         text: "Cerrar y estudiar"
-                        color: "#14131a"
+                        color: Theme.onAccent
                         font.pixelSize: 14
                         font.weight: Font.DemiBold
                     }

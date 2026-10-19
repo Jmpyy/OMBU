@@ -276,7 +276,7 @@ PanelWindow {
 
                         anchors.centerIn: parent
                         text: Submap.label + "  ·  Esc para salir"
-                        color: "#14131a"
+                        color: Theme.onAccent
                         font.pixelSize: 12
                         font.weight: Font.DemiBold
                     }

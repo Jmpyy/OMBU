@@ -147,7 +147,7 @@ DropPopup {
                                 anchors.centerIn: parent
                                 name: "mic"
                                 font.pixelSize: 10
-                                color: "#14131a"
+                                color: Theme.onAccent
                             }
                         }
                     }

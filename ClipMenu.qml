@@ -154,6 +154,10 @@ PanelWindow {
         }
     }
 
+    HardShadow {
+        target: card
+    }
+
     Rectangle {
         id: card
 
@@ -202,7 +206,7 @@ PanelWindow {
                     Layout.fillWidth: true
                     color: Theme.text
                     selectionColor: Theme.accent
-                    selectedTextColor: "#14131a"
+                    selectedTextColor: Theme.onAccent
                     font.pixelSize: 18
                     clip: true
                     focus: true
@@ -295,7 +299,7 @@ PanelWindow {
                         MIcon {
                             anchors.verticalCenter: parent.verticalCenter
                             name: "delete_sweep"
-                            color: win.clearArmed ? "#14131a" : Theme.textDim
+                            color: win.clearArmed ? Theme.onAccent : Theme.textDim
                             font.pixelSize: 19
                         }
 
@@ -303,7 +307,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: win.clearArmed
                             text: "Tocá de nuevo"
-                            color: "#14131a"
+                            color: Theme.onAccent
                             font.pixelSize: 12
                             font.weight: Font.DemiBold
                         }
@@ -489,7 +493,7 @@ PanelWindow {
                                     MIcon {
                                         anchors.centerIn: parent
                                         name: "close"
-                                        color: delHover.hovered ? "#14131a" : Theme.textDim
+                                        color: delHover.hovered ? Theme.onAccent : Theme.textDim
                                         font.pixelSize: 17
                                     }
 

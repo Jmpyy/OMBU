@@ -37,7 +37,7 @@ DropPopup {
 
             anchors.centerIn: parent
             text: pill.text
-            color: pill.filled ? "#14131a" : (pill.selected ? Theme.text : (pill.danger ? Theme.danger : Theme.textDim))
+            color: pill.filled ? Theme.onAccent : (pill.selected ? Theme.text : (pill.danger ? Theme.danger : Theme.textDim))
             font.pixelSize: 13
             font.weight: Font.DemiBold
         }
@@ -252,7 +252,7 @@ DropPopup {
                             width: 16
                             height: 16
                             radius: 8
-                            color: Focus.autoOpen ? "#14131a" : Theme.text
+                            color: Focus.autoOpen ? Theme.onAccent : Theme.text
 
                             Behavior on x {
                                 NumberAnimation {
@@ -482,7 +482,7 @@ DropPopup {
                     Layout.fillWidth: true
                     color: Theme.text
                     selectionColor: Theme.accent
-                    selectedTextColor: "#14131a"
+                    selectedTextColor: Theme.onAccent
                     font.pixelSize: 13
                     clip: true
                     onAccepted: {

@@ -156,7 +156,7 @@ Rectangle {
                     anchors.centerIn: parent
                     name: btn.modelData.icon
                     font.pixelSize: btn.modelData.main ? 22 : 20
-                    color: btn.modelData.main ? "#14131a" : Theme.text
+                    color: btn.modelData.main ? Theme.onAccent : Theme.text
                 }
 
                 HoverHandler {

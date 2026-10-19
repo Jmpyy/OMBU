@@ -84,6 +84,11 @@ PanelWindow {
                     }
                 }
 
+                HardShadow {
+                    target: card
+                    offset: 4
+                }
+
                 NotifCard {
                     id: card
 

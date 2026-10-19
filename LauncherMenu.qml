@@ -409,6 +409,10 @@ PanelWindow {
         }
     }
 
+    HardShadow {
+        target: card
+    }
+
     Rectangle {
         id: card
 
@@ -457,7 +461,7 @@ PanelWindow {
                     Layout.fillWidth: true
                     color: Theme.text
                     selectionColor: Theme.accent
-                    selectedTextColor: "#14131a"
+                    selectedTextColor: Theme.onAccent
                     font.pixelSize: 19
                     clip: true
                     focus: true

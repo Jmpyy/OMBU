@@ -161,7 +161,7 @@ Item {
                     enabled: Auth.state !== "checking"
                     color: Theme.text
                     selectionColor: Theme.accent
-                    selectedTextColor: "#14131a"
+                    selectedTextColor: Theme.onAccent
                     font.pixelSize: 17
                     clip: true
                     focus: true
@@ -249,7 +249,7 @@ Item {
                     MIcon {
                         anchors.centerIn: parent
                         name: Auth.state === "checking" ? "hourglass_top" : "arrow_forward"
-                        color: input.text.length > 0 ? "#14131a" : Theme.textDim
+                        color: input.text.length > 0 ? Theme.onAccent : Theme.textDim
                         font.pixelSize: 20
                     }
 

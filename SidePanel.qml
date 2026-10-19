@@ -149,6 +149,10 @@ PanelWindow {
         focus: true
         Keys.onEscapePressed: Ui.sideOpen = false
 
+        HardShadow {
+            target: card
+        }
+
         Rectangle {
             id: card
 

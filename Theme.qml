@@ -23,6 +23,11 @@ Singleton {
     readonly property color accent: Themes.active.accent
     readonly property color danger: Themes.active.danger
     readonly property color warn: Themes.active.warn
+    // Texto e íconos sobre un fondo de acento (botones, pastilla del escritorio activo...). Oscuro en los
+    // temas de acento claro y crema en los de acento rojo, donde el oscuro no se lee bien.
+    // Sombra dura de las tarjetas (HardShadow): transparente salvo en los temas de cómic
+    readonly property color shadow: Themes.active.shadow ?? "transparent"
+    readonly property color onAccent: Themes.active.onAccent ?? "#14131a"
     readonly property color hover: Qt.rgba(1, 1, 1, 0.09)
     readonly property color border: Qt.rgba(1, 1, 1, 0.08)
     // Contorno de la barra y de los menús que cuelgan de ella: se nota sobre una terminal oscura

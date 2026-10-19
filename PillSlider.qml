@@ -36,7 +36,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         name: slider.icon
         font.pixelSize: 18
-        color: slider.muted ? Theme.danger : (slider.value > 0.04 ? "#14131a" : Theme.text)
+        color: slider.muted ? Theme.danger : (slider.value > 0.04 ? Theme.onAccent : Theme.text)
     }
 
     MouseArea {

@@ -57,7 +57,7 @@ DropPopup {
                     anchors.centerIn: parent
                     name: tile.icon
                     font.pixelSize: 18
-                    color: tile.on ? "#14131a" : Theme.text
+                    color: tile.on ? Theme.onAccent : Theme.text
                 }
             }
 

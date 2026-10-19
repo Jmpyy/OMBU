@@ -374,7 +374,7 @@ Rectangle {
 
                                 anchors.centerIn: parent
                                 text: btn.modelData.text
-                                color: btn.primary || (btn.danger && btnArea.containsMouse) ? "#14131a" : (btn.danger ? Theme.danger : Theme.textDim)
+                                color: btn.primary || (btn.danger && btnArea.containsMouse) ? Theme.onAccent : (btn.danger ? Theme.danger : Theme.textDim)
                                 font.pixelSize: 13
                                 font.weight: Font.DemiBold
                             }
@@ -451,13 +451,13 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             name: "open_in_new"
                             font.pixelSize: 14
-                            color: goArea.containsMouse ? "#14131a" : Theme.text
+                            color: goArea.containsMouse ? Theme.onAccent : Theme.text
                         }
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Ir a la app"
-                            color: goArea.containsMouse ? "#14131a" : Theme.text
+                            color: goArea.containsMouse ? Theme.onAccent : Theme.text
                             font.pixelSize: 12
                             font.weight: Font.Medium
                         }
@@ -494,7 +494,7 @@ Rectangle {
 
                             anchors.centerIn: parent
                             text: pill.modelData.text
-                            color: pillArea.containsMouse ? "#14131a" : Theme.text
+                            color: pillArea.containsMouse ? Theme.onAccent : Theme.text
                             font.pixelSize: 12
                             font.weight: Font.Medium
                         }
@@ -535,7 +535,7 @@ Rectangle {
             anchors.centerIn: parent
             name: "close"
             font.pixelSize: 14
-            color: closeArea.containsMouse ? "#14131a" : Theme.textDim
+            color: closeArea.containsMouse ? Theme.onAccent : Theme.textDim
         }
 
         MouseArea {

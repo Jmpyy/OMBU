@@ -65,7 +65,7 @@ Row {
             MIcon {
                 anchors.centerIn: parent
                 name: button.modelData.icon
-                color: button.isArmed ? "#14131a" : Qt.rgba(1, 1, 1, 0.85)
+                color: button.isArmed ? Theme.onAccent : Qt.rgba(1, 1, 1, 0.85)
                 font.pixelSize: 22
             }
 

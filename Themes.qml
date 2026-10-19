@@ -11,7 +11,45 @@ import Quickshell.Io
 Singleton {
     id: root
 
+    // onAccent: texto sobre el acento (por defecto oscuro) · border2: segundo color del degradé del borde
+    // de la ventana activa (si falta, el borde es liso) · shadow: color de la sombra dura de las tarjetas
+    // (HardShadow; si falta, no hay sombra)
     readonly property var palettes: [
+        {
+            // El fondo de pantalla de Peter Parker: negro cálido, papel crema, rojo y el verde azulado
+            // de las letras de «Amazing» y de los ojos de la máscara
+            id: "spiderman",
+            name: "Spider-Man",
+            bg: "#161011",
+            surface: "#211819",
+            track: "#35282a",
+            text: "#efe8dc",
+            textDim: "#a89c90",
+            accent: "#e23b32",
+            danger: "#ff7a8a",
+            warn: "#f2b84b",
+            onAccent: "#fff4e8",
+            border2: "#5fb0ae",
+            shadow: "#8c231e",
+            folder: "red"
+        },
+        {
+            // Gris acero, rojo y dorado
+            id: "ironman",
+            name: "Iron Man",
+            bg: "#0f1216",
+            surface: "#171b21",
+            track: "#262c35",
+            text: "#e9eef5",
+            textDim: "#8d97a6",
+            accent: "#e5383b",
+            danger: "#ff8a80",
+            warn: "#f5b82e",
+            onAccent: "#fff6f0",
+            border2: "#f2b632",
+            shadow: "#8f6b12",
+            folder: "carmine"
+        },
         {
             id: "ombu",
             folder: "violet",
@@ -148,15 +186,17 @@ Singleton {
     // (bin/qt-theme.py). Las ventanas que ya están abiertas no cambian; la siguiente sí.
     function applyQt(): void {
         const p = active;
-        Quickshell.execDetached([Quickshell.shellPath("bin/qt-theme.py"), "--bg", p.bg, "--surface", p.surface, "--track", p.track, "--text", p.text, "--dim", p.textDim, "--accent", p.accent, "--danger", p.danger, "--warn", p.warn, "--folder", p.folder]);
+        Quickshell.execDetached([Quickshell.shellPath("bin/qt-theme.py"), "--bg", p.bg, "--surface", p.surface, "--track", p.track, "--text", p.text, "--dim", p.textDim, "--accent", p.accent, "--danger", p.danger, "--warn", p.warn, "--on-accent", p.onAccent ?? "#14131a", "--folder", p.folder]);
     }
 
     // Borde de la ventana activa: el acento del tema. Es un cambio en vivo de Hyprland (no toca tu
     // configuración): una recarga de Hyprland vuelve al color de decorations.lua hasta que se
     // vuelva a aplicar, lo que ombu hace al iniciar.
     function applyBorder(): void {
-        const hex = String(active.accent).replace("#", "");
-        Quickshell.execDetached(["hyprctl", "eval", "hl.config({ general = { col = { active_border = \"rgba(" + hex + "ff)\" } } })"]);
+        const c1 = "rgba(" + String(active.accent).replace("#", "") + "ff)";
+        // Con un segundo color el borde es un degradé en diagonal (en Lua, una tabla con colors y angle); si no, liso
+        const value = active.border2 ? "{ colors = { \"" + c1 + "\", \"rgba(" + String(active.border2).replace("#", "") + "ff)\" }, angle = 45 }" : "\"" + c1 + "\"";
+        Quickshell.execDetached(["hyprctl", "eval", "hl.config({ general = { col = { active_border = " + value + " } } })"]);
     }
 
     FileView {

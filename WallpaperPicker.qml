@@ -107,6 +107,10 @@ PanelWindow {
         }
     }
 
+    HardShadow {
+        target: card
+    }
+
     Rectangle {
         id: card
 
@@ -190,7 +194,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             color: Theme.text
                             selectionColor: Theme.accent
-                            selectedTextColor: "#14131a"
+                            selectedTextColor: Theme.onAccent
                             font.pixelSize: 13
                             clip: true
                             focus: true
@@ -408,7 +412,7 @@ PanelWindow {
                                 anchors.centerIn: parent
                                 name: "check"
                                 font.pixelSize: 14
-                                color: "#14131a"
+                                color: Theme.onAccent
                             }
                         }
                     }
