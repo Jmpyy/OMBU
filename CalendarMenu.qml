@@ -163,10 +163,14 @@ DropPopup {
 
             Text {
                 Layout.fillWidth: true
-                text: Chrono.capitalize(Chrono.date.toLocaleDateString(Chrono.locale, "dddd d 'de' MMMM"))
-                color: Theme.text
-                font.pixelSize: 15
+                text: {
+                    const raw = Chrono.capitalize(Chrono.date.toLocaleDateString(Chrono.locale, "dddd d 'de' MMMM"));
+                    return Theme.comic ? raw.toUpperCase() : raw;
+                }
+                color: Theme.comic ? Theme.accent : Theme.text
+                font.pixelSize: Theme.comic ? 17 : 15
                 font.weight: Font.DemiBold
+                font.family: Theme.comic ? Theme.displayFont : ""
             }
 
             Rectangle {
@@ -538,10 +542,14 @@ DropPopup {
                     transform: Translate {
                         x: root.shiftX
                     }
-                    text: Chrono.capitalize(Chrono.locale.monthName(root.month, Locale.LongFormat)) + " " + root.year
+                    text: {
+                        const m = Chrono.capitalize(Chrono.locale.monthName(root.month, Locale.LongFormat)) + " " + root.year;
+                        return Theme.comic ? m.toUpperCase() : m;
+                    }
                     color: Theme.accent
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.comic ? 16 : 14
                     font.weight: Font.DemiBold
+                    font.family: Theme.comic ? Theme.displayFont : ""
                 }
 
                 HoverHandler {
@@ -672,18 +680,19 @@ DropPopup {
                             anchors.centerIn: parent
                             width: 34
                             height: 34
-                            radius: 17
+                            radius: Theme.comic ? 6 : 17
                             color: day.model.today ? Theme.accent : (dayHover.hovered && day.inMonth ? Theme.hover : "transparent")
-                            border.width: day.selected && !day.model.today ? 1.5 : 0
-                            border.color: Theme.accent
+                            border.width: Theme.comic && day.model.today ? 1.5 : (day.selected && !day.model.today ? 1.5 : 0)
+                            border.color: Theme.comic && day.model.today ? "#0a0708" : Theme.accent
                         }
 
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             y: 6
                             text: day.model.day
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.comic ? 14 : 13
                             font.weight: day.model.today ? Font.Bold : Font.Normal
+                            font.family: Theme.comic ? Theme.displayFont : ""
                             color: day.model.today ? Theme.accentText : (!day.inMonth ? Theme.track : (day.marks.holiday ? Agenda.holidayColor : (day.isWeekend ? Theme.accent : Theme.text)))
                         }
 

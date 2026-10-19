@@ -9,10 +9,10 @@ Singleton {
     readonly property int barHeight: 32
     readonly property int fillet: 16      // radio de las esquinas cóncavas
     readonly property int margin: 14
-    readonly property int popupRadius: 16
-    readonly property int cardRadius: 18
+    readonly property int popupRadius: comic ? 8 : 16
+    readonly property int cardRadius: comic ? 10 : 18
     // Controles (botones, sliders, selectores): esquinas suaves, no píldoras
-    readonly property int controlRadius: 10
+    readonly property int controlRadius: comic ? 6 : 10
 
     // Colores
     readonly property color bg: Themes.active.bg  // sólido, sin transparencia

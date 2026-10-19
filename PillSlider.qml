@@ -21,6 +21,8 @@ Item {
         anchors.fill: parent
         radius: Theme.controlRadius
         color: Theme.surface
+        border.width: Theme.comic ? 1.5 : 0
+        border.color: Theme.comic ? "#0a0708" : "transparent"
         clip: true
 
         Rectangle {
@@ -28,6 +30,8 @@ Item {
             height: parent.height
             radius: parent.radius
             color: slider.muted ? Theme.textDim : Theme.accent
+            border.width: Theme.comic ? 1.5 : 0
+            border.color: Theme.comic ? "#0a0708" : "transparent"
         }
     }
 

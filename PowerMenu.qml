@@ -116,16 +116,20 @@ PanelWindow {
         focus: true
         Keys.onEscapePressed: Ui.powerOpen = false
 
+        HardShadow {
+            target: card
+        }
+
         Rectangle {
             id: card
 
             anchors.centerIn: parent
             width: row.implicitWidth + 56
             height: row.implicitHeight + 56 + title.implicitHeight + 16
-            radius: Theme.cardRadius
+            radius: Theme.comic ? 8 : Theme.cardRadius
             color: Theme.bg
-            border.width: 1
-            border.color: Theme.border
+            border.width: Theme.comic ? 2 : 1
+            border.color: Theme.comic ? "#0a0708" : Theme.border
             opacity: win.p
             scale: 0.90 + 0.10 * win.p
 
@@ -140,10 +144,11 @@ PanelWindow {
                 anchors.top: parent.top
                 anchors.topMargin: 24
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Energía"
-                color: Theme.textDim
-                font.pixelSize: Theme.fontSize
-                font.weight: Font.Medium
+                text: Theme.comic ? "ENERGÍA" : "Energía"
+                color: Theme.comic ? Theme.accent : Theme.textDim
+                font.pixelSize: Theme.comic ? 18 : Theme.fontSize
+                font.weight: Font.DemiBold
+                font.family: Theme.comic ? Theme.displayFont : ""
             }
 
             RowLayout {
@@ -168,8 +173,10 @@ PanelWindow {
 
                         Layout.preferredWidth: 116
                         Layout.preferredHeight: 108
-                        radius: 20
+                        radius: Theme.comic ? 8 : 20
                         color: isArmed ? (isDanger ? Theme.danger : Theme.accent) : (tileArea.containsMouse ? Theme.hover : Qt.rgba(1, 1, 1, 0.04))
+                        border.width: Theme.comic ? 1.5 : 0
+                        border.color: Theme.comic ? (tile.isArmed ? (tile.isDanger ? Theme.danger : Theme.accent) : (tileArea.containsMouse ? Theme.accent : "#0a0708")) : "transparent"
 
                         Behavior on color {
                             ColorAnimation {
@@ -185,15 +192,16 @@ PanelWindow {
                                 Layout.alignment: Qt.AlignHCenter
                                 name: tile.modelData.icon
                                 font.pixelSize: 34
-                                color: tile.isArmed ? "#14141a" : (tile.isDanger && tileArea.containsMouse ? Theme.danger : Theme.text)
+                                color: tile.isArmed ? Theme.accentText : (tile.isDanger && tileArea.containsMouse ? Theme.danger : Theme.text)
                             }
 
                             Text {
                                 Layout.alignment: Qt.AlignHCenter
                                 text: tile.isArmed ? "Tocá de nuevo" : tile.modelData.label
-                                color: tile.isArmed ? "#14141a" : Theme.text
-                                font.pixelSize: Theme.fontSize
+                                color: tile.isArmed ? Theme.accentText : Theme.text
+                                font.pixelSize: Theme.comic ? 15 : Theme.fontSize
                                 font.weight: Font.Medium
+                                font.family: Theme.comic ? Theme.displayFont : ""
                             }
                         }
 

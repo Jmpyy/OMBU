@@ -428,8 +428,8 @@ PanelWindow {
         height: column.implicitHeight + 24
         radius: Theme.cardRadius
         color: Theme.bg
-        border.width: 1
-        border.color: Theme.outline
+        border.width: Theme.comic ? 2 : 1
+        border.color: Theme.comic ? "#0a0708" : Theme.outline
         opacity: win.p
         scale: 0.90 + 0.10 * win.p
         transformOrigin: Item.Top
@@ -547,8 +547,10 @@ PanelWindow {
 
                     width: ListView.view.width
                     height: 44
-                    radius: 10
-                    color: current ? Theme.surface : "transparent"
+                    radius: Theme.comic ? 6 : 10
+                    color: current ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.08) : Theme.surface) : "transparent"
+                    border.width: Theme.comic && current ? 1.5 : 0
+                    border.color: Theme.comic ? "#0a0708" : "transparent"
 
                     HoverHandler {
                         onHoveredChanged: if (hovered)

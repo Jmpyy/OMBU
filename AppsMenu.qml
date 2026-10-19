@@ -90,10 +90,11 @@ DropPopup {
 
             Text {
                 text: "APPS ABIERTAS"
-                color: Theme.textDim
-                font.pixelSize: 11
+                color: Theme.comic ? Theme.accent : Theme.textDim
+                font.pixelSize: Theme.comic ? 13 : 11
                 font.weight: Font.DemiBold
                 font.letterSpacing: 0.8
+                font.family: Theme.comic ? Theme.displayFont : ""
             }
 
             Item {
@@ -145,8 +146,10 @@ DropPopup {
 
                         width: windowList.width
                         height: root.rowHeight
-                        radius: 12
-                        color: rowHover.hovered ? Theme.hover : "transparent"
+                        radius: Theme.comic ? 6 : 12
+                        color: rowHover.hovered ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.08) : Theme.hover) : "transparent"
+                        border.width: Theme.comic && rowHover.hovered ? 1.5 : 0
+                        border.color: Theme.comic ? "#0a0708" : "transparent"
 
                         RowLayout {
                             anchors.fill: parent

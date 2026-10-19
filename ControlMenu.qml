@@ -28,6 +28,8 @@ DropPopup {
         implicitHeight: 48
         radius: Theme.controlRadius
         color: area.containsMouse ? Theme.hover : Theme.surface
+        border.width: Theme.comic ? 1.5 : 0
+        border.color: Theme.comic ? (tile.on ? Theme.accent : "#0a0708") : "transparent"
 
         Behavior on color {
             ColorAnimation {
@@ -44,8 +46,10 @@ DropPopup {
             Rectangle {
                 Layout.preferredWidth: 30
                 Layout.preferredHeight: 30
-                radius: 8
+                radius: Theme.comic ? 6 : 8
                 color: tile.on ? Theme.accent : Theme.track
+                border.width: Theme.comic ? 1.5 : 0
+                border.color: Theme.comic ? "#0a0708" : "transparent"
 
                 Behavior on color {
                     ColorAnimation {
@@ -70,8 +74,9 @@ DropPopup {
                     text: tile.title
                     elide: Text.ElideRight
                     color: Theme.text
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.comic ? 14 : 13
                     font.weight: Font.DemiBold
+                    font.family: Theme.comic ? Theme.displayFont : ""
                 }
 
                 Text {
