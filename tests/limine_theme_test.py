@@ -87,7 +87,12 @@ check("directo: quiet y 2 segundos", "quiet: yes" in dhead and "timeout: 2" in d
 check("directo: arranca siempre la entrada por defecto", "remember_last_entry: no" in dhead and "default_entry: 2" in dhead)
 check("saca Windows y el cargador de respaldo", "Windows" not in d and "EFI fallback" not in d and "Other systems" not in d)
 check("conserva CachyOS y las instantáneas intactas", "/+CachyOS" in drest and "///74" in drest and "linux-cachyos" in drest)
-check("el kernel (con sus hashes) queda igual", [l for l in rest.split("\n") if "module_path" in l or l.strip().startswith("path:")] == [l for l in drest.split("\n") if "module_path" in l or l.strip().startswith("path:")])
+def hashed(text):
+    """Rutas de kernel e initramfs con hash (las del cargador de respaldo no tienen)"""
+    return [l for l in text.split("\n") if "#" in l and ("module_path:" in l or l.strip().startswith("path:")) and not l.lstrip().startswith("#")]
+
+
+check("el kernel (con sus hashes) queda igual", hashed(rest) == hashed(drest) and len(hashed(rest)) >= 2)
 check("directo+sin Windows también es repetible", lt.retheme(d, "boot():/limine-ombu.jpg", direct=True, drop=True) == d)
 
 print("\nTODO BIEN" if not fails else "\nFALLARON: " + ", ".join(fails))
