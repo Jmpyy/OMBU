@@ -129,6 +129,11 @@ DropPopup {
             }
         }
 
+        // Lo que suena (solo aparece si hay un reproductor)
+        MediaCard {
+            Layout.fillWidth: true
+        }
+
         GridLayout {
             Layout.fillWidth: true
             columns: 2

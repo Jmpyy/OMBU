@@ -1,0 +1,147 @@
+import QtQuick
+import QtQuick.Effects
+import QtQuick.Layouts
+import Quickshell.Services.Mpris
+
+// Lo que suena ahora (música, un video del navegador...) en versión compacta para el centro de
+// control: portada, título, artista y los tres controles. Solo aparece si hay algún reproductor.
+Rectangle {
+    id: root
+
+    readonly property var all: Array.from(Mpris.players.values)
+    // El que está sonando; si ninguno, el primero (por ejemplo uno en pausa)
+    readonly property var player: all.find(p => p.isPlaying) ?? all[0] ?? null
+
+    visible: player !== null
+    implicitHeight: 60
+    radius: Theme.controlRadius
+    color: Theme.surface
+
+    RowLayout {
+        anchors.fill: parent
+        anchors.leftMargin: 10
+        anchors.rightMargin: 8
+        spacing: 10
+
+        // Portada con esquinas suaves (clip solo recorta en rectángulo: hace falta una máscara)
+        Item {
+            Layout.preferredWidth: 42
+            Layout.preferredHeight: 42
+
+            Rectangle {
+                id: artMask
+
+                anchors.fill: parent
+                radius: 8
+                visible: false
+                layer.enabled: true
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 8
+                color: Theme.track
+            }
+
+            Image {
+                id: art
+
+                anchors.fill: parent
+                visible: status === Image.Ready
+                source: root.player?.trackArtUrl ?? ""
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                smooth: true
+                layer.enabled: true
+                layer.effect: MultiEffect {
+                    maskEnabled: true
+                    maskSource: artMask
+                    maskThresholdMin: 0.5
+                    maskSpreadAtMin: 1
+                }
+            }
+
+            MIcon {
+                anchors.centerIn: parent
+                visible: !art.visible
+                name: "music_note"
+                color: Theme.textDim
+                font.pixelSize: 22
+            }
+        }
+
+        Column {
+            Layout.fillWidth: true
+            spacing: 1
+
+            Text {
+                width: parent.width
+                text: root.player?.trackTitle || root.player?.identity || ""
+                elide: Text.ElideRight
+                color: Theme.text
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+            }
+
+            Text {
+                width: parent.width
+                text: root.player?.trackArtist || root.player?.identity || ""
+                elide: Text.ElideRight
+                color: Theme.textDim
+                font.pixelSize: 11
+            }
+        }
+
+        Repeater {
+            model: [
+                {
+                    icon: "skip_previous",
+                    can: root.player?.canGoPrevious ?? false,
+                    run: () => root.player.previous(),
+                    main: false
+                },
+                {
+                    icon: root.player?.isPlaying ? "pause" : "play_arrow",
+                    can: root.player?.canTogglePlaying ?? false,
+                    run: () => root.player.togglePlaying(),
+                    main: true
+                },
+                {
+                    icon: "skip_next",
+                    can: root.player?.canGoNext ?? false,
+                    run: () => root.player.next(),
+                    main: false
+                }
+            ]
+
+            Rectangle {
+                id: btn
+
+                required property var modelData
+
+                Layout.preferredWidth: modelData.main ? 34 : 28
+                Layout.preferredHeight: modelData.main ? 34 : 28
+                radius: modelData.main ? 10 : 8
+                opacity: modelData.can ? 1 : 0.35
+                color: modelData.main ? Theme.accent : (btnHover.hovered && modelData.can ? Theme.hover : "transparent")
+
+                MIcon {
+                    anchors.centerIn: parent
+                    name: btn.modelData.icon
+                    font.pixelSize: btn.modelData.main ? 22 : 20
+                    color: btn.modelData.main ? "#14131a" : Theme.text
+                }
+
+                HoverHandler {
+                    id: btnHover
+
+                    cursorShape: btn.modelData.can ? Qt.PointingHandCursor : Qt.ArrowCursor
+                }
+                TapHandler {
+                    enabled: btn.modelData.can
+                    onTapped: btn.modelData.run()
+                }
+            }
+        }
+    }
+}
