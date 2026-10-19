@@ -5,14 +5,16 @@
 #   full    el monitor con foco, directo                                                   [Super+Print]
 #   ocr     elegís una región y el texto que contiene queda en el portapapeles             [Ctrl+Print]
 #
-# Guarda en ~/Pictures/Screenshots, copia al portapapeles y avisa con una miniatura: clic en el
+# Guarda en la carpeta de imágenes del usuario, dentro de «Capturas» (~/Imágenes/Capturas en español), copia al portapapeles y avisa con una miniatura: clic en el
 # aviso la abre en el editor, "Borrar" la manda a la papelera.
 #
 # Ojo: en esta PC grim se cuelga al capturar el monitor DP-2 (HDMI-A-1 anda bien).
 # Por eso todo va con un límite de tiempo y, si falla, avisa en vez de quedarse trabado.
 set -uo pipefail
 
-dir="$HOME/Pictures/Screenshots"
+pictures=$(xdg-user-dir PICTURES 2>/dev/null)
+[ -n "$pictures" ] || pictures="$HOME/Pictures"
+dir="$pictures/Capturas"
 tmp="${XDG_RUNTIME_DIR:-/tmp}"
 mkdir -p "$dir"
 file="$dir/captura-$(date +%Y-%m-%d_%H-%M-%S).png"

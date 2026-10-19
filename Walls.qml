@@ -12,7 +12,7 @@ Singleton {
     readonly property string home: Quickshell.env("HOME") ?? ""
     // La carpeta propia va primero: lo que pongas ahí aparece arriba en el selector
     readonly property string userDir: home + "/Imágenes/Fondos"
-    readonly property var dirs: [userDir, home + "/Imágenes", home + "/Pictures/Wallpapers"]
+    readonly property var dirs: [userDir, home + "/Imágenes"]
     readonly property string stateFile: home + "/.local/share/ombu/fondo.json"
 
     property string current: Theme.wallpaper

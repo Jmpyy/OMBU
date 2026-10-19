@@ -14,6 +14,7 @@ Singleton {
     readonly property var palettes: [
         {
             id: "ombu",
+            folder: "violet",
             name: "Ombú",
             bg: "#14131a",
             surface: "#1d1c26",
@@ -26,6 +27,7 @@ Singleton {
         },
         {
             id: "tokyo",
+            folder: "indigo",
             name: "Tokyo Night",
             bg: "#1a1b26",
             surface: "#24283b",
@@ -38,6 +40,7 @@ Singleton {
         },
         {
             id: "catppuccin",
+            folder: "blue",
             name: "Catppuccin",
             bg: "#1e1e2e",
             surface: "#2a2b3c",
@@ -50,6 +53,7 @@ Singleton {
         },
         {
             id: "rosepine",
+            folder: "pink",
             name: "Rosé Pine",
             bg: "#191724",
             surface: "#1f1d2e",
@@ -62,6 +66,7 @@ Singleton {
         },
         {
             id: "gruvbox",
+            folder: "yellow",
             name: "Gruvbox",
             bg: "#1d2021",
             surface: "#282828",
@@ -74,6 +79,7 @@ Singleton {
         },
         {
             id: "nord",
+            folder: "cyan",
             name: "Nord",
             bg: "#2e3440",
             surface: "#3b4252",
@@ -86,6 +92,7 @@ Singleton {
         },
         {
             id: "everforest",
+            folder: "green",
             name: "Everforest",
             bg: "#2d353b",
             surface: "#343f44",
@@ -98,6 +105,7 @@ Singleton {
         },
         {
             id: "carbon",
+            folder: "orange",
             name: "Carbón",
             bg: "#121212",
             surface: "#1c1c1c",
@@ -133,6 +141,14 @@ Singleton {
             id: p.id
         }));
         applyBorder();
+        applyQt();
+    }
+
+    // Dolphin y las demás apps Qt: paleta, hoja de estilos, esquema de KDE y color de las carpetas
+    // (bin/qt-theme.py). Las ventanas que ya están abiertas no cambian; la siguiente sí.
+    function applyQt(): void {
+        const p = active;
+        Quickshell.execDetached([Quickshell.shellPath("bin/qt-theme.py"), "--bg", p.bg, "--surface", p.surface, "--track", p.track, "--text", p.text, "--dim", p.textDim, "--accent", p.accent, "--danger", p.danger, "--warn", p.warn, "--folder", p.folder]);
     }
 
     // Borde de la ventana activa: el acento del tema. Es un cambio en vivo de Hyprland (no toca tu

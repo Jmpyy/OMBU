@@ -6,6 +6,7 @@ KFilePlacesView, QListView#placesView {
     background: #14131a;
     border: none;
     padding: 6px 4px;
+    min-width: 230px;
 }
 KFilePlacesView::item {
     padding: 7px 10px;
