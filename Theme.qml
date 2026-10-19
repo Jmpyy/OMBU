@@ -25,6 +25,8 @@ Singleton {
     readonly property color warn: "#fbbf24"
     readonly property color hover: Qt.rgba(1, 1, 1, 0.09)
     readonly property color border: Qt.rgba(1, 1, 1, 0.08)
+    // Contorno de la barra y de los menús que cuelgan de ella: se nota sobre una terminal oscura
+    readonly property color outline: Qt.rgba(1, 1, 1, 0.2)
     readonly property color scrim: Qt.rgba(0, 0, 0, 0.55)
 
     // Fondo de pantalla (el mismo que usaba Caelestia; archivo del sistema de CachyOS)

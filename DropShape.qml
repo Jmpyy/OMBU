@@ -68,4 +68,54 @@ Shape {
             direction: PathArc.Counterclockwise
         }
     }
+
+    // Contorno: solo los lados y el fondo; arriba se funde con la barra, que ya trae el suyo
+    ShapePath {
+        fillColor: "transparent"
+        strokeColor: Theme.outline
+        strokeWidth: 1
+        startX: 0
+        startY: 0
+
+        PathArc {
+            x: root.f
+            y: root.f
+            radiusX: root.f
+            radiusY: root.f
+            direction: PathArc.Clockwise
+        }
+        PathLine {
+            x: root.f
+            y: root.height - root.r
+        }
+        PathArc {
+            x: root.f + root.r
+            y: root.height - 0.5
+            radiusX: root.r
+            radiusY: root.r
+            direction: PathArc.Counterclockwise
+        }
+        PathLine {
+            x: root.width - root.f - root.r
+            y: root.height - 0.5
+        }
+        PathArc {
+            x: root.width - root.f
+            y: root.height - root.r
+            radiusX: root.r
+            radiusY: root.r
+            direction: PathArc.Counterclockwise
+        }
+        PathLine {
+            x: root.width - root.f
+            y: root.f
+        }
+        PathArc {
+            x: root.width
+            y: 0
+            radiusX: root.f
+            radiusY: root.f
+            direction: PathArc.Clockwise
+        }
+    }
 }

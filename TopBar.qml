@@ -133,7 +133,7 @@ PanelWindow {
             // Filo sutil abajo, para separar la barra del escritorio
             ShapePath {
                 fillColor: "transparent"
-                strokeColor: Theme.border
+                strokeColor: Theme.outline
                 strokeWidth: 1
                 startX: 0
                 startY: win.fullHeight
