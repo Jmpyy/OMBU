@@ -39,7 +39,7 @@ PopupWindow {
 
     Behavior on p {
         NumberAnimation {
-            duration: Theme.popupDuration
+            duration: root.open ? Theme.popupDuration : 130
             easing.type: Easing.OutCubic
         }
     }
@@ -153,7 +153,7 @@ PopupWindow {
     Timer {
         id: leaveTimer
 
-        interval: 400
+        interval: 100
         onTriggered: {
             if (root.open && root.entered && !root.pointerInside) {
                 root.dismissed();
