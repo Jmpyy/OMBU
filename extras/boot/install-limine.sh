@@ -9,7 +9,11 @@
 #   2. Guarda una copia de /boot/limine.conf (limine.conf.pre-ombu, la primera vez, y limine.conf.ultima
 #      en cada corrida).
 #   3. Cambia SOLO las opciones de aspecto de la parte de arriba de limine.conf (limine-theme.py); las
-#      entradas de kernel, Windows y las instantáneas quedan idénticas, y se comprueba antes de escribir.
+#      entradas de kernel y las instantáneas quedan idénticas, y se comprueba antes de escribir. Además:
+#      - arranque directo (quiet + 2 s de espera; el menú aparece apretando una tecla al encender), y
+#      - se saca el grupo «Other systems» (Windows fantasma): también se pone FIND_BOOTLOADERS=no en
+#        /etc/limine-entry-tool.conf (con copia) para que Limine no lo vuelva a agregar.
+#      Con OMBU_LIMINE_DIRECT=0 u OMBU_LIMINE_DROP_OTHERS=0 se salta cada una.
 #   4. Vuelve a registrar el hash de la configuración (limine-enroll-config), porque Limine lo verifica.
 #   5. Si ese paso FALLA, restaura limine.conf y vuelve a registrar el hash original.
 #
@@ -28,6 +32,12 @@ if [ -z "$ESP" ]; then
 fi
 CONF="$ESP/limine.conf"
 WALL_NAME="limine-ombu.jpg"
+DIRECT="${OMBU_LIMINE_DIRECT:-1}"
+DROP="${OMBU_LIMINE_DROP_OTHERS:-1}"
+ENTRY_CONF="${OMBU_ENTRY_CONF:-/etc/limine-entry-tool.conf}"
+THEME_ARGS=(--wallpaper "boot():/$WALL_NAME")
+[ "$DIRECT" = "1" ] && THEME_ARGS+=(--direct)
+[ "$DROP" = "1" ] && THEME_ARGS+=(--drop-others)
 
 if [ "$TEST" != "1" ] && [ "$(id -u)" -ne 0 ]; then
     echo "Hace falta root: sudo bash $0" >&2
@@ -69,7 +79,7 @@ if [ "$TEST" = "1" ]; then "${MAKE_WALL[@]}"; else runuser -u "$USERNAME" -- "${
 [ -s "$STAGE/$WALL_NAME" ] || { echo "No se pudo generar el fondo: no se tocó nada." >&2; exit 1; }
 
 # --- 2 y 3. configuración nueva (se arma aparte y se comprueba antes de tocar nada) --------------
-python3 -I "$HERE/limine-theme.py" "$CONF" "$STAGE/limine.conf" --wallpaper "boot():/$WALL_NAME"
+python3 -I "$HERE/limine-theme.py" "$CONF" "$STAGE/limine.conf" "${THEME_ARGS[@]}"
 grep -q "^/+CachyOS\|^/CachyOS\|^/" "$STAGE/limine.conf" || { echo "La configuración nueva no tiene entradas: no se tocó nada." >&2; exit 1; }
 
 [ -e "$CONF.pre-ombu" ] || { cp -a "$CONF" "$CONF.pre-ombu"; echo "Copia original: $CONF.pre-ombu"; }
@@ -78,6 +88,13 @@ install -m 644 "$STAGE/$WALL_NAME" "$ESP/$WALL_NAME"
 cp "$STAGE/limine.conf" "$CONF"
 sync
 echo "Aspecto escrito en $CONF"
+
+# Que Limine no vuelva a agregar Windows (ni el cargador de respaldo) en la próxima actualización
+if [ "$DROP" = "1" ] && [ -f "$ENTRY_CONF" ] && grep -q "^FIND_BOOTLOADERS=yes" "$ENTRY_CONF"; then
+    [ -e "$ENTRY_CONF.pre-ombu" ] || cp -a "$ENTRY_CONF" "$ENTRY_CONF.pre-ombu"
+    sed -i 's/^FIND_BOOTLOADERS=yes/FIND_BOOTLOADERS=no/' "$ENTRY_CONF"
+    echo "FIND_BOOTLOADERS=no en $ENTRY_CONF (copia: $ENTRY_CONF.pre-ombu)"
+fi
 
 # --- 4 y 5. hash de la configuración --------------------------------------------------------------
 if [ "$TEST" = "1" ]; then
@@ -88,6 +105,7 @@ echo "Registrando el hash de la configuración..."
 if ! limine-enroll-config; then
     echo "FALLÓ el registro del hash: restauro la configuración anterior." >&2
     cp "$CONF.ultima" "$CONF"
+    [ -e "$ENTRY_CONF.pre-ombu" ] && cp "$ENTRY_CONF.pre-ombu" "$ENTRY_CONF" || true
     sync
     limine-enroll-config || echo "ATENCIÓN: tampoco se pudo volver a registrar el hash original. Antes de reiniciar, corré: sudo limine-enroll-config" >&2
     exit 1

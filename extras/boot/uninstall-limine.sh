@@ -12,6 +12,8 @@ CONF="$ESP/limine.conf"
 [ -f "$CONF.pre-ombu" ] || { echo "No encuentro $CONF.pre-ombu: no hay nada que restaurar." >&2; exit 1; }
 
 cp "$CONF.pre-ombu" "$CONF"
+ENTRY_CONF="${OMBU_ENTRY_CONF:-/etc/limine-entry-tool.conf}"
+[ -e "$ENTRY_CONF.pre-ombu" ] && cp "$ENTRY_CONF.pre-ombu" "$ENTRY_CONF" && echo "Restaurado $ENTRY_CONF"
 sync
 limine-enroll-config
 rm -f "$ESP/limine-ombu.jpg"

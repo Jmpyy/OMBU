@@ -80,5 +80,15 @@ except ValueError:
 alias = lt.retheme("interface_branding_color: 112233\n\n/Arch\n  protocol: linux\n")
 check("un alias (color) se unifica sin duplicar", alias.count("interface_branding_colour") == 1 and "112233" not in alias)
 
+# Arranque directo y sin Windows fantasma
+d = lt.retheme(SAMPLE, "boot():/limine-ombu.jpg", direct=True, drop=True)
+dhead, drest = lt.split(d)
+check("directo: quiet y 2 segundos", "quiet: yes" in dhead and "timeout: 2" in dhead)
+check("directo: arranca siempre la entrada por defecto", "remember_last_entry: no" in dhead and "default_entry: 2" in dhead)
+check("saca Windows y el cargador de respaldo", "Windows" not in d and "EFI fallback" not in d and "Other systems" not in d)
+check("conserva CachyOS y las instantáneas intactas", "/+CachyOS" in drest and "///74" in drest and "linux-cachyos" in drest)
+check("el kernel (con sus hashes) queda igual", [l for l in rest.split("\n") if "module_path" in l or l.strip().startswith("path:")] == [l for l in drest.split("\n") if "module_path" in l or l.strip().startswith("path:")])
+check("directo+sin Windows también es repetible", lt.retheme(d, "boot():/limine-ombu.jpg", direct=True, drop=True) == d)
+
 print("\nTODO BIEN" if not fails else "\nFALLARON: " + ", ".join(fails))
 sys.exit(1 if fails else 0)
