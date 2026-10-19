@@ -12,10 +12,11 @@ import os
 import subprocess
 import sys
 
-W, H = 300, 1200         # tamaño de cada cuadro (1x): tan alto como una pantalla, para que el hilo salga del borde de arriba
-CY = 560                  # altura de la araña en reposo
+W, H = 300, 800          # tamaño de cada cuadro (1x). Chico a propósito: Plymouth carga todos los cuadros en memoria
+CY = 400                  # altura de la araña en reposo (el cuadro queda centrado en la pantalla)
+FADE = 220                # el hilo aparece en degradé desde arriba: sin borde duro a mitad de pantalla
 S = 2
-LOOP, END = 30, 24
+LOOP, END = 24, 18
 FONT = os.path.expanduser("~/.local/share/fonts/ombu/Bangers-Regular.ttf")
 
 # Patas de la araña del logo de la barra (caja de 64x64), lado izquierdo; la derecha es el espejo
@@ -54,8 +55,15 @@ def frame(path, spider_y, wiggle, sway, alpha, args, label=True):
     cmds = ["magick", "-size", "%dx%d" % (W * S, H * S), "xc:none", "-antialias"]
     sp, top = spider_cmds(cx, spider_y * S, 120, wiggle, args.accent, args.ink)
     # hilo: del borde de arriba a la cabeza
-    cmds += ["-stroke", args.ink, "-strokewidth", str(6 * S), "-draw", "line %.1f,0 %.1f,%.1f" % (W * S / 2, top[0], top[1]),
-             "-stroke", args.cream, "-strokewidth", str(3 * S), "-draw", "line %.1f,0 %.1f,%.1f" % (W * S / 2, top[0], top[1])]
+    x0, y1 = W * S / 2, top[1]
+    steps = 40
+    for k in range(steps):
+        ya, yb = y1 * k / steps, y1 * (k + 1) / steps + 1
+        xa, xb = x0 + (top[0] - x0) * k / steps, x0 + (top[0] - x0) * (k + 1) / steps
+        alpha = max(0.0, min(1.0, (ya + yb) / 2 / (FADE * S)))
+        cmds += ["-stroke", "srgba(10,7,8,%.3f)" % alpha, "-strokewidth", str(6 * S), "-draw", "line %.1f,%.1f %.1f,%.1f" % (xa, ya, xb, yb),
+                 "-stroke", "srgba(%d,%d,%d,%.3f)" % (*tuple(int(args.cream[i:i + 2], 16) for i in (1, 3, 5)), alpha),
+                 "-strokewidth", str(3 * S), "-draw", "line %.1f,%.1f %.1f,%.1f" % (xa, ya, xb, yb)]
     cmds += sp
     if label:
         font = ["-font", FONT] if os.path.exists(FONT) else []
@@ -63,10 +71,10 @@ def frame(path, spider_y, wiggle, sway, alpha, args, label=True):
         for dx, dy, fill, stroke in ((5 * S, 5 * S, args.shadow, args.shadow), (0, 0, args.cream, args.ink)):
             cmds += font + ["-stroke", stroke, "-strokewidth", str(4 * S if stroke == args.ink else 1), "-fill", fill,
                             "-pointsize", str(58 * S), "-gravity", "north", "-annotate", "+%d+%d" % (dx, top + dy), "OMBU"]
-    cmds += ["-resize", "%d%%" % (100 // S)]
+    cmds += ["-resize", "%d%%" % (100 // S), "-depth", "8"]
     if alpha < 1:
         cmds += ["-channel", "A", "-evaluate", "multiply", "%.3f" % alpha, "+channel"]
-    cmds.append(path)
+    cmds.append("PNG32:" + path)   # 8 bits por canal con transparencia, como los cuadros del tema de CachyOS
     subprocess.run(cmds, check=True)
 
 
