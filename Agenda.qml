@@ -27,6 +27,14 @@ Singleton {
     property var holidays: ({})
 
     property string googleUrl: ""
+    // API de Google (bin/gcal.py): hay credenciales / hay sesión / esperando el permiso en el navegador
+    property bool apiClient: false
+    property bool apiConnected: false
+    property bool apiAuthing: false
+    property string apiError: ""
+    // Al anotar un evento, ¿va a Google (y al celular) o queda solo en ombu?
+    property bool createInGoogle: true
+    readonly property bool googleOn: apiConnected || googleUrl !== ""
     property string googleError: ""
     property bool googleLoading: false
     property double googleAt: 0
@@ -78,6 +86,10 @@ Singleton {
             if (e.date === day)
                 (e.time ? timed : out).push({
                     kind: "google",
+                    id: e.id ?? "",
+                    calendarId: e.calendarId ?? "",
+                    mine: e.mine ?? false,
+                    meet: e.meet ?? "",
                     time: e.time,
                     end: e.end,
                     title: e.title
@@ -135,6 +147,14 @@ Singleton {
         const m = time.trim().match(/^(\d{1,2})(?::|\.|h)?(\d{2})$/);
         if (m && parseInt(m[1]) < 24 && parseInt(m[2]) < 60)
             hhmm = m[1].padStart(2, "0") + ":" + m[2];
+        if (apiConnected && createInGoogle) {
+            gcal(["add", day, hhmm, t], r => {
+                if (r.error)
+                    googleError = r.error;
+                refreshGoogle(true);
+            });
+            return;
+        }
         local = local.concat([
             {
                 id: Date.now() + "-" + Math.floor(Math.random() * 1000),
@@ -159,6 +179,15 @@ Singleton {
         saveLocal();
     }
 
+    // Borra un evento de Google que creó ombu (los ajenos no se tocan)
+    function removeGoogle(calendarId: string, id: string): void {
+        gcal(["delete", calendarId, id], r => {
+            if (r.error)
+                googleError = r.error;
+            refreshGoogle(true);
+        });
+    }
+
     function saveLocal(): void {
         localFile.setText(JSON.stringify(local, null, 2) + "\n");
     }
@@ -168,22 +197,82 @@ Singleton {
         googleError = "";
         if (googleUrl === "")
             google = [];
-        configFile.setText(JSON.stringify({
-            url: googleUrl
-        }));
-        // La dirección es un secreto: el archivo solo lo lee el usuario
-        Quickshell.execDetached(["sh", "-c", "sleep 1; chmod 600 \"$1\"", "permisos", configFile.path]);
+        saveConfig();
         refreshGoogle(true);
     }
 
+    function setCreateInGoogle(on: bool): void {
+        createInGoogle = on;
+        saveConfig();
+    }
+
+    function saveConfig(): void {
+        configFile.setText(JSON.stringify({
+            url: googleUrl,
+            createInGoogle: createInGoogle
+        }));
+        // La dirección es un secreto: el archivo solo lo lee el usuario
+        Quickshell.execDetached(["sh", "-c", "sleep 1; chmod 600 \"$1\"", "permisos", configFile.path]);
+    }
+
+    // Corre bin/gcal.py y entrega su respuesta JSON a `done`
+    function gcal(args: var, done: var): void {
+        const p = gcalComponent.createObject(root, {
+            command: [ombuDir + "/bin/gcal.py"].concat(args),
+            done: done
+        });
+        p.running = true;
+    }
+
+    function refreshApiStatus(): void {
+        gcal(["status"], r => {
+            apiClient = r.client === true;
+            apiConnected = r.connected === true;
+            if (apiConnected)
+                refreshGoogle(true);
+        });
+    }
+
+    // Abre el navegador para dar el permiso; al volver queda conectado
+    function connectApi(): void {
+        if (apiAuthing)
+            return;
+        apiAuthing = true;
+        apiError = "";
+        gcal(["auth"], r => {
+            apiAuthing = false;
+            if (r.error)
+                apiError = r.error;
+            refreshApiStatus();
+        });
+    }
+
+    function disconnectApi(): void {
+        gcal(["disconnect"], r => {
+            apiConnected = false;
+            google = [];
+            googleError = "";
+            refreshApiStatus();
+        });
+    }
+
     function refreshGoogle(force: bool): void {
-        if (googleUrl === "" || googleLoading)
+        if (!googleOn || googleLoading)
             return;
         if (!force && Date.now() - googleAt < 5 * 60000)
             return;
         const from = new Date(now.getFullYear(), now.getMonth() - 2, 1, 12);
         const to = new Date(now.getFullYear(), now.getMonth() + 14, 0, 12);
         googleLoading = true;
+        if (apiConnected) {
+            gcal(["list", ymd(from), ymd(to)], r => {
+                googleLoading = false;
+                googleAt = Date.now();
+                google = r.events ?? [];
+                googleError = r.error ?? "";
+            });
+            return;
+        }
         fetcher.command = ["python3", ombuDir + "/bin/ics.py", "env", ymd(from), ymd(to), cacheDir + "/google.ics"];
         fetcher.running = true;
     }
@@ -237,6 +326,32 @@ Singleton {
         }
     }
 
+    Component {
+        id: gcalComponent
+
+        Process {
+            id: gproc
+
+            property var done
+
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    let r = {};
+                    try {
+                        r = JSON.parse(text);
+                    } catch (e) {
+                        r = {
+                            error: "respuesta inválida de gcal.py"
+                        };
+                    }
+                    if (gproc.done)
+                        gproc.done(r);
+                    gproc.destroy();
+                }
+            }
+        }
+    }
+
     Process {
         id: fetcher
 
@@ -281,11 +396,11 @@ Singleton {
         onTriggered: root.check()
     }
 
-    // Refresca Google cada 30 minutos
+    // Refresca Google: cada 5 minutos con la API (es barata) y cada 30 con la dirección iCal
     Timer {
-        running: root.googleUrl !== ""
+        running: root.googleOn
         repeat: true
-        interval: 30 * 60000
+        interval: root.apiConnected ? 5 * 60000 : 30 * 60000
         onTriggered: root.refreshGoogle(true)
     }
 
@@ -300,9 +415,12 @@ Singleton {
             const cfg = JSON.parse(configFile.text());
             if (typeof cfg.url === "string")
                 googleUrl = cfg.url;
+            if (typeof cfg.createInGoogle === "boolean")
+                createInGoogle = cfg.createInGoogle;
         } catch (e) {}
         loadHolidays(now.getFullYear());
         loadHolidays(now.getFullYear() + 1);
+        refreshApiStatus();
         refreshGoogle(true);
     }
 }

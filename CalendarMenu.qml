@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 
 // Calendario mensual con agenda: flechas para cambiar de mes (la rueda también), el mes/año
 // vuelve a hoy, el número de semana a la izquierda, puntos de colores bajo los días (feriado,
@@ -90,6 +91,7 @@ DropPopup {
         viewDate = new Date(Chrono.date.getFullYear(), Chrono.date.getMonth(), 1);
         selected = Agenda.ymd(Chrono.date);
         showSettings = false;
+        Agenda.refreshApiStatus();
         Focus.recordHistory();
         Agenda.refreshGoogle(false);
     }
@@ -168,7 +170,7 @@ DropPopup {
             }
 
             Rectangle {
-                visible: Agenda.googleUrl !== ""
+                visible: Agenda.googleOn
                 Layout.preferredWidth: 28
                 Layout.preferredHeight: 28
                 radius: 14
@@ -211,7 +213,7 @@ DropPopup {
                     anchors.centerIn: parent
                     name: "event_note"
                     font.pixelSize: 18
-                    color: Agenda.googleUrl !== "" ? Agenda.googleColor : Theme.textDim
+                    color: Agenda.googleOn ? Agenda.googleColor : Theme.textDim
                 }
 
                 HoverHandler {
@@ -225,7 +227,7 @@ DropPopup {
             }
         }
 
-        // Conectar Google Calendar (solo lectura, por la dirección secreta en formato iCal)
+        // Conectar Google Calendar: por la API (lee y escribe) o por la dirección iCal (solo lectura)
         Rectangle {
             visible: root.showSettings
             Layout.fillWidth: true
@@ -236,22 +238,24 @@ DropPopup {
             ColumnLayout {
                 id: googleBox
 
+                readonly property bool icalOn: Agenda.googleUrl !== "" && !Agenda.apiConnected
+
                 anchors.fill: parent
                 anchors.margins: 10
-                spacing: 6
+                spacing: 8
 
                 Text {
                     Layout.fillWidth: true
-                    text: Agenda.googleUrl !== "" ? "Google Calendar conectado" : "Conectar Google Calendar"
-                    color: Agenda.googleUrl !== "" ? Agenda.googleColor : Theme.text
+                    text: Agenda.apiConnected ? "Google Calendar conectado" : (googleBox.icalOn ? "Google Calendar conectado (solo lectura)" : "Conectar Google Calendar")
+                    color: Agenda.googleOn ? Agenda.googleColor : Theme.text
                     font.pixelSize: 13
                     font.weight: Font.DemiBold
                 }
 
                 Text {
                     Layout.fillWidth: true
-                    visible: Agenda.googleError !== ""
-                    text: Agenda.googleError
+                    visible: text !== ""
+                    text: Agenda.apiError !== "" ? Agenda.apiError : Agenda.googleError
                     wrapMode: Text.Wrap
                     color: Theme.danger
                     font.pixelSize: 11
@@ -259,15 +263,100 @@ DropPopup {
 
                 Text {
                     Layout.fillWidth: true
-                    visible: Agenda.googleUrl === ""
-                    text: "En Google Calendar: Configuración → tu calendario → «Dirección secreta en formato iCal». Pegala acá y Enter. Es de solo lectura: lo que anotes acá queda en ombu."
+                    visible: Agenda.apiConnected
+                    text: "Lo que anotes puede ir a Google y verse en tu celular. Los eventos de Google se actualizan cada 5 minutos."
+                    wrapMode: Text.Wrap
+                    color: Theme.textDim
+                    font.pixelSize: 11
+                }
+
+                // Con credenciales guardadas: un botón abre el navegador para dar permiso
+                Text {
+                    Layout.fillWidth: true
+                    visible: !Agenda.apiConnected && Agenda.apiClient
+                    text: "Se abre el navegador para que des permiso. Después podés anotar eventos desde ombu y verlos en el celular."
                     wrapMode: Text.Wrap
                     color: Theme.textDim
                     font.pixelSize: 11
                 }
 
                 Rectangle {
-                    visible: Agenda.googleUrl === ""
+                    visible: !Agenda.apiConnected && Agenda.apiClient
+                    implicitWidth: connectText.implicitWidth + 28
+                    implicitHeight: 30
+                    radius: 15
+                    color: Agenda.apiAuthing ? Theme.track : Theme.accent
+
+                    Text {
+                        id: connectText
+
+                        anchors.centerIn: parent
+                        text: Agenda.apiAuthing ? "Esperando el permiso en el navegador…" : "Conectar con Google"
+                        color: Agenda.apiAuthing ? Theme.textDim : "#14131a"
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                    }
+
+                    TapHandler {
+                        onTapped: Agenda.connectApi()
+                    }
+                    HoverHandler {
+                        cursorShape: Qt.PointingHandCursor
+                    }
+                }
+
+                // Sin credenciales: dónde conseguirlas
+                Text {
+                    Layout.fillWidth: true
+                    visible: !Agenda.apiConnected && !Agenda.apiClient
+                    text: "Para leer y escribir en tu Google Calendar hace falta crear unas credenciales en la consola de Google (pasos en docs/google-calendar.md) y guardar el archivo como ~/.local/share/ombu/google-client.json."
+                    wrapMode: Text.Wrap
+                    color: Theme.textDim
+                    font.pixelSize: 11
+                }
+
+                Rectangle {
+                    visible: Agenda.apiConnected
+                    implicitWidth: disconnectText.implicitWidth + 24
+                    implicitHeight: 28
+                    radius: 14
+                    color: "transparent"
+                    border.width: 1
+                    border.color: Theme.danger
+
+                    Text {
+                        id: disconnectText
+
+                        anchors.centerIn: parent
+                        text: "Desconectar"
+                        color: Theme.danger
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                    }
+
+                    TapHandler {
+                        onTapped: {
+                            Agenda.disconnectApi();
+                            root.showSettings = false;
+                        }
+                    }
+                    HoverHandler {
+                        cursorShape: Qt.PointingHandCursor
+                    }
+                }
+
+                // Alternativa de solo lectura: la dirección secreta en formato iCal
+                Text {
+                    Layout.fillWidth: true
+                    visible: !Agenda.apiConnected && Agenda.googleUrl === ""
+                    text: "O, solo para ver: pegá la «dirección secreta en formato iCal» de tu calendario y Enter."
+                    wrapMode: Text.Wrap
+                    color: Theme.textDim
+                    font.pixelSize: 11
+                }
+
+                Rectangle {
+                    visible: !Agenda.apiConnected && Agenda.googleUrl === ""
                     Layout.fillWidth: true
                     implicitHeight: 32
                     radius: 10
@@ -301,8 +390,8 @@ DropPopup {
                 }
 
                 Rectangle {
-                    visible: Agenda.googleUrl !== ""
-                    implicitWidth: disconnectText.implicitWidth + 24
+                    visible: googleBox.icalOn
+                    implicitWidth: disconnectIcalText.implicitWidth + 24
                     implicitHeight: 28
                     radius: 14
                     color: "transparent"
@@ -310,7 +399,7 @@ DropPopup {
                     border.color: Theme.danger
 
                     Text {
-                        id: disconnectText
+                        id: disconnectIcalText
 
                         anchors.centerIn: parent
                         text: "Desconectar"
@@ -684,14 +773,30 @@ DropPopup {
                             font.strikeout: item.modelData.done === true
                         }
 
+                        // Entrar a la clase o reunión de Meet
                         MIcon {
-                            visible: item.modelData.kind === "local" && itemHover.hovered
+                            visible: item.modelData.meet !== undefined && item.modelData.meet !== ""
+                            name: "videocam"
+                            font.pixelSize: 17
+                            color: Agenda.googleColor
+
+                            TapHandler {
+                                onTapped: Quickshell.execDetached(["xdg-open", item.modelData.meet])
+                            }
+                            HoverHandler {
+                                cursorShape: Qt.PointingHandCursor
+                            }
+                        }
+
+                        // Borrar: los propios y los que creó ombu en Google (los ajenos no)
+                        MIcon {
+                            visible: (item.modelData.kind === "local" || item.modelData.mine === true) && itemHover.hovered
                             name: "close"
                             font.pixelSize: 16
                             color: Theme.textDim
 
                             TapHandler {
-                                onTapped: Agenda.remove(item.modelData.id)
+                                onTapped: item.modelData.kind === "local" ? Agenda.remove(item.modelData.id) : Agenda.removeGoogle(item.modelData.calendarId, item.modelData.id)
                             }
                             HoverHandler {
                                 cursorShape: Qt.PointingHandCursor
@@ -754,6 +859,29 @@ DropPopup {
                         text: "Anotar algo para este día"
                         color: Theme.textDim
                         font.pixelSize: 13
+                    }
+                }
+
+                // Destino: Google (se ve en el celular) o solo en ombu
+                Rectangle {
+                    visible: Agenda.apiConnected
+                    Layout.preferredWidth: 26
+                    Layout.preferredHeight: 26
+                    radius: 8
+                    color: Agenda.createInGoogle ? Qt.rgba(Agenda.googleColor.r, Agenda.googleColor.g, Agenda.googleColor.b, 0.2) : Theme.bg
+
+                    MIcon {
+                        anchors.centerIn: parent
+                        name: Agenda.createInGoogle ? "cloud" : "cloud_off"
+                        font.pixelSize: 16
+                        color: Agenda.createInGoogle ? Agenda.googleColor : Theme.textDim
+                    }
+
+                    TapHandler {
+                        onTapped: Agenda.setCreateInGoogle(!Agenda.createInGoogle)
+                    }
+                    HoverHandler {
+                        cursorShape: Qt.PointingHandCursor
                     }
                 }
 
