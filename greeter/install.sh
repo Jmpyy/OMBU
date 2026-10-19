@@ -128,6 +128,18 @@ install -d -m 755 "$(dirname "$BIN")"
 install -m 755 "$HERE/ombu-greeter-session" "$BIN"
 echo "Archivos instalados en $SHARE y $BIN"
 
+# Si el greeter trae la intro en video, se deja una marca en tu carpeta de datos: así ombu no la repite
+# después de la contraseña (ver Welcome.qml). Sin intro, se borra la marca.
+MARK="$USERHOME/.local/share/ombu/intro-en-login"
+if [ -f "$SHARE/intro.mp4" ]; then
+    install -d -m 755 -o "$USERNAME" "$(dirname "$MARK")" 2>/dev/null || mkdir -p "$(dirname "$MARK")"
+    echo 1 >"$MARK"
+    chown "$USERNAME" "$MARK" 2>/dev/null || true
+    echo "La intro en video sonará en el login (marca: $MARK)"
+else
+    rm -f "$MARK"
+fi
+
 # --- 4. greetd ----------------------------------------------------------------------------
 if [ ! -e "$GREETD_CONF.noctalia-backup" ]; then
     cp -a "$GREETD_CONF" "$GREETD_CONF.noctalia-backup"

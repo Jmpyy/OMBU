@@ -9,7 +9,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 OMBU="$(cd "$HERE/.." && pwd)"
 
 SHARED=(Theme.qml MIcon.qml AvatarRing.qml NameBadge.qml Halftone.qml LockBackdrop.qml LockChip.qml LockPower.qml Chrono.qml Keyboard.qml Ui.qml)
-OWN=(shell.qml GreeterConfig.qml GreeterAuth.qml GreeterScreen.qml)
+OWN=(shell.qml GreeterConfig.qml GreeterAuth.qml GreeterScreen.qml GreeterIntro.qml IntroState.qml)
 
 mkdir -p "$DEST"
 for f in "${SHARED[@]}"; do cp "$OMBU/$f" "$DEST/$f"; done
@@ -62,6 +62,12 @@ open(os.path.join(dest, "Walls.qml"), "w").write(
     'pragma Singleton\n\nimport QtQuick\nimport Quickshell\n\n// Generado por greeter/build.sh: el fondo elegido, copiado\nSingleton {\n'
     '    readonly property string current: "%s"\n}\n' % (os.path.join(share, "fondo.jpg") if has_wall else ""))
 
+# Intro de ombu en video (si existe): suena en el login antes de pedir la contraseña
+intro = os.path.join(data, "intro.mp4")
+has_intro = os.path.isfile(intro)
+if has_intro:
+    shutil.copy(intro, os.path.join(dest, "intro.mp4"))
+
 # Tipografía del tema (si es una que tengamos en ~/.local/share/fonts/ombu)
 font = palette.get("display", "")
 fdir = os.path.join(home, ".local/share/fonts/ombu")
@@ -69,6 +75,6 @@ if font and os.path.isdir(fdir):
     for f in os.listdir(fdir):
         if f.lower().startswith(font.lower()):
             shutil.copy(os.path.join(fdir, f), os.path.join(dest, f))
-print("tema=%s fondo=%s tipografía=%s" % (theme_id or "(ninguno)", "sí" if has_wall else "no", font or "-"))
+print("tema=%s fondo=%s tipografía=%s intro=%s" % (theme_id or "(ninguno)", "sí" if has_wall else "no", font or "-", "sí" if has_intro else "no"))
 PYEOF
 echo "greeter armado en $DEST ($(ls "$DEST" | wc -l) archivos)"

@@ -47,6 +47,13 @@ ShellRoot {
                     anchors.fill: parent
                     interactive: scope.primary
                 }
+
+                // La intro de ombu por encima del login (solo en el monitor principal)
+                Loader {
+                    anchors.fill: parent
+                    active: scope.primary
+                    source: "GreeterIntro.qml"
+                }
             }
 
             // Pruebas: una ventana común en el monitor actual
@@ -58,6 +65,12 @@ ShellRoot {
 
                 GreeterScreen {
                     anchors.fill: parent
+                }
+
+                Loader {
+                    anchors.fill: parent
+                    active: root.test && scope.primary
+                    source: "GreeterIntro.qml"
                 }
             }
         }

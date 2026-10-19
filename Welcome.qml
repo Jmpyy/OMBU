@@ -31,8 +31,12 @@ Singleton {
     // Cuántos caracteres van escritos: sigue el reloj de la animación, no el del sistema
     readonly property int typed: Saver.welcome ? Math.min(line.length, Math.max(0, Math.floor((Saver.clock - 2.4) / 0.04))) : 0
 
-    function play(): void {
+    // Si el greeter ya pasó la intro antes de la contraseña (lo marca su instalador), acá no se repite.
+    // `force` (el comando `welcome play`) la reproduce igual, para probar.
+    function play(force): void {
         if (shown || Ui.locked)
+            return;
+        if (force !== true && (loginIntro.text() ?? "").trim() !== "")
             return;
         mode = "video";
         fadeMs = 0;
@@ -87,10 +91,20 @@ Singleton {
             root.fallbackToRain();
         }
         // El obturador del final deja negro a los 3,7 s: ahí empieza el desvanecimiento hacia el escritorio
-        onPositionChanged: if (root.mode === "video" && position >= 3700)
-            root.finishNow()
+        onPositionChanged: pos => {
+            if (root.mode === "video" && pos >= 3700)
+                root.finishNow();
+        }
         onPlaybackStateChanged: if (root.mode === "video" && playbackState === MediaPlayer.StoppedState && root.playing)
             root.finishNow()
+    }
+
+    FileView {
+        id: loginIntro
+
+        path: (Quickshell.env("HOME") ?? "") + "/.local/share/ombu/intro-en-login"
+        blockLoading: true
+        printErrors: false
     }
 
     FileView {

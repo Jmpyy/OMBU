@@ -198,7 +198,10 @@ Item {
                     clip: true
                     focus: true
 
-                    onTextChanged: GreeterAuth.reset()
+                    onTextChanged: {
+                        GreeterAuth.reset();
+                        IntroState.skip();
+                    }
 
                     onAccepted: {
                         if (text.length === 0)

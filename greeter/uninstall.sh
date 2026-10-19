@@ -25,4 +25,8 @@ fi
 
 rm -rf "$SHARE"
 rm -f "$BIN"
+# Sin intro en el login, la bienvenida de ombu vuelve a reproducirla después de la contraseña
+USERNAME="${OMBU_USER:-${SUDO_USER:-$(logname 2>/dev/null || id -un)}}"
+USERHOME="$(getent passwd "$USERNAME" | cut -d: -f6)"
+[ -n "$USERHOME" ] && rm -f "$USERHOME/.local/share/ombu/intro-en-login"
 echo "Archivos del greeter de ombu borrados. La copia de seguridad se conserva por si hace falta."

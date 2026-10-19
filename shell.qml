@@ -567,7 +567,7 @@ ShellRoot {
     // qs -c ombu ipc call welcome play  -> repite la bienvenida del inicio de sesión
     IpcHandler {
         function play(): void {
-            Welcome.play();
+            Welcome.play(true);
         }
 
         target: "welcome"
