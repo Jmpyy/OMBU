@@ -65,103 +65,57 @@ DropPopup {
         spacing: 14
 
         // Modo
-        RowLayout {
+        Segmented {
             Layout.fillWidth: true
-            spacing: 8
-
-            Repeater {
-                model: [
-                    {
-                        id: "estudio",
-                        name: "Estudio"
-                    },
-                    {
-                        id: "trabajo",
-                        name: "Trabajo"
-                    },
-                    {
-                        id: "libre",
-                        name: "Libre"
-                    }
-                ]
-
-                Pill {
-                    required property var modelData
-
-                    Layout.fillWidth: true
-                    text: modelData.name
-                    selected: Focus.mode === modelData.id
-                    onClicked: Focus.setMode(modelData.id)
+            current: Focus.mode
+            model: [
+                {
+                    id: "estudio",
+                    name: "Estudio"
+                },
+                {
+                    id: "trabajo",
+                    name: "Trabajo"
+                },
+                {
+                    id: "libre",
+                    name: "Libre"
                 }
-            }
+            ]
+            onPicked: id => Focus.setMode(id)
         }
 
         // Temporizador
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 2
-
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: Focus.mode === "libre" ? "Modo libre" : Focus.phaseName
-                color: Focus.running ? Theme.accent : Theme.textDim
-                font.pixelSize: 12
-                font.weight: Font.DemiBold
-            }
-
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: Focus.clock(Focus.remaining)
-                color: Focus.mode === "libre" ? Theme.textDim : Theme.text
-                font.pixelSize: 46
-                font.weight: Font.Light
-            }
-
-            // Avance de la fase
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.topMargin: 6
-                implicitHeight: 4
-                radius: 2
-                color: Theme.track
-
-                Rectangle {
-                    width: parent.width * (1 - Focus.remaining / Focus.lengthOf(Focus.phase))
-                    height: parent.height
-                    radius: 2
-                    color: Theme.accent
-
-                    Behavior on width {
-                        NumberAnimation {
-                            duration: 300
-                        }
-                    }
-                }
-            }
+        FocusRing {
+            Layout.alignment: Qt.AlignHCenter
+            title: Focus.mode === "libre" ? "Modo libre" : Focus.phaseName
+            time: Focus.clock(Focus.remaining)
+            active: Focus.running
+            dim: Focus.mode === "libre"
+            progress: Focus.mode === "libre" ? 0 : 1 - Focus.remaining / Focus.lengthOf(Focus.phase)
         }
 
         // Controles
         RowLayout {
-            Layout.fillWidth: true
-            spacing: 8
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 14
 
-            Pill {
-                Layout.fillWidth: true
-                filled: true
-                text: Focus.running ? "Pausar" : (Focus.mode === "libre" ? "Empezar a estudiar" : "Empezar")
+            RoundButton {
+                icon: "stop"
+                enabled: Focus.running || Focus.remaining !== Focus.lengthOf(Focus.phase)
+                onClicked: Focus.stop()
+            }
+
+            RoundButton {
+                primary: true
+                icon: Focus.running ? "pause" : "play_arrow"
                 onClicked: Focus.running ? Focus.pause() : Focus.start()
             }
 
-            Pill {
-                text: "Saltar"
+            RoundButton {
+                icon: "skip_next"
                 enabled: Focus.running
                 onClicked: Focus.next(false)
-            }
-
-            Pill {
-                text: "Parar"
-                enabled: Focus.running || Focus.remaining !== Focus.lengthOf(Focus.phase)
-                onClicked: Focus.stop()
             }
         }
 
@@ -175,6 +129,14 @@ DropPopup {
                 color: Theme.textDim
                 font.pixelSize: 11
                 font.weight: Font.DemiBold
+                font.letterSpacing: 0.8
+            }
+
+            Segmented {
+                Layout.fillWidth: true
+                current: Focus.kit
+                model: Focus.kits
+                onPicked: id => Focus.setKit(id)
             }
 
             RowLayout {
@@ -182,48 +144,127 @@ DropPopup {
                 spacing: 8
 
                 Repeater {
-                    model: Focus.kits
+                    model: [
+                        {
+                            tool: "notebook",
+                            icon: "menu_book",
+                            name: "NotebookLM"
+                        },
+                        {
+                            tool: "ide",
+                            icon: "code",
+                            name: "Editor"
+                        },
+                        {
+                            tool: "ai",
+                            icon: "terminal",
+                            name: "Antigravity"
+                        }
+                    ]
 
-                    Pill {
+                    Rectangle {
+                        id: toolTile
+
                         required property var modelData
 
                         Layout.fillWidth: true
-                        text: modelData.name
-                        selected: Focus.kit === modelData.id
-                        onClicked: Focus.setKit(modelData.id)
+                        Layout.preferredWidth: 1
+                        implicitHeight: 62
+                        radius: 14
+                        color: toolArea.containsMouse ? Theme.hover : Theme.surface
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 90
+                            }
+                        }
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 5
+
+                            MIcon {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                name: toolTile.modelData.icon
+                                font.pixelSize: 22
+                                color: Theme.text
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: toolTile.modelData.name
+                                color: Theme.textDim
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
+                            }
+                        }
+
+                        MouseArea {
+                            id: toolArea
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Focus.openTool(toolTile.modelData.tool)
+                        }
                     }
                 }
             }
 
-            RowLayout {
+            // Interruptor: abrir el entorno solo al empezar a estudiar
+            Rectangle {
                 Layout.fillWidth: true
-                spacing: 8
+                implicitHeight: 40
+                radius: 12
+                color: Theme.surface
 
-                Pill {
-                    Layout.fillWidth: true
-                    text: "NotebookLM"
-                    onClicked: Focus.openTool("notebook")
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: "Abrir mi entorno al empezar"
+                        color: Theme.text
+                        font.pixelSize: 13
+                    }
+
+                    Rectangle {
+                        implicitWidth: 38
+                        implicitHeight: 22
+                        radius: 11
+                        color: Focus.autoOpen ? Theme.accent : Theme.track
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 120
+                            }
+                        }
+
+                        Rectangle {
+                            x: Focus.autoOpen ? parent.width - width - 3 : 3
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 16
+                            height: 16
+                            radius: 8
+                            color: Focus.autoOpen ? "#14131a" : Theme.text
+
+                            Behavior on x {
+                                NumberAnimation {
+                                    duration: 120
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+                        }
+                    }
                 }
 
-                Pill {
-                    Layout.fillWidth: true
-                    text: "Editor"
-                    onClicked: Focus.openTool("ide")
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: Focus.toggleAutoOpen()
                 }
-
-                Pill {
-                    Layout.fillWidth: true
-                    text: "Antigravity"
-                    onClicked: Focus.openTool("ai")
-                }
-            }
-
-            Pill {
-                Layout.fillWidth: true
-                implicitHeight: 28
-                text: Focus.autoOpen ? "Abrir mi entorno al empezar: sí" : "Abrir mi entorno al empezar: no"
-                selected: Focus.autoOpen
-                onClicked: Focus.toggleAutoOpen()
             }
         }
 

@@ -29,6 +29,19 @@ PanelWindow {
     readonly property bool muted: sink?.audio?.muted ?? false
     readonly property string volumeIcon: muted || volume <= 0 ? "volume_off" : (volume < 0.5 ? "volume_down" : "volume_up")
 
+    // Hay una sesión de foco a medias: el cronómetro se ve en la barra
+    readonly property bool focusShown: Focus.mode !== "libre" && (Focus.running || Focus.remaining !== Focus.lengthOf(Focus.phase))
+    // De dónde crece el menú de foco: del cronómetro si está a la vista, si no del centro de
+    // control. Se fija al abrirlo para que no salte si empezás el temporizador con el menú abierto.
+    property Item focusFrom: controlButton
+
+    Binding {
+        target: win
+        property: "focusFrom"
+        value: win.focusShown ? focusButton : controlButton
+        when: Ui.popup !== win.popupKey("focus")
+    }
+
     function popupKey(kind: string): string {
         return kind + "@" + screen.name;
     }
@@ -289,13 +302,15 @@ PanelWindow {
                             color: Theme.border
                         }
 
-                        // Modo foco: con el temporizador en marcha muestra el tiempo que falta
+                        // Modo foco: solo aparece mientras hay una sesión (en marcha o en pausa) y muestra el
+        // tiempo que falta; el resto del tiempo se abre desde el centro de control
                         BarButton {
                             id: focusButton
 
                             readonly property bool isOpen: Ui.popup === win.popupKey("focus")
 
                             anchors.verticalCenter: parent.verticalCenter
+                            visible: win.focusShown
                             active: isOpen
                             icon: Focus.running ? (Focus.phase === "estudio" ? "school" : "coffee") : (Focus.mode === "trabajo" ? "work" : (Focus.mode === "estudio" ? "school" : "timer"))
                             iconColor: Focus.running ? Theme.accent : Theme.textDim
@@ -484,7 +499,7 @@ PanelWindow {
 
     FocusMenu {
         barWindow: win
-        anchorItem: focusButton
+        anchorItem: win.focusFrom
         open: focusButton.isOpen
 
         onDismissed: {
