@@ -234,8 +234,7 @@ Rectangle {
             border.color: "#0a0708"
             rotation: Theme.comic ? -6 : 0
             transform: Translate {
-                x: Theme.comic ? -5 : 0
-                y: Theme.comic ? -6 : 0
+                x: Theme.comic ? -4 : 0
             }
 
             Rectangle {
