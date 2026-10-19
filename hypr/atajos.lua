@@ -62,6 +62,8 @@ local D = {
 
     -- Sistema
     ["SUPER + K"]                   = "Sistema|Esta lista de atajos",
+    ["SUPER + ALT + Space"]         = "Sistema|Menú del sistema (estilo, ajustes, capturas...)",
+    ["SUPER + CONTROL + SHIFT + Space"] = "Sistema|Elegir el tema de colores|Super + Ctrl + Shift + Espacio",
     ["SUPER + Escape"]              = "Sistema|Menú de energía|Super + Esc  /  Super + X",
     ["SUPER + CONTROL + L"]         = "Sistema|Bloquear la pantalla",
     ["SUPER + B"]                   = "Sistema|Mostrar u ocultar la barra",

@@ -95,6 +95,12 @@ ShellRoot {
         KeysMenu {}
     }
 
+    Variants {
+        model: Quickshell.screens
+
+        SystemMenu {}
+    }
+
     // qs -c ombu ipc call bar toggle  -> mostrar/ocultar la barra
     // qs -c ombu ipc call bar mixer   -> abrir/cerrar la mezcladora (monitor con foco)
     // qs -c ombu ipc call bar apps    -> abrir/cerrar las apps abiertas (monitor con foco)
@@ -112,6 +118,43 @@ ShellRoot {
         }
 
         target: "keys"
+    }
+
+    // qs -c ombu ipc call menu toggle  -> menú del sistema (Super+Alt+Espacio)
+    IpcHandler {
+        function toggle(): void {
+            Ui.powerOpen = false;
+            Ui.launcherOpen = false;
+            Ui.clipOpen = false;
+            Ui.keysOpen = false;
+            Ui.popup = "";
+            Ui.sysMenuOpen = !Ui.sysMenuOpen;
+        }
+
+        function close(): void {
+            Ui.sysMenuOpen = false;
+        }
+
+        // ipc call menu open "Estilo>Tema"  -> abre el menú directo en esa sección
+        function open(path: string): void {
+            Ui.powerOpen = false;
+            Ui.launcherOpen = false;
+            Ui.clipOpen = false;
+            Ui.keysOpen = false;
+            Ui.popup = "";
+            Ui.sysMenuStart = path;
+            Ui.sysMenuOpen = true;
+        }
+
+        // ipc call menu theme tokyo  -> cambia de tema sin abrir el menú
+        function theme(id: string): string {
+            if (!Themes.find(id))
+                return "no existe " + id + " (hay: " + Themes.palettes.map(p => p.id).join(", ") + ")";
+            Themes.set(id);
+            return "ok";
+        }
+
+        target: "menu"
     }
 
     // qs -c ombu ipc call subs add Netflix 11850 ARS 6 mama "Mercado Pago"  -> sumar un pago mensual

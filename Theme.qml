@@ -3,7 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// Tokens de diseño: todo el aspecto sale de acá.
+// Tokens de diseño: todo el aspecto sale de acá. Los colores base vienen del tema elegido (Themes.qml).
 Singleton {
     // Geometría
     readonly property int barHeight: 32
@@ -15,14 +15,14 @@ Singleton {
     readonly property int controlRadius: 10
 
     // Colores
-    readonly property color bg: "#14131a"           // sólido, sin transparencia
-    readonly property color surface: "#1d1c26"      // tarjetas y filas sobre el fondo
-    readonly property color track: "#2b2a38"        // pista de los sliders
-    readonly property color text: "#e8e8f0"
-    readonly property color textDim: "#8a8a9c"
-    readonly property color accent: "#a78bfa"
-    readonly property color danger: "#f87171"
-    readonly property color warn: "#fbbf24"
+    readonly property color bg: Themes.active.bg  // sólido, sin transparencia
+    readonly property color surface: Themes.active.surface  // tarjetas y filas sobre el fondo
+    readonly property color track: Themes.active.track  // pista de los sliders
+    readonly property color text: Themes.active.text
+    readonly property color textDim: Themes.active.textDim
+    readonly property color accent: Themes.active.accent
+    readonly property color danger: Themes.active.danger
+    readonly property color warn: Themes.active.warn
     readonly property color hover: Qt.rgba(1, 1, 1, 0.09)
     readonly property color border: Qt.rgba(1, 1, 1, 0.08)
     // Contorno de la barra y de los menús que cuelgan de ella: se nota sobre una terminal oscura

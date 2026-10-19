@@ -15,6 +15,9 @@ Singleton {
     // Historial del portapapeles abierto
     property bool clipOpen: false
     property bool keysOpen: false
+    property bool sysMenuOpen: false
+    // Sección por la que abre el menú del sistema, por ejemplo "Estilo>Tema" (vacío = el principio)
+    property string sysMenuStart: ""
     // Texto con el que se abre el launcher (para atajos que lo precargan)
     property string launcherPrefill: ""
     // Menú desplegado de la barra, con formato "tipo@monitor" (ej. "mixer@HDMI-A-1"); "" = ninguno

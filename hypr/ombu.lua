@@ -98,6 +98,9 @@ hl.bind(mainMod .. " + X",           hl.dsp.exec_cmd(ipc .. "power toggle"))
 hl.bind(mainMod .. " + CONTROL + L", hl.dsp.exec_cmd(ipc .. "lock lock"))
 hl.bind(mainMod .. " + B",           hl.dsp.exec_cmd(ipc .. "bar toggle"))
 hl.bind(mainMod .. " + K",           hl.dsp.exec_cmd(ipc .. "keys toggle"))
+-- Menú del sistema (estilo Omarchy) y selector de temas
+hl.bind(mainMod .. " + ALT + Space",             hl.dsp.exec_cmd(ipc .. "menu toggle"))
+hl.bind(mainMod .. " + CONTROL + SHIFT + Space", hl.dsp.exec_cmd(ipc .. "menu open \"Estilo>Tema\""))
 
 -- Notificaciones (estilo Omarchy). Se usa el código de tecla de la coma (59) para que
 -- funcione igual con cualquier distribución de teclado.
