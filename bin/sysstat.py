@@ -126,9 +126,11 @@ def main():
     s = Sampler()
     if "--watch" in sys.argv:
         every = float(sys.argv[sys.argv.index("--watch") + 1])
+        # La primera medición sale enseguida (0,6 s): esperar el intervalo completo dejaba la pestaña vacía
+        time.sleep(min(every, 0.6))
         while True:
-            time.sleep(every)
             print(json.dumps(s.sample()), flush=True)
+            time.sleep(every)
     else:
         time.sleep(0.5)
         print(json.dumps(s.sample()))

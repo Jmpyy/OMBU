@@ -5,7 +5,8 @@ import Quickshell
 import Quickshell.Io
 
 // Noticias del panel lateral. Solo baja algo cuando se las pide (bin/rss.py, que además guarda una
-// copia de 15 minutos): con el panel cerrado no hay ninguna consulta de fondo.
+// copia de 15 minutos): con el panel cerrado no hay ninguna consulta de fondo. Al iniciar lee la copia
+// del disco (sin red), así que el panel muestra algo al instante y se actualiza por detrás.
 Singleton {
     id: root
 
@@ -36,6 +37,25 @@ Singleton {
         proc.running = true;
     }
 
+    // La copia guardada, sin importar su edad: solo se usa si todavía no hay nada más nuevo
+    Process {
+        id: cacheProc
+
+        running: true
+        command: [Quickshell.shellPath("bin/rss.py"), "--cached"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const r = JSON.parse(text);
+                    if (root.updated === 0 && (r.categories ?? []).length > 0) {
+                        root.categories = r.categories;
+                        root.updated = r.updated ?? 0;
+                    }
+                } catch (e) {}
+            }
+        }
+    }
+
     Process {
         id: proc
 
@@ -44,8 +64,11 @@ Singleton {
                 root.loading = false;
                 try {
                     const r = JSON.parse(text);
-                    root.categories = r.categories ?? [];
-                    root.updated = r.updated ?? 0;
+                    // Una respuesta vacía no borra lo que ya se estaba mostrando
+                    if ((r.categories ?? []).some(c => c.items.length > 0) || root.categories.length === 0) {
+                        root.categories = r.categories ?? [];
+                        root.updated = r.updated ?? 0;
+                    }
                     root.error = r.error ?? "";
                 } catch (e) {
                     root.error = "No se pudieron leer las noticias";

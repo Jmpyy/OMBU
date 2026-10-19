@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Noticias para el panel lateral de ombu: baja varios feeds RSS/Atom y los junta por categoría.
 
-Uso: rss.py [--refresh] [--max N]
+Uso: rss.py [--refresh | --cached] [--max N]
+  --cached imprime la copia guardada sin importar su edad (o una lista vacía) y no baja nada: es lo que
+  muestra el panel mientras se actualiza.
   Sin --refresh usa la copia guardada (~/.cache/ombu/noticias.json) si tiene menos de 15 minutos.
 Salida (JSON): {"updated": segundos, "categories": [{"id", "name", "items": [{"title", "link",
   "source", "time"}]}], "error": null | "texto"}
@@ -144,6 +146,13 @@ def build(feeds, limit):
 def main():
     args = sys.argv[1:]
     refresh = "--refresh" in args
+    if "--cached" in args:
+        try:
+            with open(CACHE, encoding="utf-8") as f:
+                print(f.read())
+        except (OSError, ValueError):
+            print(json.dumps({"updated": 0, "categories": [], "error": None}))
+        return
     limit = int(args[args.index("--max") + 1]) if "--max" in args else 25
     if not refresh:
         try:

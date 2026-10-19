@@ -247,7 +247,7 @@ PanelWindow {
 
                             Text {
                                 visible: parent.todays.length === 0
-                                text: "Nada agendado para hoy"
+                                text: Agenda.googleLoading ? "Cargando agenda…" : "Nada agendado para hoy"
                                 color: Theme.textDim
                                 font.pixelSize: 13
                             }
