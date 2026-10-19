@@ -64,9 +64,10 @@ PanelWindow {
 
     property real p: Ui.sideOpen ? 1 : 0
 
+    // Entra con calma y se va rápido
     Behavior on p {
         NumberAnimation {
-            duration: Theme.popupDuration + 40
+            duration: Ui.sideOpen ? Theme.popupDuration + 20 : 120
             easing.type: Easing.OutCubic
         }
     }
@@ -114,19 +115,21 @@ PanelWindow {
         top: true
         bottom: true
     }
-    margins.top: Theme.barHeight + 8
-    margins.bottom: 12
+    // Pegado al borde izquierdo, debajo de la barra y hasta el fondo de la pantalla: un cajón de la
+    // pantalla, no una tarjeta flotante
+    margins.top: Theme.barHeight
+    margins.bottom: 0
     implicitWidth: panelWidth + 12
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "ombu-side"
     WlrLayershell.keyboardFocus: Ui.sideOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
-    // Salir con el mouse cierra el panel (medio segundo de gracia)
+    // Salir con el mouse cierra el panel casi enseguida (la pausa evita que un roce al borde lo cierre)
     Timer {
         id: leave
 
-        interval: 500
+        interval: 150
         onTriggered: if (win.entered && !hover.hovered)
             Ui.sideOpen = false
     }
@@ -156,10 +159,12 @@ PanelWindow {
         Rectangle {
             id: card
 
-            x: 6 - (1 - win.p) * (win.panelWidth + 20)
+            x: -(1 - win.p) * (win.panelWidth + 20)
             width: win.panelWidth
             height: parent.height
             radius: Theme.cardRadius
+            topLeftRadius: 0
+            bottomLeftRadius: 0
             color: Theme.bg
             border.width: 1
             border.color: Theme.outline
