@@ -135,15 +135,27 @@ Item {
 
             visible: root.interactive
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 22
+            Layout.topMargin: Theme.comic ? 28 : 22
             Layout.preferredWidth: input.activeFocus ? 380 : 340
             Layout.preferredHeight: 54
-            radius: 27
+            radius: Theme.comic ? 10 : 27
             color: Theme.bg
-            border.width: 1
-            border.color: GreeterAuth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : Theme.border)
+            border.width: Theme.comic ? 2 : 1
+            border.color: GreeterAuth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : (Theme.comic ? Theme.ink : Theme.border))
             transform: Translate {
                 x: root.shakeX
+            }
+
+            // Sombra dura de viñeta (solo temas de cómic), igual que el campo de la pantalla de bloqueo
+            Rectangle {
+                visible: Theme.comic
+                z: -1
+                x: 5
+                y: 5
+                width: parent.width
+                height: parent.height
+                radius: parent.radius
+                color: Theme.shadow
             }
 
             Behavior on Layout.preferredWidth {
