@@ -62,13 +62,60 @@ PanelWindow {
                 readonly property bool show: appeared && entry.shown
                 // Cuánto se arrastró la tarjeta hacia la derecha
                 property real dragX: 0
+                // Vibración de Sentido Arácnido al entrar (temblor de cómic)
+                property real tingleAngle: 0
 
                 width: stack.width
-                height: show ? card.implicitHeight + 10 : 0
+                height: show ? card.implicitHeight + 14 : 0
                 opacity: show ? 1 : 0
-                clip: true
+                clip: !show
 
                 Component.onCompleted: appeared = true
+
+                onShowChanged: {
+                    if (show && Theme.comic)
+                        tingleAnim.restart();
+                }
+
+                SequentialAnimation {
+                    id: tingleAnim
+
+                    NumberAnimation {
+                        target: slot
+                        property: "tingleAngle"
+                        to: -2.2
+                        duration: 35
+                        easing.type: Easing.OutQuad
+                    }
+                    NumberAnimation {
+                        target: slot
+                        property: "tingleAngle"
+                        to: 2.2
+                        duration: 35
+                        easing.type: Easing.InOutQuad
+                    }
+                    NumberAnimation {
+                        target: slot
+                        property: "tingleAngle"
+                        to: -1.0
+                        duration: 35
+                        easing.type: Easing.InOutQuad
+                    }
+                    NumberAnimation {
+                        target: slot
+                        property: "tingleAngle"
+                        to: 1.0
+                        duration: 35
+                        easing.type: Easing.InOutQuad
+                    }
+                    NumberAnimation {
+                        target: slot
+                        property: "tingleAngle"
+                        to: 0
+                        duration: 40
+                        easing.type: Easing.OutQuad
+                    }
+                }
 
                 Behavior on height {
                     NumberAnimation {
@@ -97,6 +144,7 @@ PanelWindow {
                     entry: slot.entry
                     floating: true
                     scale: slot.show ? 1 : 0.95
+                    rotation: slot.tingleAngle
                     transformOrigin: Item.Right
 
                     // Entra con rebote; sale acelerando. Mientras se arrastra, sigue al mouse.

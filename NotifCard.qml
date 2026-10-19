@@ -91,16 +91,61 @@ Rectangle {
     // Los avisos con cuenta regresiva llevan una barra de tiempo abajo
     readonly property bool timed: floating && entry.hasTimer
 
+    // Badge de cómic / Sentido Arácnido
+    readonly property string badgeText: {
+        if (!Theme.comic)
+            return "";
+        if (entry.critical || entry.risky)
+            return "¡LOOK OUT!";
+        const app = (entry.appName || "").toLowerCase();
+        const sum = (entry.summary || "").toLowerCase();
+        if (app.includes("claude") || app.includes("antigravity") || sum.includes("terminó") || sum.includes("listo"))
+            return "THWIP!";
+        if (app.includes("capturas") || app.includes("shot"))
+            return "SNAP!";
+        if (app.includes("gcc") || app.includes("clang") || app.includes("make") || sum.includes("compil") || sum.includes("build") || sum.includes("valgrind"))
+            return "POW!";
+        if (app.includes("spider-man") || app.includes("spiderman"))
+            return "SPIDEY-SENSE!";
+        return "";
+    }
+
+    readonly property color badgeColor: {
+        if (entry.critical || entry.risky)
+            return Theme.danger;
+        const app = (entry.appName || "").toLowerCase();
+        const sum = (entry.summary || "").toLowerCase();
+        if (app.includes("claude") || app.includes("antigravity") || sum.includes("terminó"))
+            return Themes.active.border2 ?? "#5fb0ae";
+        if (app.includes("capturas") || app.includes("shot"))
+            return Theme.warn;
+        return Theme.accent;
+    }
+
+    readonly property color badgeTextColor: {
+        if (entry.critical || entry.risky)
+            return "#ffffff";
+        const app = (entry.appName || "").toLowerCase();
+        if (app.includes("claude") || app.includes("antigravity") || app.includes("capturas") || app.includes("shot"))
+            return "#101014";
+        return Theme.accentText;
+    }
+
     implicitHeight: content.implicitHeight + (timed ? 32 : 26)
     radius: 14
     color: floating ? Theme.bg : Theme.surface
-    border.width: floating ? 1 : 0
-    border.color: hover.hovered ? Qt.rgba(1, 1, 1, 0.32) : Theme.outline
+    border.width: floating ? (Theme.comic ? 2 : 1) : (Theme.comic ? 1 : 0)
+    border.color: hover.hovered ? (Theme.comic ? Theme.accent : Qt.rgba(1, 1, 1, 0.32)) : (Theme.comic ? "#0a0708" : Theme.outline)
 
     Behavior on border.color {
         ColorAnimation {
             duration: 160
         }
+    }
+
+    Halftone {
+        strength: 0.05
+        anchors.margins: 4
     }
 
     HoverHandler {
@@ -209,14 +254,38 @@ Rectangle {
 
             RowLayout {
                 Layout.fillWidth: true
+                spacing: 6
 
                 Text {
                     Layout.fillWidth: true
                     text: root.entry.appName
                     elide: Text.ElideRight
-                    color: Theme.textDim
+                    color: Theme.comic ? Theme.accent : Theme.textDim
                     font.pixelSize: 11
                     font.weight: Font.DemiBold
+                }
+
+                // Badge de cómic / Sentido Arácnido
+                Rectangle {
+                    visible: Theme.comic && root.badgeText !== ""
+                    color: root.badgeColor
+                    radius: 4
+                    border.width: 1.5
+                    border.color: "#0a0708"
+                    rotation: -2
+                    implicitWidth: badgeLabel.implicitWidth + 10
+                    implicitHeight: badgeLabel.implicitHeight + 4
+
+                    Text {
+                        id: badgeLabel
+                        anchors.centerIn: parent
+                        text: root.badgeText
+                        font.family: Theme.displayFont || Qt.application.font.family
+                        font.pixelSize: 11
+                        font.letterSpacing: 0.8
+                        font.weight: Font.Bold
+                        color: root.badgeTextColor
+                    }
                 }
 
                 Text {
@@ -233,7 +302,9 @@ Rectangle {
                 maximumLineCount: 2
                 elide: Text.ElideRight
                 color: Theme.text
-                font.pixelSize: 14
+                font.family: (Theme.comic && Theme.displayFont) ? Theme.displayFont : Qt.application.font.family
+                font.pixelSize: Theme.comic ? 16 : 14
+                font.letterSpacing: Theme.comic ? 1 : 0
                 font.weight: Font.DemiBold
             }
 

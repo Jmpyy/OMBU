@@ -15,6 +15,7 @@ Rectangle {
     height: target.height
     radius: target.radius
     scale: target.scale
+    rotation: target.rotation
     transformOrigin: target.transformOrigin
     opacity: target.opacity
     color: Theme.shadow
