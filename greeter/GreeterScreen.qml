@@ -42,9 +42,11 @@ Item {
 
             Text {
                 text: Chrono.date.toLocaleString(Chrono.locale, "HH")
-                color: "#f4f4fa"
-                font.pixelSize: 132
-                font.weight: Font.Light
+                color: Theme.comic ? Theme.text : "#f4f4fa"
+                font.family: Theme.displayFont || Qt.application.font.family
+                font.pixelSize: Theme.comic ? 150 : 132
+                font.weight: Theme.comic ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comic ? 4 : 0
             }
 
             Text {
@@ -53,9 +55,11 @@ Item {
                 property bool lit: true
 
                 text: ":"
-                color: "#f4f4fa"
-                font.pixelSize: 132
-                font.weight: Font.Light
+                color: Theme.comic ? Theme.text : "#f4f4fa"
+                font.family: Theme.displayFont || Qt.application.font.family
+                font.pixelSize: Theme.comic ? 150 : 132
+                font.weight: Theme.comic ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comic ? 4 : 0
                 opacity: lit ? 1 : 0.28
 
                 Behavior on opacity {
@@ -75,9 +79,11 @@ Item {
 
             Text {
                 text: Chrono.date.toLocaleString(Chrono.locale, "mm")
-                color: "#f4f4fa"
-                font.pixelSize: 132
-                font.weight: Font.Light
+                color: Theme.comic ? Theme.text : "#f4f4fa"
+                font.family: Theme.displayFont || Qt.application.font.family
+                font.pixelSize: Theme.comic ? 150 : 132
+                font.weight: Theme.comic ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comic ? 4 : 0
             }
         }
 
@@ -162,7 +168,7 @@ Item {
                     enabled: !root.busy
                     color: Theme.text
                     selectionColor: Theme.accent
-                    selectedTextColor: "#14131a"
+                    selectedTextColor: Theme.accentText
                     font.pixelSize: 17
                     clip: true
                     focus: true
@@ -240,7 +246,7 @@ Item {
                     MIcon {
                         anchors.centerIn: parent
                         name: root.busy ? "hourglass_top" : "arrow_forward"
-                        color: input.text.length > 0 ? "#14131a" : Theme.textDim
+                        color: input.text.length > 0 ? Theme.accentText : Theme.textDim
                         font.pixelSize: 20
                     }
 

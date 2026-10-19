@@ -57,7 +57,7 @@ echo "Usuario: $USERNAME | configuración de greetd: $GREETD_CONF"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 chmod 755 "$STAGE"
-bash "$HERE/build.sh" "$STAGE" >/dev/null
+OMBU_SHARE="$SHARE" OMBU_THEME_HOME="$USERHOME" bash "$HERE/build.sh" "$STAGE"
 
 # Teclado y monitor principal se toman de tu configuración de Hyprland
 GREETER_USER="$USERNAME" python3 - "$USERHOME" "$STAGE" "$SHARE" <<'PYEOF'

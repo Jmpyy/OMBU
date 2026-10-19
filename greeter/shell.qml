@@ -12,6 +12,11 @@ ShellRoot {
     readonly property var testAttempts: (Quickshell.env("OMBU_GREETER_TEST_PASSWORDS") ?? "").split(",").filter(p => p.length > 0)
     property int attempt: 0
 
+    // Tipografía del tema (generada por build.sh junto a este archivo; sin ella se usa la común)
+    FontLoader {
+        source: Theme.displayFont !== "" ? Qt.resolvedUrl(Theme.displayFont + "-Regular.ttf") : ""
+    }
+
     Variants {
         model: Quickshell.screens
 
