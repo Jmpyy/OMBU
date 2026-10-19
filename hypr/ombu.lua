@@ -10,6 +10,9 @@ local mainMod = "SUPER"
 local ombu = os.getenv("HOME") .. "/.config/quickshell/ombu"
 local ipc = "quickshell -c ombu ipc call "
 
+-- Descripciones de los atajos para el menú de atajos (Super+K); tiene que ir antes de los hl.bind
+dofile(ombu .. "/hypr/atajos.lua")
+
 -- Arranque del shell (-n evita que se abra dos veces)
 hl.on("hyprland.start", function ()
     hl.exec_cmd("quickshell -c ombu -n -d")
@@ -94,6 +97,7 @@ hl.bind(mainMod .. " + Escape",      hl.dsp.exec_cmd(ipc .. "power toggle"))
 hl.bind(mainMod .. " + X",           hl.dsp.exec_cmd(ipc .. "power toggle"))
 hl.bind(mainMod .. " + CONTROL + L", hl.dsp.exec_cmd(ipc .. "lock lock"))
 hl.bind(mainMod .. " + B",           hl.dsp.exec_cmd(ipc .. "bar toggle"))
+hl.bind(mainMod .. " + K",           hl.dsp.exec_cmd(ipc .. "keys toggle"))
 
 -- Notificaciones (estilo Omarchy). Se usa el código de tecla de la coma (59) para que
 -- funcione igual con cualquier distribución de teclado.

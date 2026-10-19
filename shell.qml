@@ -86,9 +86,31 @@ ShellRoot {
         ClipMenu {}
     }
 
+    Variants {
+        model: Quickshell.screens
+
+        KeysMenu {}
+    }
+
     // qs -c ombu ipc call bar toggle  -> mostrar/ocultar la barra
     // qs -c ombu ipc call bar mixer   -> abrir/cerrar la mezcladora (monitor con foco)
     // qs -c ombu ipc call bar apps    -> abrir/cerrar las apps abiertas (monitor con foco)
+    IpcHandler {
+        function toggle(): void {
+            Ui.powerOpen = false;
+            Ui.launcherOpen = false;
+            Ui.clipOpen = false;
+            Ui.popup = "";
+            Ui.keysOpen = !Ui.keysOpen;
+        }
+
+        function close(): void {
+            Ui.keysOpen = false;
+        }
+
+        target: "keys"
+    }
+
     IpcHandler {
         function set(path: string): void {
             Walls.set(path);
