@@ -120,6 +120,12 @@ hl.window_rule({ match = { class = "^(dev\\.zed\\.Zed)$" }, opacity = "1.0 overr
 -- Editor de capturas (satty): ventana flotante al centro
 hl.window_rule({ match = { class = "^(com\\.gabm\\.satty)$" }, float = true, center = true, opacity = "1.0 override", size = { "monitor_w*0.70", "monitor_h*0.75" } })
 
+-- Brillo del monitor por DDC (teclas de brillo y Super+F11 / Super+F12)
+hl.bind("XF86MonBrightnessUp",       hl.dsp.exec_cmd(ipc .. "brightness up"),   { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessDown",     hl.dsp.exec_cmd(ipc .. "brightness down"), { locked = true, repeating = true })
+hl.bind(mainMod .. " + F12",         hl.dsp.exec_cmd(ipc .. "brightness up"),   { repeating = true })
+hl.bind(mainMod .. " + F11",         hl.dsp.exec_cmd(ipc .. "brightness down"), { repeating = true })
+
 -- Historial del portapapeles
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd(ipc .. "clip toggle"))
 

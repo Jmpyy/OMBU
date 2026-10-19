@@ -43,6 +43,8 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 - **Bienvenida** al iniciar sesión: lluvia de código, el logo que se descifra y la barra que baja desde el borde.
 - **Capturas** con editor para anotar y recortar, miniatura en el aviso (clic para editarla, botón para borrarla) y OCR para copiar texto de la pantalla.
 - Avisos cuando Claude Code o Antigravity terminan una tarea larga (y no los muestra si ya tenés la terminal a la vista).
+- **Brillo del monitor** con un indicador igual al del volumen. Habla con el monitor por DDC/CI (`ddcutil`), así que sirve para monitores externos de escritorio. Teclas de brillo o `Super+F11` / `Super+F12`; hace falta `ddcutil` y que el monitor acepte DDC/CI.
+- **Proyectos de C para estudiar:** `bin/cproj.sh nombre` crea en `~/universidad` un proyecto con CMake (avisos estrictos), `compile_commands.json` para clangd y un Makefile con `make run`, `make leaks` (valgrind), `make asan` y `make debug` (gdb).
 - **Modo foco** en la barra: temporizador de estudio y descanso (25/5), tres modos (estudio, trabajo, libre), estadística y racha del día, un entorno de estudio que se abre al empezar (NotebookLM, el editor y una terminal con la IA, según estudies programación, matemática u otra cosa), un cajón para anotar ideas sin distraerte y, en modo estudio, un bloqueo de juegos y de redes sociales (Instagram, TikTok...; YouTube no) que avisa antes de cerrarlos y se puede saltar esperando 60 segundos.
 - **Historial del portapapeles** con búsqueda, miniaturas de imágenes, textos fijados y pegado automático en la ventana donde estabas. No guarda lo que las apps marcan como sensible (gestores de contraseñas), se puede pausar y se vacía en cada sesión nueva.
 - Un explorador de archivos que se abre donde está tu terminal.
@@ -209,7 +211,7 @@ Saver*.qml Idle    salvapantallas ASCII y detección de inactividad
 Welcome*.qml       la bienvenida
 greeter/           pantalla de inicio de sesión para greetd (+ instalador)
 hypr/ombu.lua      configuración de Hyprland: arranque, reglas y atajos
-bin/               scripts: capturas, portapapeles, explorador, montar unidades
+bin/               scripts: capturas, portapapeles, explorador, montar unidades, proyectos de C
 extras/            tema para apps Qt y tema de iconos
 ```
 

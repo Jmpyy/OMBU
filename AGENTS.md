@@ -105,3 +105,8 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 - **Cartel** (`FocusBlock.qml`): al detectar un juego durante el bloque de estudio muestra una tarjeta encima de todo, con una frase, el nombre de lo que se cierra y la cuenta regresiva de 15 s. No toma el teclado. El botón "Cerrar y estudiar" cierra el juego **al instante** (`Focus.closeBlocked()`, o `qs -c ombu ipc call focus closeblocked`); no hay forma de solo esconder el cartel.
 - **Modo estudio para la IA** (`bin/agent-study.sh`): si `~/.local/state/ombu/modo` dice `estudio activo` (y el archivo tiene menos de 40 min, por si el shell se cayó), el hook le pasa al agente unas reglas: solo temas de la facultad, enseñar en vez de resolver, y las ideas ajenas van al cajón (`qs -c ombu ipc call focus idea "texto"`). Claude Code lo recibe por `UserPromptSubmit` (`additionalContext`) y Antigravity por `PreInvocation` (`injectSteps` con `ephemeralMessage`). Si trabajás en este repo y el modo estudio está activo, **seguí esas reglas**: la persona puede pausar el temporizador desde la barra.
 
+
+## Brillo y proyectos de C
+
+- **Brillo:** [`Brightness.qml`](Brightness.qml) usa `ddcutil` (DDC/CI). Detecta el bus I2C del primer monitor que responde y manda un cambio a la vez, porque cada llamada tarda unos cientos de ms. `ipc call brightness up|down` cambia de a 5 y muestra el indicador de [`Osd.qml`](Osd.qml) (`kind` volumen o brillo). Los primeros segundos tras iniciar el shell todavía no hay bus detectado y el atajo no hace nada.
+- **C:** [`bin/cproj.sh`](bin/cproj.sh) arma un proyecto en `~/universidad`. `make leaks` usa valgrind; el sanitizer de fugas (LeakSanitizer) no se pudo comprobar en el entorno aislado de Claude.

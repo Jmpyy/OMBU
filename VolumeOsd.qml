@@ -71,7 +71,7 @@ PanelWindow {
             MIcon {
                 name: Osd.icon
                 font.pixelSize: 22
-                color: Osd.muted ? Theme.danger : Theme.text
+                color: Osd.showMuted ? Theme.danger : Theme.text
             }
 
             Item {
@@ -86,10 +86,10 @@ PanelWindow {
                     color: Theme.track
 
                     Rectangle {
-                        width: track.width * Math.min(1, Osd.volume)
+                        width: track.width * Math.min(1, Osd.level)
                         height: parent.height
                         radius: parent.radius
-                        color: Osd.muted ? Theme.textDim : Theme.accent
+                        color: Osd.showMuted ? Theme.textDim : Theme.accent
 
                         Behavior on width {
                             NumberAnimation {
@@ -104,8 +104,8 @@ PanelWindow {
             Text {
                 Layout.preferredWidth: 40
                 horizontalAlignment: Text.AlignRight
-                text: Osd.muted ? "Mute" : Math.round(Osd.volume * 100) + "%"
-                color: Osd.muted ? Theme.textDim : Theme.text
+                text: Osd.showMuted ? "Mute" : Math.round(Osd.level * 100) + "%"
+                color: Osd.showMuted ? Theme.textDim : Theme.text
                 font.pixelSize: 13
                 font.weight: Font.Medium
             }

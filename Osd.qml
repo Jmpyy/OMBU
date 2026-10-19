@@ -4,17 +4,22 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
 
-// Estado del indicador de volumen: aparece cuando cambia el volumen o el mute
-// de la salida principal, y se oculta solo.
+// Estado del indicador en pantalla: aparece cuando cambia el volumen o el mute de la salida
+// principal, o el brillo del monitor, y se oculta solo.
 Singleton {
     id: root
 
     property bool shown: false
+    // Qué muestra: "volume" o "brightness"
+    property string kind: "volume"
 
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property real volume: sink?.audio?.volume ?? 0
     readonly property bool muted: sink?.audio?.muted ?? false
-    readonly property string icon: muted || volume <= 0 ? "volume_off" : (volume < 0.5 ? "volume_down" : "volume_up")
+    readonly property bool isVolume: kind === "volume"
+    readonly property real level: isVolume ? volume : Brightness.level
+    readonly property bool showMuted: isVolume && muted
+    readonly property string icon: !isVolume ? "brightness_6" : (muted || volume <= 0 ? "volume_off" : (volume < 0.5 ? "volume_down" : "volume_up"))
 
     // Ignora los cambios del arranque (Pipewire reporta los valores recién ahí)
     property bool ready: false
@@ -24,6 +29,13 @@ Singleton {
         // Con la mezcladora abierta ya se ve el slider: no hace falta avisar
         if (!ready || Date.now() < quietUntil || Ui.popup.startsWith("mixer@"))
             return;
+        kind = "volume";
+        shown = true;
+        hide.restart();
+    }
+
+    function showBrightness(): void {
+        kind = "brightness";
         shown = true;
         hide.restart();
     }

@@ -90,6 +90,18 @@ ShellRoot {
     // qs -c ombu ipc call bar mixer   -> abrir/cerrar la mezcladora (monitor con foco)
     // qs -c ombu ipc call bar apps    -> abrir/cerrar las apps abiertas (monitor con foco)
     IpcHandler {
+        function up(): void {
+            Brightness.step(5);
+        }
+
+        function down(): void {
+            Brightness.step(-5);
+        }
+
+        target: "brightness"
+    }
+
+    IpcHandler {
         function toggle(): void {
             Ui.barShown = !Ui.barShown;
         }
