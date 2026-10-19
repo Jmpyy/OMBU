@@ -1,4 +1,5 @@
 import QtQuick
+import QtMultimedia
 import Quickshell
 import Quickshell.Wayland
 
@@ -22,11 +23,42 @@ PanelWindow {
     WlrLayershell.namespace: "ombu-welcome"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
+    readonly property bool primary: Screens.primary !== null && modelData.name === Screens.primary.name
+
+    // La intro en video (con sonido). El fundido al irse sigue a Welcome.fade; en los monitores que no son
+    // el principal queda solo el negro de fondo.
+    Item {
+        anchors.fill: parent
+        visible: Welcome.mode === "video"
+        opacity: Welcome.fade
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#0a0708"
+        }
+
+        VideoOutput {
+            id: vo
+
+            anchors.fill: parent
+            fillMode: VideoOutput.PreserveAspectCrop
+            visible: win.primary
+        }
+    }
+
+    Binding {
+        target: Welcome.player
+        property: "videoOutput"
+        value: vo
+        when: win.primary
+    }
+
+    // Respaldo: lluvia de código con el logo
     SaverView {
         id: view
 
         anchors.fill: parent
-        amount: Welcome.fade
+        amount: Welcome.mode === "rain" ? Welcome.fade : 0
     }
 
     // Línea que se escribe sola, dos filas debajo de la frase del logo
@@ -35,6 +67,7 @@ PanelWindow {
 
         x: Math.round((parent.width - Welcome.line.length * view.cw) / 2)
         y: view.gridY + (Saver.tagRow + 2) * view.lh
+        visible: Welcome.mode === "rain"
         opacity: Welcome.fade
         text: shownText + (Welcome.typed < Welcome.line.length || cursor.on ? "▌" : " ")
         color: view.brightColor

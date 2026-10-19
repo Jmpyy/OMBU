@@ -1,12 +1,15 @@
 pragma Singleton
 
 import QtQuick
+import QtMultimedia
 import Quickshell
 import Quickshell.Io
 
-// Bienvenida al iniciar la sesión: una capa a pantalla completa con la lluvia de código
-// que descifra el logo, una línea que se escribe sola y, al irse, la barra baja desde el
-// borde del monitor. Dura unos 3 segundos y un clic la salta.
+// Bienvenida al iniciar la sesión: una capa a pantalla completa que reproduce la intro de ombu
+// (~/.local/share/ombu/intro.mp4, con sonido: telaraña, «ombu» y la firma) y, al irse, la barra baja
+// desde el borde del monitor. Dura 4 segundos y un clic la salta. Si el video no está o no se puede
+// reproducir, se usa la animación de antes: lluvia de código que descifra el logo y una línea que se
+// escribe sola.
 //
 // Solo se muestra una vez por sesión: la primera vez que ombu arranca deja una marca en la
 // carpeta de ejecución (que se borra al cerrar sesión), así que recargar el shell no la repite.
@@ -19,6 +22,10 @@ Singleton {
     property bool shown: false
     property real fade: 0
     property int fadeMs: 0
+    // «video» (la intro) o «rain» (la animación de código, de respaldo)
+    property string mode: "video"
+    readonly property string videoPath: (Quickshell.env("HOME") ?? "") + "/.local/share/ombu/intro.mp4"
+    property alias player: player
     // Línea que se escribe y cuántos caracteres van
     property string line: ""
     // Cuántos caracteres van escritos: sigue el reloj de la animación, no el del sistema
@@ -27,13 +34,27 @@ Singleton {
     function play(): void {
         if (shown || Ui.locked)
             return;
-        Saver.beginWelcome();
-        line = (Theme.comic ? "¡THWIP! · " : "") + (Quickshell.env("USER") ?? "") + "@ombu · sesión iniciada · " + Qt.formatTime(new Date(), "HH:mm");
+        mode = "video";
         fadeMs = 0;
         fade = 1;
         shown = true;
         playing = true;
-        // Respaldo por si la animación no llegara a avanzar
+        player.source = "file://" + videoPath;
+        player.play();
+        // Respaldo por si el video no llegara a avanzar
+        finish.interval = 7000;
+        finish.restart();
+    }
+
+    // El video no está o no se pudo reproducir: la animación de código de siempre
+    function fallbackToRain(): void {
+        if (mode !== "video" || !playing)
+            return;
+        mode = "rain";
+        player.stop();
+        Saver.beginWelcome();
+        line = (Theme.comic ? "¡THWIP! · " : "") + (Quickshell.env("USER") ?? "") + "@ombu · sesión iniciada · " + Qt.formatTime(new Date(), "HH:mm");
+        finish.interval = 12000;
         finish.restart();
     }
 
@@ -53,6 +74,23 @@ Singleton {
             duration: root.fadeMs
             easing.type: Easing.InOutQuad
         }
+    }
+
+    MediaPlayer {
+        id: player
+
+        audioOutput: AudioOutput {
+            volume: 0.85
+        }
+        onErrorOccurred: (error, errorString) => {
+            console.log("BIENVENIDA: el video falló (" + errorString + "); se usa la animación de código");
+            root.fallbackToRain();
+        }
+        // El obturador del final deja negro a los 3,7 s: ahí empieza el desvanecimiento hacia el escritorio
+        onPositionChanged: if (root.mode === "video" && position >= 3700)
+            root.finishNow()
+        onPlaybackStateChanged: if (root.mode === "video" && playbackState === MediaPlayer.StoppedState && root.playing)
+            root.finishNow()
     }
 
     FileView {
@@ -84,7 +122,9 @@ Singleton {
         interval: 900
         onTriggered: {
             root.shown = false;
-            Saver.endWelcome();
+            player.stop();
+            if (root.mode === "rain")
+                Saver.endWelcome();
         }
     }
 
