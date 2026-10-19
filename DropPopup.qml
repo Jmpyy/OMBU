@@ -61,8 +61,16 @@ PopupWindow {
         anchor.rect = Qt.rect(pos.x + Theme.fillet, y, 1, 1);
     }
 
-    onOpenChanged: if (open)
-        place()
+    onOpenChanged: {
+        if (open) {
+            place();
+            root.entered = root.pointerInside;
+            leaveTimer.stop();
+        } else {
+            root.entered = false;
+            leaveTimer.stop();
+        }
+    }
 
     onWarmChanged: if (warm)
         place()
@@ -125,6 +133,34 @@ PopupWindow {
         }
     }
 
+    // El mouse está sobre el cuerpo del menú o sobre el botón de la barra que lo abrió
+    readonly property bool pointerInside: popupHover.hovered || warmHover.hovered
+    property bool entered: false
+
+    onPointerInsideChanged: {
+        if (!root.open)
+            return;
+        if (pointerInside) {
+            root.entered = true;
+            leaveTimer.stop();
+        } else if (root.entered) {
+            leaveTimer.restart();
+        }
+    }
+
+
+    // Al sacar el cursor del menú y de su botón, se cierra solo sin necesidad de hacer clic
+    Timer {
+        id: leaveTimer
+
+        interval: 400
+        onTriggered: {
+            if (root.open && root.entered && !root.pointerInside) {
+                root.dismissed();
+            }
+        }
+    }
+
     // Avisa cuando la ventana ya dibujó su primer cuadro (ahí arranca la animación)
     Item {
         id: frameWatcher
@@ -152,6 +188,11 @@ PopupWindow {
     // barra) y el contenido aparece un poco después. Al cerrar hace el camino inverso.
     Item {
         anchors.fill: parent
+
+        HoverHandler {
+            id: popupHover
+            enabled: root.open
+        }
 
         Item {
             width: parent.width
