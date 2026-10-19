@@ -98,7 +98,7 @@ Singleton {
     readonly property string dataDir: (Quickshell.env("HOME") ?? "") + "/.local/share/ombu"
     readonly property string stateDir: (Quickshell.env("HOME") ?? "") + "/.local/state/ombu"
 
-    readonly property string phaseName: phase === "estudio" ? "Estudio" : (phase === "largo" ? "Descanso largo" : "Descanso")
+    readonly property string phaseName: phase === "estudio" ? (mode === "trabajo" ? "Trabajo" : "Estudio") : (phase === "largo" ? "Descanso largo" : "Descanso")
 
     // Sitios que se bloquean en el navegador. Se reconocen por el título de la pestaña activa (el
     // de la ventana de Zen); al vencer el plazo se cierra esa pestaña. YouTube no está: sirve para

@@ -121,6 +121,7 @@ DropPopup {
 
         // Entorno de estudio: qué toca hoy y las herramientas para abrir a mano
         ColumnLayout {
+            visible: Focus.mode !== "trabajo"
             Layout.fillWidth: true
             spacing: 8
 
