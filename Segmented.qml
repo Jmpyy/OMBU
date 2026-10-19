@@ -13,8 +13,8 @@ Rectangle {
     readonly property int index: Math.max(0, model.findIndex(m => m.id === current))
     readonly property real segment: (width - 6) / Math.max(1, model.length)
 
-    implicitHeight: 34
-    radius: height / 2
+    implicitHeight: 28
+    radius: Theme.controlRadius
     color: Theme.surface
 
     Rectangle {
@@ -22,8 +22,8 @@ Rectangle {
         y: 3
         width: root.segment
         height: root.height - 6
-        radius: height / 2
-        color: Theme.accent
+        radius: Theme.controlRadius - 2
+        color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22)
 
         Behavior on x {
             NumberAnimation {
@@ -52,8 +52,8 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     text: seg.modelData.name
-                    color: root.index === seg.index ? "#14131a" : (area.containsMouse ? Theme.text : Theme.textDim)
-                    font.pixelSize: 13
+                    color: root.index === seg.index ? Theme.accent : (area.containsMouse ? Theme.text : Theme.textDim)
+                    font.pixelSize: 12
                     font.weight: Font.DemiBold
                 }
 

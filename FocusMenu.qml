@@ -170,8 +170,8 @@ DropPopup {
 
                         Layout.fillWidth: true
                         Layout.preferredWidth: 1
-                        implicitHeight: 62
-                        radius: 14
+                        implicitHeight: 54
+                        radius: Theme.controlRadius
                         color: toolArea.containsMouse ? Theme.hover : Theme.surface
 
                         Behavior on color {
@@ -216,7 +216,7 @@ DropPopup {
             Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: 40
-                radius: 12
+                radius: Theme.controlRadius
                 color: Theme.surface
 
                 RowLayout {
@@ -295,7 +295,7 @@ DropPopup {
 
                     Layout.fillWidth: true
                     implicitHeight: 54
-                    radius: 12
+                    radius: Theme.controlRadius
                     color: Theme.surface
 
                     Column {
@@ -326,7 +326,7 @@ DropPopup {
             visible: Focus.mode === "estudio" && Focus.running && Focus.phase === "estudio"
             Layout.fillWidth: true
             implicitHeight: lockRow.implicitHeight + 20
-            radius: 12
+            radius: Theme.controlRadius
             color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.12)
 
             RowLayout {
@@ -364,7 +364,7 @@ DropPopup {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 40
-            radius: 12
+            radius: Theme.controlRadius
             color: Theme.surface
 
             RowLayout {

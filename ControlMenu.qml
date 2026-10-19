@@ -24,8 +24,8 @@ DropPopup {
 
         signal clicked
 
-        implicitHeight: 58
-        radius: 14
+        implicitHeight: 48
+        radius: Theme.controlRadius
         color: area.containsMouse ? Theme.hover : Theme.surface
 
         Behavior on color {
@@ -41,9 +41,9 @@ DropPopup {
             spacing: 10
 
             Rectangle {
-                Layout.preferredWidth: 38
-                Layout.preferredHeight: 38
-                radius: 19
+                Layout.preferredWidth: 30
+                Layout.preferredHeight: 30
+                radius: 8
                 color: tile.on ? Theme.accent : Theme.track
 
                 Behavior on color {
@@ -55,7 +55,7 @@ DropPopup {
                 MIcon {
                     anchors.centerIn: parent
                     name: tile.icon
-                    font.pixelSize: 20
+                    font.pixelSize: 18
                     color: tile.on ? "#14131a" : Theme.text
                 }
             }
@@ -102,7 +102,7 @@ DropPopup {
         x: 16
         y: 2
         width: root.bodyWidth - 32
-        spacing: 10
+        spacing: 8
 
         PillSlider {
             Layout.fillWidth: true

@@ -232,7 +232,7 @@ DropPopup {
             visible: root.showSettings
             Layout.fillWidth: true
             implicitHeight: googleBox.implicitHeight + 20
-            radius: 12
+            radius: Theme.controlRadius
             color: Theme.surface
 
             ColumnLayout {
@@ -827,7 +827,7 @@ DropPopup {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 38
-            radius: 12
+            radius: Theme.controlRadius
             color: Theme.surface
 
             RowLayout {

@@ -13,13 +13,13 @@ Item {
     signal moved(real value)
     signal iconClicked
 
-    implicitHeight: 40
+    implicitHeight: 30
 
     Rectangle {
         id: track
 
         anchors.fill: parent
-        radius: height / 2
+        radius: Theme.controlRadius
         color: Theme.surface
         clip: true
 
@@ -32,10 +32,10 @@ Item {
     }
 
     MIcon {
-        x: 10
+        x: 8
         anchors.verticalCenter: parent.verticalCenter
         name: slider.icon
-        font.pixelSize: 20
+        font.pixelSize: 18
         color: slider.muted ? Theme.danger : (slider.value > 0.04 ? "#14131a" : Theme.text)
     }
 

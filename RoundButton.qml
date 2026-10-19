@@ -7,13 +7,13 @@ Rectangle {
     property string icon
     property bool primary: false
     property bool enabled: true
-    property int size: primary ? 56 : 42
+    property int size: primary ? 44 : 34
 
     signal clicked
 
     implicitWidth: size
     implicitHeight: size
-    radius: size / 2
+    radius: size * 0.28
     opacity: enabled ? 1 : 0.4
     color: primary ? (area.containsMouse ? Qt.lighter(Theme.accent, 1.12) : Theme.accent) : (area.containsMouse && enabled ? Theme.hover : Theme.surface)
 
@@ -26,7 +26,7 @@ Rectangle {
     MIcon {
         anchors.centerIn: parent
         name: root.icon
-        font.pixelSize: root.primary ? 30 : 22
+        font.pixelSize: root.primary ? 26 : 20
         color: root.primary ? "#14131a" : Theme.text
     }
 

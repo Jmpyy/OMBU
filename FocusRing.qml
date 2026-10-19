@@ -11,8 +11,8 @@ Item {
     property bool active: false
     property bool dim: false
 
-    implicitWidth: 172
-    implicitHeight: 172
+    implicitWidth: 148
+    implicitHeight: 148
 
     Behavior on progress {
         NumberAnimation {
@@ -33,8 +33,8 @@ Item {
             ctx.reset();
             const cx = width / 2;
             const cy = height / 2;
-            const r = width / 2 - 8;
-            ctx.lineWidth = 7;
+            const r = width / 2 - 6;
+            ctx.lineWidth = 5;
             ctx.lineCap = "round";
             ctx.strokeStyle = Theme.track;
             ctx.beginPath();
@@ -65,7 +65,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.time
             color: root.dim ? Theme.textDim : Theme.text
-            font.pixelSize: 38
+            font.pixelSize: 32
             font.weight: Font.Light
         }
     }
