@@ -9,13 +9,13 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    property bool active: false
+    property bool active: true
     // Última medición (ver bin/sysstat.py); {} hasta que llega la primera
     property var data: ({})
 
     Process {
         running: root.active
-        command: [Quickshell.shellPath("bin/sysstat.py"), "--watch", "2"]
+        command: [Quickshell.shellPath("bin/sysstat.py"), "--watch", "3"]
         stdout: SplitParser {
             onRead: line => {
                 try {

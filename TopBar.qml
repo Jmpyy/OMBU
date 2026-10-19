@@ -133,8 +133,8 @@ PanelWindow {
             // Filo sutil abajo, para separar la barra del escritorio
             ShapePath {
                 fillColor: "transparent"
-                strokeColor: Theme.outline
-                strokeWidth: 1
+                strokeColor: Theme.comic ? "#0a0708" : Theme.outline
+                strokeWidth: Theme.comic ? 2 : 1
                 startX: 0
                 startY: win.fullHeight
 
@@ -179,8 +179,10 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 30
                     height: 24
-                    radius: 12
-                    color: logoArea.containsMouse || Ui.sysMenuOpen ? Theme.hover : "transparent"
+                    radius: Theme.comic ? 6 : 12
+                    color: logoArea.containsMouse || Ui.sysMenuOpen ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.12) : Theme.hover) : "transparent"
+                    border.width: Theme.comic ? 1.5 : 0
+                    border.color: Theme.comic ? (logoArea.containsMouse || Ui.sysMenuOpen ? Theme.accent : "#0a0708") : "transparent"
 
                     // El logo de CachyOS, o el del tema (araña, reactor) cuando hay uno
                     Image {
@@ -255,18 +257,23 @@ PanelWindow {
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: clockButton.hovered || clockButton.isOpen ? Chrono.date.toLocaleString(Chrono.locale, "dddd d 'de' MMMM") : Chrono.date.toLocaleString(Chrono.locale, "ddd d MMM").replace(/\./g, "")
+                    text: {
+                        const raw = clockButton.hovered || clockButton.isOpen ? Chrono.date.toLocaleString(Chrono.locale, "dddd d 'de' MMMM") : Chrono.date.toLocaleString(Chrono.locale, "ddd d MMM").replace(/\./g, "");
+                        return Theme.comic ? raw.toUpperCase() : raw;
+                    }
                     color: Theme.textDim
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.comic ? 13 : 12
                     font.weight: Font.Medium
+                    font.family: Theme.comic ? Theme.displayFont : ""
                 }
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Chrono.date.toLocaleString(Chrono.locale, "HH:mm")
-                    color: Theme.text
-                    font.pixelSize: 14
+                    color: Theme.comic ? Theme.accent : Theme.text
+                    font.pixelSize: Theme.comic ? 18 : 14
                     font.weight: Font.DemiBold
+                    font.family: Theme.comic ? Theme.displayFont : ""
                 }
             }
 
@@ -283,8 +290,10 @@ PanelWindow {
                     visible: Submap.active
                     width: submapText.implicitWidth + 22
                     height: 24
-                    radius: 12
+                    radius: Theme.comic ? 6 : 12
                     color: Theme.accent
+                    border.width: Theme.comic ? 1.5 : 0
+                    border.color: Theme.comic ? "#0a0708" : "transparent"
 
                     Text {
                         id: submapText
@@ -292,17 +301,20 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: Submap.label + "  ·  Esc para salir"
                         color: Theme.accentText
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.comic ? 13 : 12
                         font.weight: Font.DemiBold
+                        font.family: Theme.comic ? Theme.displayFont : ""
                     }
                 }
 
                 Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: cluster.implicitWidth + 6
+                    width: cluster.implicitWidth + 8
                     height: 28
-                    radius: 14
+                    radius: Theme.comic ? 8 : 14
                     color: Theme.surface
+                    border.width: Theme.comic ? 1.5 : 0
+                    border.color: Theme.comic ? "#0a0708" : "transparent"
 
                     Row {
                         id: cluster
@@ -340,10 +352,10 @@ PanelWindow {
                             visible: win.focusShown
                             implicitWidth: chipRow.implicitWidth + 22
                             implicitHeight: 24
-                            radius: height / 2
+                            radius: Theme.comic ? 6 : height / 2
                             color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, isOpen || chipArea.containsMouse ? 0.28 : 0.16)
-                            border.width: 1
-                            border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, Focus.running ? 0.45 : 0.2)
+                            border.width: Theme.comic ? 1.5 : 1
+                            border.color: Theme.comic ? "#0a0708" : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, Focus.running ? 0.45 : 0.2)
 
                             onProgressChanged: chipRing.requestPaint()
                             onToneChanged: chipRing.requestPaint()
@@ -391,6 +403,7 @@ PanelWindow {
                                     color: focusButton.tone
                                     font.pixelSize: 14
                                     font.weight: Font.Bold
+                                    font.family: Theme.comic ? Theme.displayFont : ""
                                     font.features: {
                                         "tnum": 1
                                     }
@@ -543,6 +556,23 @@ PanelWindow {
                             onClicked: {
                                 if (Date.now() - win.dismissedControl > 300)
                                     win.togglePopup("control");
+                            }
+                        }
+
+                        // Monitor de hardware (RAM / CPU en vivo): chip inteligente estilo spider-tech
+                        BarButton {
+                            id: sysButton
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            active: Ui.sideOpen
+                            icon: "memory"
+                            iconColor: (SysStat.data.cpu ?? 0) > 80 ? Theme.danger : ((SysStat.data.cpu ?? 0) > 40 ? Theme.accent : Theme.textDim)
+                            label: SysStat.data.memUsed ? (sysButton.hovered ? (Math.round(SysStat.data.cpu ?? 0) + "%") : ((SysStat.data.memUsed / 1073741824).toFixed(1) + "G")) : "· · ·"
+                            labelColor: (SysStat.data.cpu ?? 0) > 80 ? Theme.danger : Theme.text
+                            labelMinWidth: 32
+                            onClicked: {
+                                Ui.sideTab = "sistema";
+                                Ui.sideOpen = !Ui.sideOpen;
                             }
                         }
 
