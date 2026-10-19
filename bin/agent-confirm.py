@@ -43,11 +43,17 @@ SAFE_SUB = {
     "qs": {"list", "log"},
     "atuin": {"history", "search", "stats"},
 }
-# Palabras que vuelven un comando "destructivo": no se aprueban desde la tarjeta
-RISKY = re.compile(
-    r"(?<![\w-])(sudo|doas|su|rm|rmdir|dd|mkfs\w*|shred|truncate|chmod|chown|mv|kill|pkill|killall|"
-    r"eval|exec|reboot|poweroff|shutdown|pacman|paru|yay|systemctl|crontab|mount|umount|"
-    r"git\s+(push|reset|clean|rebase|checkout\s+--)|gio\s+trash|find\b.*(-delete|-exec|-ok))(?![\w-])"
+# Comandos verdaderamente destructivos o que tocan privilegios del sistema
+DESTRUCTIVE = re.compile(
+    r"(?<![\w-])("
+    r"sudo|doas|su\b|"                                            # Escalado a root
+    r"rm\s+(-[a-zA-Z]*[rf][a-zA-Z]*|--recursive)|rmdir\b|"        # Borrado recursivo
+    r"mkfs\w*|dd\b|fdisk\b|parted\b|shred\b|truncate\b|"          # Destrucción de discos/particiones
+    r"reboot\b|poweroff\b|shutdown\b|"                            # Apagado/reinicio
+    r"git\s+(reset\s+--hard|clean\s+-[a-zA-Z]*f|push\s+.*--force)|" # Git destructivo
+    r"chmod\s+(-[a-zA-Z]*R\s+)?(777|000)|"                       # Permisos peligrosos
+    r">:?\s*/dev/sd[a-z]"                                         # Sobrescritura directa de discos
+    r")(?![\w-])"
 )
 # Para saber si un comando es "compuesto" (varias órdenes, redirecciones, sustitución)
 COMPOUND = re.compile(r"[;&|<>`\n]|\$\(")
@@ -93,32 +99,6 @@ def read_payload():
     return (cmd if isinstance(cmd, str) else ""), (cwd if isinstance(cwd, str) else "")
 
 
-def is_safe_segment(seg):
-    words = seg.strip().split()
-    if not words:
-        return True
-    first = words[0]
-    if first in SAFE_SIMPLE:
-        return True
-    if first == "pacman":
-        return len(words) > 1 and words[1].startswith("-Q") or (len(words) > 1 and words[1] in ("-Si", "-Ss", "-F", "-Fl", "-Ql", "-Qi", "-Qo"))
-    if first == "journalctl":
-        return True
-    sub = SAFE_SUB.get(first)
-    if sub is None:
-        return False
-    rest = [w for w in words[1:] if not w.startswith("-") or w in sub]
-    return bool(rest) and rest[0] in sub
-
-
-def is_read_only(cmd):
-    """Verdadero solo si todo el comando son lecturas encadenadas con ; && || o tuberías."""
-    if re.search(r"[<>`\n]|\$\(|(?<!&)&(?!&)", cmd):
-        return False
-    segments = re.split(r"\|\||&&|;|\|", cmd)
-    return all(is_safe_segment(s) for s in segments)
-
-
 def terminal_address():
     """Ventana de kitty donde corre este agente: se sube por los procesos padre hasta dar con ella."""
     try:
@@ -148,38 +128,49 @@ def focus_terminal():
 
 def main():
     cmd, cwd = read_payload()
+    if not cmd.strip():
+        defer()
+
+    is_danger = bool(DESTRUCTIVE.search(cmd))
+
+    # Si NO es un comando destructivo: full access automático
+    if not is_danger:
+        decide(True)
+
+    # Si ES destructivo y la terminal está activa: confirmás en la consola
     active = ""
     try:
         active = json.loads(run(["hyprctl", "activewindow", "-j"]) or "{}").get("class", "")
     except Exception:
         pass
-    # Si ya estás en la terminal, o no se entiende el pedido, o es solo lectura: flujo normal
-    if active == "kitty" or not cmd.strip() or is_read_only(cmd):
+
+    if active == "kitty":
         defer()
 
-    lines = cmd.count("\n") + 1
-    too_long = len(cmd) > MAX_CHARS or lines > MAX_LINES
-    risky = bool(RISKY.search(cmd)) or too_long
-    compound = bool(COMPOUND.search(cmd))
-
-    args = ["notify-send", "-a", NAME, "-u", "critical", "-t", str(WAIT_MS), "-c", "ombu.confirm",
-            "-h", "string:x-ombu-kind:confirm",
-            "-h", f"int:x-ombu-risky:{1 if risky else 0}",
-            "-h", f"int:x-ombu-compound:{1 if compound else 0}",
-            "-h", "string:x-ombu-cwd:" + cwd]
-    if not risky:
-        args += ["-A", "allow=Permitir"]
-    args += ["-A", "deny=Denegar", "-A", "focus=Ir a la consola",
-             f"{NAME} quiere ejecutar un comando", cmd]
+    # Si estás fuera de la consola y el comando es destructivo: mostramos la tarjeta con opción Permitir
+    args = [
+        "notify-send", "-a", NAME, "-u", "critical", "-t", str(WAIT_MS), "-c", "ombu.confirm",
+        "-h", "string:x-ombu-kind:confirm",
+        "-h", "int:x-ombu-risky:1",
+        "-h", f"int:x-ombu-compound:{1 if bool(COMPOUND.search(cmd)) else 0}",
+        "-h", "string:x-ombu-cwd:" + cwd,
+        "-A", "allow=Permitir",
+        "-A", "deny=Denegar",
+        "-A", "focus=Ir a la consola",
+        f"{NAME} quiere ejecutar un comando importante",
+        cmd
+    ]
     choice = run(args, timeout=WAIT_MS // 1000 + 15).strip()
 
-    if choice == "allow" and not risky:
+    if choice == "allow":
         decide(True)
-    if choice == "deny":
+    elif choice == "deny":
         decide(False, "Denegado por el usuario desde la tarjeta de ombu.")
-    if choice == "focus":
+    elif choice == "focus":
         focus_terminal()
-    defer()
+        defer()
+    else:
+        defer()
 
 
 if __name__ == "__main__":
