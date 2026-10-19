@@ -17,6 +17,7 @@ PanelWindow {
     property double dismissedFocus: 0
     property double dismissedApps: 0
     property double dismissedDevices: 0
+    property double dismissedControl: 0
     property double dismissedCalendar: 0
     property double dismissedNotifs: 0
 
@@ -288,17 +289,6 @@ PanelWindow {
                             color: Theme.border
                         }
 
-                        // Layout de teclado: clic para alternar (igual que Alt+Shift)
-                        BarButton {
-                            id: keyboardButton
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            icon: "keyboard"
-                            label: Keyboard.code
-                            labelMinWidth: 42
-                            onClicked: Keyboard.toggle()
-                        }
-
                         // Modo foco: con el temporizador en marcha muestra el tiempo que falta
                         BarButton {
                             id: focusButton
@@ -428,20 +418,21 @@ PanelWindow {
                             }
                         }
 
-                        // Dispositivos: discos del equipo y unidades conectadas
+                        // Centro de control: brillo, volumen y ajustes rápidos; el número avisa de
+                        // unidades conectadas
                         BarButton {
-                            id: devicesButton
+                            id: controlButton
 
-                            readonly property bool isOpen: Ui.popup === win.popupKey("devices")
+                            readonly property bool isOpen: Ui.popup === win.popupKey("control")
 
                             anchors.verticalCenter: parent.verticalCenter
                             active: isOpen
-                            icon: Disks.removable.length > 0 ? "usb" : "hard_drive"
+                            icon: "tune"
                             label: Disks.removable.length > 0 ? String(Disks.removable.length) : ""
                             labelColor: Theme.accent
                             onClicked: {
-                                if (Date.now() - win.dismissedDevices > 300)
-                                    win.togglePopup("devices");
+                                if (Date.now() - win.dismissedControl > 300)
+                                    win.togglePopup("control");
                             }
                         }
 
@@ -527,14 +518,29 @@ PanelWindow {
         }
     }
 
-    DevicesMenu {
+    ControlMenu {
         barWindow: win
-        anchorItem: devicesButton
-        open: devicesButton.isOpen
+        anchorItem: controlButton
+        open: controlButton.isOpen
+
+        onOpenDevices: win.togglePopup("devices")
+        onDismissed: {
+            win.dismissedControl = Date.now();
+            if (controlButton.isOpen)
+                Ui.popup = "";
+        }
+    }
+
+    DevicesMenu {
+        readonly property bool isOpen: Ui.popup === win.popupKey("devices")
+
+        barWindow: win
+        anchorItem: controlButton
+        open: isOpen
 
         onDismissed: {
             win.dismissedDevices = Date.now();
-            if (devicesButton.isOpen)
+            if (isOpen)
                 Ui.popup = "";
         }
     }

@@ -27,6 +27,15 @@ Singleton {
         flush();
     }
 
+    // Desde un slider: sin indicador en pantalla, el menú ya muestra el valor
+    function setLevel(value: real): void {
+        if (!available)
+            return;
+        wanted = Math.max(0, Math.min(100, Math.round(value * 100)));
+        level = wanted / 100;
+        flush();
+    }
+
     function flush(): void {
         if (setter.running || wanted < 0 || wanted === sent)
             return;
