@@ -66,6 +66,8 @@ Singleton {
     property int cycles: 0
     property int streak: 0
     property string lastStudyDay: ""
+    // Minutos estudiados por día ("yyyy-MM-dd" -> minutos), para marcar el calendario
+    property var history: ({})
 
     // Bloqueo: ventanas que no se dejan abrir mientras se estudia
     readonly property var blockedPattern: /steam_app|^steam$|gamescope|minecraft|mojang|league|riot|heroic|lutris/i
@@ -279,6 +281,15 @@ Singleton {
             }
         }
         warned = next;
+    }
+
+    // Pasa los minutos de hoy al historial (solo reasigna si cambió, para no despertar al calendario de balde)
+    function recordHistory(): void {
+        const m = Math.floor(studyToday / 60);
+        if (day !== "" && (history[day] ?? 0) !== m)
+            history = Object.assign({}, history, {
+                [day]: m
+            });
     }
 
     function today(): string {
@@ -555,16 +566,20 @@ Singleton {
         id: saveTimer
 
         interval: 500
-        onTriggered: file.setText(JSON.stringify({
-            mode: root.mode,
-            kit: root.kit,
-            autoOpen: root.autoOpen,
-            day: root.day,
-            studyToday: root.studyToday,
-            cycles: root.cycles,
-            streak: root.streak,
-            lastStudyDay: root.lastStudyDay
-        }, null, 2) + "\n")
+        onTriggered: {
+            root.recordHistory();
+            file.setText(JSON.stringify({
+                mode: root.mode,
+                kit: root.kit,
+                autoOpen: root.autoOpen,
+                day: root.day,
+                studyToday: root.studyToday,
+                cycles: root.cycles,
+                streak: root.streak,
+                lastStudyDay: root.lastStudyDay,
+                history: root.history
+            }, null, 2) + "\n");
+        }
     }
 
     FileView {
@@ -593,6 +608,8 @@ Singleton {
             day = today();
             streak = saved.streak ?? 0;
             lastStudyDay = saved.lastStudyDay ?? "";
+            history = saved.history ?? {};
+            recordHistory();
             // Una racha de ayer sigue viva; más vieja se corta
             if (lastStudyDay !== "" && lastStudyDay !== today()) {
                 const y = new Date();

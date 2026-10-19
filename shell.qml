@@ -15,6 +15,8 @@ ShellRoot {
         Hyprland.refreshToplevels();
         // Nombrarlo crea el detector de inactividad (bloqueo a los 5 min, monitores a los 30)
         Idle.start();
+        // Nombrarlo arranca la agenda: feriados, Google Calendar y los recordatorios con hora
+        Agenda.check();
     }
 
     // Historial del portapapeles (lo usa Super+V, ver bin/clip.sh)
@@ -109,6 +111,28 @@ ShellRoot {
         }
 
         target: "keys"
+    }
+
+    // qs -c ombu ipc call agenda add 2026-10-20 19:00 "Examen"  -> anotar un evento
+    IpcHandler {
+        function add(day: string, time: string, title: string): void {
+            Agenda.add(day, time, title);
+        }
+
+        function remove(title: string): void {
+            for (const e of Agenda.local.filter(x => x.title === title))
+                Agenda.remove(e.id);
+        }
+
+        function google(url: string): void {
+            Agenda.setUrl(url);
+        }
+
+        function reminders(): void {
+            Agenda.check();
+        }
+
+        target: "agenda"
     }
 
     IpcHandler {
