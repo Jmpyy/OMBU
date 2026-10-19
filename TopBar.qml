@@ -302,24 +302,95 @@ PanelWindow {
                             color: Theme.border
                         }
 
-                        // Modo foco: solo aparece mientras hay una sesión (en marcha o en pausa) y muestra el
-        // tiempo que falta; el resto del tiempo se abre desde el centro de control
-                        BarButton {
+                        // Modo foco: solo aparece mientras hay una sesión (en marcha o en pausa); el resto
+                        // del tiempo se abre desde el centro de control. Es una píldora violeta con un anillo
+                        // de avance y el tiempo en grande para que se note de lejos.
+                        Rectangle {
                             id: focusButton
 
                             readonly property bool isOpen: Ui.popup === win.popupKey("focus")
+                            readonly property real progress: Focus.mode === "libre" ? 0 : 1 - Focus.remaining / Focus.lengthOf(Focus.phase)
+                            readonly property color tone: Focus.running ? Theme.accent : Theme.textDim
 
                             anchors.verticalCenter: parent.verticalCenter
                             visible: win.focusShown
-                            active: isOpen
-                            icon: Focus.running ? (Focus.phase === "estudio" ? "school" : "coffee") : (Focus.mode === "trabajo" ? "work" : (Focus.mode === "estudio" ? "school" : "timer"))
-                            iconColor: Focus.running ? Theme.accent : Theme.textDim
-                            label: Focus.running ? Focus.clock(Focus.remaining) : ""
-                            labelColor: Theme.accent
-                            labelMinWidth: Focus.running ? 38 : 0
-                            onClicked: {
-                                if (Date.now() - win.dismissedFocus > 300)
-                                    win.togglePopup("focus");
+                            implicitWidth: chipRow.implicitWidth + 22
+                            implicitHeight: 24
+                            radius: height / 2
+                            color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, isOpen || chipArea.containsMouse ? 0.28 : 0.16)
+                            border.width: 1
+                            border.color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, Focus.running ? 0.45 : 0.2)
+
+                            onProgressChanged: chipRing.requestPaint()
+                            onToneChanged: chipRing.requestPaint()
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: 120
+                                }
+                            }
+
+                            Row {
+                                id: chipRow
+
+                                anchors.centerIn: parent
+                                spacing: 7
+
+                                Canvas {
+                                    id: chipRing
+
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 16
+                                    height: 16
+                                    antialiasing: true
+                                    onPaint: {
+                                        const ctx = getContext("2d");
+                                        ctx.reset();
+                                        ctx.lineWidth = 2.4;
+                                        ctx.lineCap = "round";
+                                        ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.16);
+                                        ctx.beginPath();
+                                        ctx.arc(8, 8, 6.2, 0, Math.PI * 2);
+                                        ctx.stroke();
+                                        if (focusButton.progress > 0.01) {
+                                            ctx.strokeStyle = focusButton.tone;
+                                            ctx.beginPath();
+                                            ctx.arc(8, 8, 6.2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, focusButton.progress));
+                                            ctx.stroke();
+                                        }
+                                    }
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: Focus.clock(Focus.remaining)
+                                    color: focusButton.tone
+                                    font.pixelSize: 14
+                                    font.weight: Font.Bold
+                                    font.features: {
+                                        "tnum": 1
+                                    }
+                                }
+
+                                MIcon {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: !Focus.running
+                                    name: "pause"
+                                    font.pixelSize: 14
+                                    color: Theme.textDim
+                                }
+                            }
+
+                            MouseArea {
+                                id: chipArea
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    if (Date.now() - win.dismissedFocus > 300)
+                                        win.togglePopup("focus");
+                                }
                             }
                         }
 
