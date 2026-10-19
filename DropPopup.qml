@@ -39,7 +39,7 @@ PopupWindow {
 
     Behavior on p {
         NumberAnimation {
-            duration: root.open ? Theme.popupDuration : 130
+            duration: root.open ? 200 : 150
             easing.type: Easing.OutCubic
         }
     }
@@ -120,7 +120,7 @@ PopupWindow {
         Timer {
             id: warmTimer
 
-            interval: 100
+            interval: 40
             onTriggered: root.warm = true
         }
 
@@ -195,15 +195,18 @@ PopupWindow {
         }
 
         Item {
+            id: animBox
+
             width: parent.width
             height: parent.height
-            opacity: Math.min(1, root.p * 1.8)
-            transform: Scale {
-                origin.x: root.originX
-                origin.y: 0
-                xScale: 0.88 + 0.12 * root.p
-                yScale: 0.62 + 0.38 * root.p
+            opacity: root.p
+            scale: 0.95 + 0.05 * root.p
+            transformOrigin: Item.Top
+            transform: Translate {
+                y: (1 - root.p) * -8
             }
+            layer.enabled: root.p > 0.001 && root.p < 0.999
+            layer.smooth: true
 
             DropShape {
                 panelWidth: root.bodyWidth
@@ -217,7 +220,6 @@ PopupWindow {
                 y: Theme.fillet
                 width: root.bodyWidth
                 height: root.bodyHeight
-                opacity: Math.max(0, (root.p - 0.3) / 0.7)
             }
         }
     }
