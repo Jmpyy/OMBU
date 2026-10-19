@@ -16,6 +16,8 @@ Singleton {
     property bool clipOpen: false
     property bool keysOpen: false
     property bool sysMenuOpen: false
+    // Contador que pide abrir o cerrar la vista previa del launcher (ipc call launcher preview)
+    property int launcherPreviewTick: 0
     // Sección por la que abre el menú del sistema, por ejemplo "Estilo>Tema" (vacío = el principio)
     property string sysMenuStart: ""
     // Texto con el que se abre el launcher (para atajos que lo precargan)

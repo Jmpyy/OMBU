@@ -359,6 +359,11 @@ ShellRoot {
             Ui.launcherOpen = !Ui.launcherOpen;
         }
 
+        // ipc call launcher preview  -> vista previa (Quick Look) de la fila elegida
+        function preview(): void {
+            Ui.launcherPreviewTick += 1;
+        }
+
         function search(text: string): void {
             Ui.powerOpen = false;
             Ui.popup = "";
