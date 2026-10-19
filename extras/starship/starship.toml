@@ -1,0 +1,100 @@
+# Prompt de dos líneas con el estilo de ombu. Plantilla: bin/qt-theme.py la pinta con el tema elegido
+# (@NOMBRE@ = color o símbolo) y la escribe en ~/.config/starship.toml.
+#   arriba: barra con la carpeta (en un fondo violeta), rama y estado de git, y a la derecha
+#           el lenguaje del proyecto, lo que tardó el último comando y la hora
+#   abajo:  la línea para escribir
+add_newline = true
+palette = "ombu"
+
+format = """
+@LEAD@[](fg:accent)$directory[](fg:accent) $git_branch$git_status$fill $c$cmake$python$nodejs$rust$golang$cmd_duration$time
+$character"""
+
+[palettes.ombu]
+accent = "@ACCENT@"
+light = "@LIGHT@"
+dim = "@DIM@"
+line = "@LINE@"
+danger = "@DANGER@"
+warn = "@WARN@"
+ok = "@OK@"
+dark = "@DARK@"
+
+# Carpeta: píldora violeta con ícono. Las carpetas de siempre tienen el suyo.
+[directory]
+style = "bold fg:dark bg:accent"
+format = "[ $path$read_only ]($style)"
+read_only = " 󰌾"
+home_symbol = "󰋜 ~"
+truncation_length = 3
+truncation_symbol = "…/"
+truncate_to_repo = true
+
+[directory.substitutions]
+"Documentos" = "󰈙 Documentos"
+"Descargas" = "󰇚 Descargas"
+"Imágenes" = "󰋩 Imágenes"
+"Música" = "󰎄 Música"
+"Vídeos" = "󰕧 Vídeos"
+"Escritorio" = "󰍹 Escritorio"
+"Proyectos" = "󰲋 Proyectos"
+".config" = "󰒓 .config"
+
+[git_branch]
+symbol = " "
+style = "fg:light"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "fg:warn"
+format = '([$all_status$ahead_behind]($style) )'
+
+# Una línea tenue que une los dos lados de la barra
+[fill]
+symbol = "─"
+style = "fg:line"
+
+[c]
+symbol = " "
+style = "fg:dim"
+format = "[$symbol$name $version]($style) "
+
+[cmake]
+symbol = "△ "
+style = "fg:dim"
+format = "[$symbol$version]($style) "
+
+[nodejs]
+symbol = " "
+style = "fg:dim"
+format = "[$symbol$version]($style) "
+
+[python]
+symbol = " "
+style = "fg:dim"
+format = '[$symbol$version]($style) '
+
+[rust]
+symbol = " "
+style = "fg:dim"
+format = "[$symbol$version]($style) "
+
+[golang]
+symbol = " "
+style = "fg:dim"
+format = "[$symbol$version]($style) "
+
+[cmd_duration]
+min_time = 3000
+style = "fg:dim"
+format = "[󰔛 $duration]($style) "
+
+[time]
+disabled = false
+time_format = "%H:%M"
+style = "fg:dim"
+format = "[󰥔 $time]($style)"
+
+[character]
+success_symbol = "[@PROMPT@](bold fg:accent)"
+error_symbol = "[@PROMPT@](bold fg:danger)"

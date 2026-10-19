@@ -7,6 +7,7 @@ el del tema elegido; los tonos derivados (más claro, más oscuro) se calculan. 
   ~/.config/qt6ct/qss/ombu.qss            la hoja de estilos (bordes redondeados, selección)
   ~/.local/share/color-schemes/Ombu.colors  el esquema de colores de KDE
   ~/.config/kitty/themes/ombu.conf        los colores de la terminal (se recarga sola con SIGUSR1)
+  ~/.config/starship.toml                 el prompt de la terminal (extras/starship/starship.toml, con el tema)
   ~/.local/share/ombu/icons/bar-logo.svg  el logo de la barra (araña o reactor, en los colores del tema;
                                           sin --logo se borra y la barra usa el de CachyOS)
 y rehace las carpetas del tema de íconos Ombu en el color de Papirus que corresponda.
@@ -139,6 +140,34 @@ def logo_svg(kind, accent, accent2, text):
     return ""
 
 
+def kitty_comic(c, on_accent, logo, accent2):
+    """Paleta de 16 colores para los temas de cómic: azul del traje (o del reactor), grises cálidos y
+    blancos crema en vez de los fríos de Ombú; la estela del cursor lleva el segundo color del tema"""
+    blue = {"spider": ("#4f86e8", "#8db0f5"), "reactor": ("#5fc4e8", "#a3e0f4")}.get(logo, ("#4f86e8", "#8db0f5"))
+    t = rgb(c["text"])
+    lines = ["", "# Paleta de cómic",
+             "color0  " + c["track"], "color8  " + hexc(mix(rgb(c["track"]), t, 0.22)),
+             "color4  " + blue[0], "color12 " + blue[1],
+             "color7  " + hexc(mix(t, rgb(c["bg"]), 0.12)), "color15 " + hexc(mix(t, WHITE, 0.4))]
+    if accent2:
+        lines.append("cursor_trail_color " + accent2)
+    return "\n".join(lines) + "\n"
+
+
+def starship_text(text, c, on_accent, logo):
+    """Prompt: colores del tema y, en los de cómic, el símbolo de la araña y la flecha doble"""
+    accent = rgb(c["accent"])
+    values = {"ACCENT": c["accent"], "LIGHT": hexc(mix(accent, WHITE, 0.35)), "DIM": c["dim"], "LINE": c["track"],
+              "DANGER": c["danger"], "WARN": c["warn"], "OK": "#86efac", "DARK": on_accent}
+    lead, prompt = "", "❯"
+    if logo == "spider":
+        lead, prompt = "[\U000F11EA ](fg:accent)", "❯❯"
+    elif logo == "reactor":
+        lead, prompt = "[◉ ](fg:accent)", "❯❯"
+    values.update({"LEAD": lead, "PROMPT": prompt})
+    return re.sub(r"@([A-Z]+)@", lambda m: values.get(m.group(1), m.group(0)), text)
+
+
 def write(path, content, backup):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if backup and os.path.exists(path) and not os.path.exists(path + ".pre-temas"):
@@ -172,7 +201,13 @@ def main():
             text = f.read()
         # Con el tema Ombú las plantillas ya están en sus colores: se copian sin tocar
         same = colors == DEFAULT and on_accent == "#14131a"
-        write(dst, text if same else recolor(text, dict(colors, on_accent=on_accent)), backup=not a.out)
+        out = text if same else recolor(text, dict(colors, on_accent=on_accent))
+        if dst.endswith("kitty/themes/ombu.conf") and a.logo:
+            out += kitty_comic(colors, on_accent, a.logo, a.accent2)
+        write(dst, out, backup=not a.out)
+    # Prompt (starship): lee el archivo en cada línea nueva, así que cambia sin reiniciar nada
+    with open(os.path.join(EXTRAS, "starship", "starship.toml"), encoding="utf-8") as f:
+        write(os.path.join(root, ".config/starship.toml"), starship_text(f.read(), colors, on_accent, a.logo), backup=not a.out)
     # Logo de la barra: se escribe si el tema tiene uno y se borra si no (la barra vuelve al de CachyOS)
     logo_path = os.path.join(root, ".local/share/ombu/icons/bar-logo.svg")
     svg = logo_svg(a.logo, colors["accent"], a.accent2 or colors["accent"], colors["text"]) if a.logo else ""

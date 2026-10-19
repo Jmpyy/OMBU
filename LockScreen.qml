@@ -14,6 +14,7 @@ Item {
     property bool preview: false
 
     readonly property string userName: Quickshell.env("USER") ?? ""
+    readonly property string displayName: (userName === "jmpyy" || userName === "juampy") ? "JUAMPY" : userName.toUpperCase()
     readonly property string greeting: {
         const h = Chrono.date.getHours();
         return h < 6 ? "Buenas noches" : (h < 13 ? "Buen día" : (h < 20 ? "Buenas tardes" : "Buenas noches"));
@@ -98,16 +99,29 @@ Item {
         }
 
         Item {
-            Layout.preferredHeight: 44
+            Layout.preferredHeight: Theme.comic ? 28 : 44
+        }
+
+        // Sticker estilo Peter Parker en temas de cómic, o Avatar común en el resto
+        NameBadge {
+            visible: Theme.comic
+            Layout.alignment: Qt.AlignHCenter
+            name: root.displayName
+            alert: Auth.state === "failed"
+            transform: Translate {
+                x: root.shakeX
+            }
         }
 
         AvatarRing {
+            visible: !Theme.comic
             Layout.alignment: Qt.AlignHCenter
             letter: root.userName.charAt(0).toUpperCase()
             alert: Auth.state === "failed"
         }
 
         Text {
+            visible: !Theme.comic
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 14
             text: root.greeting + ", " + root.userName
@@ -117,20 +131,13 @@ Item {
         }
 
         // Campo de contraseña: se ensancha al enfocarlo
-        Rectangle {
-            id: field
+        Item {
+            id: fieldContainer
 
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 22
+            Layout.topMargin: Theme.comic ? 28 : 22
             Layout.preferredWidth: input.activeFocus ? 380 : 340
             Layout.preferredHeight: 54
-            radius: 27
-            color: Theme.bg
-            border.width: 1
-            border.color: Auth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : Theme.border)
-            transform: Translate {
-                x: root.shakeX
-            }
 
             Behavior on Layout.preferredWidth {
                 NumberAnimation {
@@ -139,128 +146,149 @@ Item {
                 }
             }
 
-            Behavior on border.color {
-                ColorAnimation {
-                    duration: 150
-                }
+            HardShadow {
+                target: field
+                offset: 5
             }
 
-            RowLayout {
+            Rectangle {
+                id: field
+
                 anchors.fill: parent
-                anchors.leftMargin: 20
-                anchors.rightMargin: 8
-                spacing: 12
-
-                MIcon {
-                    name: "lock"
-                    color: Theme.textDim
-                    font.pixelSize: 20
+                radius: Theme.comic ? 10 : 27
+                color: Theme.bg
+                border.width: Theme.comic ? 2 : 1
+                border.color: Auth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : (Theme.comic ? "#0a0708" : Theme.border))
+                transform: Translate {
+                    x: root.shakeX
                 }
 
-                TextInput {
-                    id: input
-
-                    Layout.fillWidth: true
-                    echoMode: TextInput.Password
-                    passwordCharacter: "•"
-                    inputMethodHints: Qt.ImhSensitiveData | Qt.ImhNoPredictiveText
-                    enabled: Auth.state !== "checking"
-                    color: Theme.text
-                    selectionColor: Theme.accent
-                    selectedTextColor: Theme.accentText
-                    font.pixelSize: 17
-                    clip: true
-                    focus: true
-
-                    onTextChanged: {
-                        if (Auth.state === "failed")
-                            Auth.reset();
-                    }
-
-                    onAccepted: {
-                        if (text.length === 0)
-                            return;
-                        const password = text;
-                        text = "";
-                        Auth.submit(password);
-                    }
-
-                    // Cualquier tecla despierta el salvapantallas (y la letra igual se escribe)
-                    Keys.onPressed: event => {
-                        Saver.wake();
-                        // Hyprland no avisa del Bloq Mayús: se vuelve a leer tras apretarlo
-                        if (event.key === Qt.Key_CapsLock)
-                            Keyboard.refreshLeds();
-                        event.accepted = false;
-                    }
-
-                    Keys.onEscapePressed: {
-                        if (root.preview)
-                            Ui.locked = false;
-                        else
-                            text = "";
-                    }
-
-                    Text {
-                        visible: input.text.length === 0
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "Contraseña"
-                        color: Theme.textDim
-                        font.pixelSize: 17
+                Behavior on border.color {
+                    ColorAnimation {
+                        duration: 150
                     }
                 }
 
-                // Ver u ocultar lo escrito
-                Rectangle {
-                    Layout.preferredWidth: 32
-                    Layout.preferredHeight: 32
-                    radius: 16
-                    opacity: input.text.length > 0 ? 1 : 0
-                    visible: opacity > 0.01
-                    color: eyeHover.hovered ? Theme.hover : "transparent"
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 160
-                        }
-                    }
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 20
+                    anchors.rightMargin: 8
+                    spacing: 12
 
                     MIcon {
-                        anchors.centerIn: parent
-                        name: input.echoMode === TextInput.Password ? "visibility" : "visibility_off"
+                        name: "lock"
                         color: Theme.textDim
-                        font.pixelSize: 19
-                    }
-
-                    HoverHandler {
-                        id: eyeHover
-                    }
-                    TapHandler {
-                        onTapped: input.echoMode = input.echoMode === TextInput.Password ? TextInput.Normal : TextInput.Password
-                    }
-                }
-
-                Rectangle {
-                    Layout.preferredWidth: 38
-                    Layout.preferredHeight: 38
-                    radius: 19
-                    color: input.text.length > 0 ? Theme.accent : Theme.surface
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-
-                    MIcon {
-                        anchors.centerIn: parent
-                        name: Auth.state === "checking" ? "hourglass_top" : "arrow_forward"
-                        color: input.text.length > 0 ? Theme.accentText : Theme.textDim
                         font.pixelSize: 20
                     }
 
-                    TapHandler {
-                        onTapped: input.accepted()
+                    TextInput {
+                        id: input
+
+                        Layout.fillWidth: true
+                        echoMode: TextInput.Password
+                        passwordCharacter: "•"
+                        inputMethodHints: Qt.ImhSensitiveData | Qt.ImhNoPredictiveText
+                        enabled: Auth.state !== "checking"
+                        color: Theme.text
+                        selectionColor: Theme.accent
+                        selectedTextColor: Theme.accentText
+                        font.pixelSize: 17
+                        clip: true
+                        focus: true
+
+                        onTextChanged: {
+                            if (Auth.state === "failed")
+                                Auth.reset();
+                        }
+
+                        onAccepted: {
+                            if (text.length === 0)
+                                return;
+                            const password = text;
+                            text = "";
+                            Auth.submit(password);
+                        }
+
+                        // Cualquier tecla despierta el salvapantallas (y la letra igual se escribe)
+                        Keys.onPressed: event => {
+                            Saver.wake();
+                            // Hyprland no avisa del Bloq Mayús: se vuelve a leer tras apretarlo
+                            if (event.key === Qt.Key_CapsLock)
+                                Keyboard.refreshLeds();
+                            event.accepted = false;
+                        }
+
+                        Keys.onEscapePressed: {
+                            if (root.preview)
+                                Ui.locked = false;
+                            else
+                                text = "";
+                        }
+
+                        Text {
+                            visible: input.text.length === 0
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Contraseña"
+                            color: Theme.textDim
+                            font.pixelSize: 17
+                        }
+                    }
+
+                    // Ver u ocultar lo escrito
+                    Rectangle {
+                        Layout.preferredWidth: 32
+                        Layout.preferredHeight: 32
+                        radius: 16
+                        opacity: input.text.length > 0 ? 1 : 0
+                        visible: opacity > 0.01
+                        color: eyeHover.hovered ? Theme.hover : "transparent"
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 150
+                            }
+                        }
+
+                        MIcon {
+                            anchors.centerIn: parent
+                            name: input.echoMode === TextInput.Password ? "visibility" : "visibility_off"
+                            color: Theme.textDim
+                            font.pixelSize: 18
+                        }
+
+                        HoverHandler {
+                            id: eyeHover
+                        }
+
+                        TapHandler {
+                            onTapped: input.echoMode = input.echoMode === TextInput.Password ? TextInput.Normal : TextInput.Password
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.preferredWidth: 38
+                        Layout.preferredHeight: 38
+                        radius: Theme.comic ? 8 : 19
+                        color: input.text.length > 0 ? Theme.accent : Theme.surface
+                        border.width: Theme.comic ? 1.5 : 0
+                        border.color: Theme.comic ? "#0a0708" : "transparent"
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+
+                        MIcon {
+                            anchors.centerIn: parent
+                            name: Auth.state === "checking" ? "hourglass_top" : "arrow_forward"
+                            color: input.text.length > 0 ? Theme.accentText : Theme.textDim
+                            font.pixelSize: 20
+                        }
+
+                        TapHandler {
+                            onTapped: input.accepted()
+                        }
                     }
                 }
             }
