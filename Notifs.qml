@@ -68,7 +68,8 @@ Singleton {
             risky = Number(h["x-ombu-risky"] ?? 0) === 1;
             compound = Number(h["x-ombu-compound"] ?? 0) === 1;
             cwd = String(h["x-ombu-cwd"] ?? "");
-            expireSeconds = n.expireTimeout;
+            // expireTimeout de freedesktop viene en milisegundos (ej: 5000 = 5s)
+            expireSeconds = n.expireTimeout > 0 ? (n.expireTimeout >= 100 ? Math.round(n.expireTimeout / 1000) : n.expireTimeout) : 0;
             actionList = Array.from(n.actions).map(a => ({
                         identifier: a.identifier,
                         text: NotifRules.translateAction(a.text)
@@ -99,10 +100,10 @@ Singleton {
             onFinished: entry.hide()
         }
 
-        // Tope: con el mouse quieto encima el contador se pausaba para siempre. Pasado este tiempo
-        // el aviso se va aunque lo tengas debajo.
+        // Tope: con el mouse quieto encima el contador se pausaba. Pasado este tiempo
+        // el aviso se va aunque lo tengas debajo (tope razonable de 8 a 15s).
         readonly property Timer hardLimit: Timer {
-            interval: Math.max(entry.seconds * 4, 30) * 1000
+            interval: Math.min(15, Math.max(entry.seconds * 1.5, 8)) * 1000
             running: entry.shown && entry.hasTimer
             onTriggered: entry.hide()
         }
