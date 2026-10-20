@@ -13,7 +13,8 @@ Singleton {
             // La ventana del juego se llama com.mojang.minecraft y no coincide con el launcher
             "mojang": "file:///usr/share/icons/Papirus-Dark/64x64/apps/minecraft.svg",
             "minecraft": "file:///usr/share/icons/Papirus-Dark/64x64/apps/minecraft.svg",
-            "dev.zed": "file:///usr/share/icons/Papirus-Dark/64x64/apps/zed.svg"
+            "dev.zed": "file:///usr/share/icons/Papirus-Dark/64x64/apps/zed.svg",
+            "sung": "file://" + (Quickshell.env("HOME") ?? "/home/jmpyy") + "/.local/share/icons/hicolor/scalable/apps/sung.svg"
         })
 
     // Ícono propio para ese identificador, o "" si no hay
