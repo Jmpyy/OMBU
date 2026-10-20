@@ -12,7 +12,7 @@ Singleton {
     id: root
 
     // Favoritas, en orden. Son los ids de los .desktop (sin la extensión).
-    property var favorites: ["zen", "vesktop", "kitty", "org.kde.dolphin", "minecraft-launcher"]
+    property var favorites: ["zen", "vesktop", "kitty", "org.kde.dolphin", "minecraft-launcher", "sung"]
     // Cuántas veces abriste cada app: { id: veces }
     property var usage: ({})
     // Apps que elegiste ocultar a mano (por id), además de las reglas de abajo
