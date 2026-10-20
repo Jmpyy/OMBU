@@ -9,11 +9,14 @@ WlSessionLock {
     locked: Ui.locked && !Ui.lockPreview
 
     WlSessionLockSurface {
+        id: surface
+
         color: Theme.bg
 
         LockScreen {
             anchors.fill: parent
             preview: false
+            surfaceScreen: surface.screen
         }
     }
 }

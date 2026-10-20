@@ -12,6 +12,8 @@ Item {
 
     // En vista previa Esc cierra la ventana; en el bloqueo real Esc solo borra lo escrito
     property bool preview: false
+    property var surfaceScreen: null
+    readonly property bool isPrimary: !surfaceScreen || surfaceScreen === Screens.primary || (surfaceScreen.name !== undefined && Screens.primary !== null && surfaceScreen.name === Screens.primary.name)
 
     readonly property string userName: Quickshell.env("USER") ?? ""
     readonly property string displayName: (userName === "jmpyy" || userName === "juampy") ? "JUAMPY" : userName.toUpperCase()
@@ -22,10 +24,14 @@ Item {
     property real shakeX: 0
 
     function focusInput(): void {
-        input.forceActiveFocus();
+        if (root.isPrimary)
+            input.forceActiveFocus();
     }
 
-    Component.onCompleted: Qt.callLater(focusInput)
+    Component.onCompleted: {
+        if (root.isPrimary)
+            Qt.callLater(focusInput);
+    }
 
     LockBackdrop {
         anchors.fill: parent
@@ -130,14 +136,15 @@ Item {
             font.weight: Font.Medium
         }
 
-        // Campo de contraseña: se ensancha al enfocarlo
+        // Campo de contraseña: se ensancha al enfocarlo (solo en monitor principal)
         Item {
             id: fieldContainer
 
+            visible: root.isPrimary
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: Theme.comic ? 28 : 22
+            Layout.topMargin: root.isPrimary ? (Theme.comic ? 28 : 22) : 0
             Layout.preferredWidth: input.activeFocus ? 380 : 340
-            Layout.preferredHeight: 54
+            Layout.preferredHeight: root.isPrimary ? 54 : 0
 
             Behavior on Layout.preferredWidth {
                 NumberAnimation {
@@ -188,7 +195,7 @@ Item {
                         echoMode: TextInput.Password
                         passwordCharacter: "•"
                         inputMethodHints: Qt.ImhSensitiveData | Qt.ImhNoPredictiveText
-                        enabled: Auth.state !== "checking"
+                        enabled: root.isPrimary && Auth.state !== "checking"
                         color: Theme.text
                         selectionColor: Theme.accent
                         selectedTextColor: Theme.accentText
@@ -294,12 +301,13 @@ Item {
             }
         }
 
-        // Estado de la verificación y aviso de Bloq Mayús
+        // Estado de la verificación y aviso de Bloq Mayús (solo en monitor principal)
         Item {
+            visible: root.isPrimary
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 14
+            Layout.topMargin: root.isPrimary ? 14 : 0
             Layout.preferredWidth: 320
-            Layout.preferredHeight: 32
+            Layout.preferredHeight: root.isPrimary ? 32 : 0
 
             Text {
                 anchors.centerIn: parent

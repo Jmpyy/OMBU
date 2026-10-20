@@ -26,5 +26,6 @@ PanelWindow {
     LockScreen {
         anchors.fill: parent
         preview: true
+        surfaceScreen: win.screen
     }
 }
