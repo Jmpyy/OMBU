@@ -47,8 +47,14 @@ Rectangle {
                 id: art
 
                 anchors.fill: parent
+                readonly property string url: root.player?.trackArtUrl ?? ""
+                property bool failed: false
+
+                onUrlChanged: failed = false
+                onStatusChanged: if (status === Image.Error)
+                    failed = true
                 visible: status === Image.Ready
-                source: root.player?.trackArtUrl ?? ""
+                source: Media.artUrl(url, failed)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 smooth: true

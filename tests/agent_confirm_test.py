@@ -31,6 +31,26 @@ UNSAFE = [
  "ls > /etc/passwd", "echo x >> ~/.bashrc", "cat <<EOF\nx\nEOF", "ls $(rm x)", "ls `rm x`", "ls & rm x", "ls\nrm x", "ls; rm x", "ls && rm x", "ls | sh",
  "echo x | tee ~/.bashrc", "cat a | dd of=/dev/sda", "journalctl --vacuum-time=1s", "systemctl restart greetd", "hyprctl dispatch exit",
  "qs -c ombu ipc call lock lock", "quickshell -c ombu kill", "chmod 777 x", "FOO=1 ls", "/bin/ls", "docker run x", "npm i",
+ # Comillas y barras: bash las quita, así que no pueden esconder una bandera peligrosa
+ "fd x '-x' rm", "fd x \"-x\" rm", "fd x \\-x rm", "git diff \"--output=/home/x/.bashrc\"", "gcc x.c '-o' ~/.bashrc",
+ "gcc '-fplugin=./evil.so' x.c", "fd x $'\\x2dx' rm", "sort \"-o\" ~/.bashrc x", "git log '--ext-diff'",
+ # Opciones con valor delante del subcomando: el verbo real es otro
+ "systemctl -p status poweroff", "systemctl --user -p status start evil", "hyprctl -i clients dispatch exit",
+ # Escriben en un argumento posicional o en un archivo de una opción
+ "uniq a.txt ~/.bashrc", "valgrind --log-file=/home/x/.bashrc ./prog", "gcc -MD -MF ~/.bashrc x.c",
+ "gcc --output=/home/x/.bashrc x.c", "gcc -Wl,-o,/home/x/.bashrc x.c", "gcc @args.txt", "file -C -m x",
+ # Ejecutan otro programa
+ "sort --compress-program=sh x", "ctest --build-and-test . b --build-generator Ninja --test-command rm -rf x",
+ "ctest -S evil.cmake", "cmake --build build -- --eval=x", "cmake -B b -DCMAKE_C_COMPILER_LAUNCHER=poweroff",
+ "cmake --install build --prefix /home/x", "cmake --graphviz=/home/x/.bashrc .", "identify ephemeral:/home/x/tesis.pdf",
+ "atuin search --delete x", "atuin history prune",
+ # Comodines: un archivo llamado «-x» se volvería bandera
+ "fd x * rm", "git diff *",
+]
+SAFE += [
+ "grep -n \"hola mundo\" main.c", "rg -n 'TODO|FIXME' src", "uniq lista.txt", "systemctl --user status pipewire",
+ "gcc -Wall -Wextra -g main.c lista.c -o prog", "cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug", "ctest --test-dir build --output-on-failure",
+ "valgrind --leak-check=full --show-leak-kinds=all ./build/prog", "ls *.c", "identify foto.png", "atuin stats",
 ]
 bad = [c for c in SAFE if not ac.is_safe(c)]
 leak = [c for c in UNSAFE if ac.is_safe(c)]

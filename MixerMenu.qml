@@ -17,12 +17,12 @@ DropPopup {
         return n.properties["application.name"] ?? n.properties["node.name"] ?? "Aplicación";
     }
 
+    // El ícono que trae el stream, el de su app o uno genérico. Con iconPath(nombre, respaldo) Qt no
+    // encontraba ni uno ni otro para procesos sin app (paplay) y dejaba un aviso en el log por cada fila.
     function appIcon(n): string {
         const hint = n.properties["application.icon-name"];
-        if (hint)
-            return Quickshell.iconPath(hint, "application-x-executable");
         const entry = DesktopEntries.heuristicLookup(appName(n));
-        return Quickshell.iconPath(entry ? entry.icon : appName(n).toLowerCase(), "application-x-executable");
+        return (hint ? Icons.themed(hint) : "") || Icons.forApp(appName(n), entry ? entry.icon : "") || Icons.themed("multimedia-volume-control");
     }
 
     readonly property var sinks: allNodes.filter(n => mediaClass(n) === "Audio/Sink")

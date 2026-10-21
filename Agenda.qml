@@ -101,12 +101,15 @@ Singleton {
             return false;
         const d = parseDay(day);
         const b = parseDay(e.date);
+        // Si el mes no tiene ese día (un 30 en febrero, un 29/2 en un año común) cae el último,
+        // igual que Subs.nextDue; antes ese mes el evento no aparecía ni avisaba
+        const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
         if (e.repeat === "monthly")
-            return d.getDate() === b.getDate();
+            return d.getDate() === Math.min(b.getDate(), last);
         if (e.repeat === "monthly-last")
-            return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() === d.getDate();
+            return last === d.getDate();
         if (e.repeat === "yearly")
-            return d.getDate() === b.getDate() && d.getMonth() === b.getMonth();
+            return d.getMonth() === b.getMonth() && d.getDate() === Math.min(b.getDate(), last);
         return false;
     }
 
@@ -394,6 +397,7 @@ Singleton {
     function check(): void {
         now = new Date();
         const stamp = now.getTime();
+        let firedChanged = false;
         for (let off = 0; off < 3; off++) {
             const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + off, 12);
             const day = ymd(date);
@@ -407,6 +411,7 @@ Singleton {
                     if (fired[key] || stamp < fireAt || stamp > fireAt + 5 * 60000)
                         continue;
                     fired[key] = true;
+                    firedChanged = true;
                     let body = "Es ahora (" + it.time + ")";
                     if (m >= 1440)
                         body = (m < 2880 ? "Mañana" : "En " + Math.round(m / 1440) + " días") + " a las " + it.time;
@@ -416,6 +421,33 @@ Singleton {
                 }
             }
         }
+        if (firedChanged)
+            saveFired();
+        // La compu que queda prendida de un día para el otro también recibe el resumen (si estás
+        // bloqueado espera: este chequeo corre cada 30 s y sale apenas vuelvas)
+        if (summaryDay !== "" && summaryDay !== ymd(now) && now.getHours() >= 7 && !Ui.locked && !summaryTimer.running)
+            showSummary();
+    }
+
+    // Los avisos ya mandados sobreviven a una recarga del shell (pasa cada vez que se guarda un .qml):
+    // antes, recargar dentro de los 5 minutos de un aviso lo repetía. Se guardan en la carpeta de
+    // ejecución (se borra al cerrar sesión) y solo los de los últimos días.
+    function saveFired(): void {
+        const keep = {};
+        const oldest = ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 12));
+        for (const k in fired)
+            if (k.slice(0, 10) >= oldest)
+                keep[k] = true;
+        fired = keep;
+        firedFile.setText(JSON.stringify(keep));
+    }
+
+    FileView {
+        id: firedFile
+
+        path: (Quickshell.env("XDG_RUNTIME_DIR") ?? "/tmp") + "/ombu-avisos.json"
+        blockLoading: true
+        printErrors: false
     }
 
     // ---- Resumen del día: una notificación al prender la compu, una vez por día ----
@@ -620,6 +652,11 @@ Singleton {
             const sd = JSON.parse(summaryFile.text());
             if (typeof sd.day === "string")
                 summaryDay = sd.day;
+        } catch (e) {}
+        try {
+            const f = JSON.parse(firedFile.text());
+            if (f && typeof f === "object")
+                fired = f;
         } catch (e) {}
         loadHolidays(now.getFullYear());
         loadHolidays(now.getFullYear() + 1);

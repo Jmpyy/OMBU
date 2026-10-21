@@ -34,9 +34,11 @@ Singleton {
     }
 
     function lockNow(): void {
-        if (Ui.locked)
+        // La vista previa también pone Ui.locked, pero se cierra con Esc: si quedó abierta y te fuiste,
+        // se pasa a un bloqueo de verdad (antes la sesión quedaba abierta para siempre)
+        if (Ui.locked && (!Ui.lockPreview || testMode))
             return;
-        console.log("ombu: inactividad, bloqueando" + (testMode ? " (prueba, vista previa)" : ""));
+        console.log("ombu: inactividad, bloqueando" + (testMode ? " (prueba, vista previa)" : (Ui.locked ? " (había una vista previa abierta)" : "")));
         lockedByIdle = true;
         Ui.lockPreview = testMode;
         Ui.locked = true;

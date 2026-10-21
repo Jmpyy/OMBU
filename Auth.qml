@@ -67,6 +67,19 @@ Singleton {
         }
     }
 
+    // Si PAM no contesta (un módulo colgado, una contraseña vencida que pide otra), el campo quedaba
+    // deshabilitado en «Verificando…» para siempre y no había forma de entrar sin reiniciar
+    Timer {
+        interval: 20000
+        running: root.state === "checking"
+        onTriggered: {
+            pam.abort();
+            root.pending = "";
+            root.state = "failed";
+            root.message = "La verificación tardó demasiado: probá de nuevo";
+        }
+    }
+
     Connections {
         target: Ui
 

@@ -32,6 +32,8 @@ Singleton {
 
         required property var n
         property date time: new Date()
+        // La app (o Quickshell, al tocar una acción) ya la cerró: el objeto original no se puede volver a cerrar
+        property bool gone: false
         property bool shown: false
         property bool hovered: false
         // Se cerró deslizándola hacia la derecha: sale con ese movimiento
@@ -55,25 +57,22 @@ Singleton {
         property real expireSeconds: 0
         property var actionList: []
 
-        Component.onCompleted: {
-            appName = n.appName;
-            summary = n.summary;
-            body = n.body;
-            image = n.image;
-            appIcon = n.appIcon;
-            desktopEntry = n.desktopEntry;
-            critical = n.urgency === NotificationUrgency.Critical;
-            const h = n.hints ?? {};
-            kind = String(h["x-ombu-kind"] ?? "");
-            risky = Number(h["x-ombu-risky"] ?? 0) === 1;
-            compound = Number(h["x-ombu-compound"] ?? 0) === 1;
-            cwd = String(h["x-ombu-cwd"] ?? "");
-            // expireTimeout de freedesktop viene en milisegundos (ej: 5000 = 5s)
-            expireSeconds = n.expireTimeout > 0 ? (n.expireTimeout >= 100 ? Math.round(n.expireTimeout / 1000) : n.expireTimeout) : 0;
-            actionList = Array.from(n.actions).map(a => ({
-                        identifier: a.identifier,
-                        text: NotifRules.translateAction(a.text)
-                    }));
+        Component.onCompleted: root.copyInto(entry)
+
+        // Una app que reemplaza su aviso (replaces_id: volumen, progreso, el tema que suena) no manda
+        // una notificación nueva: Quickshell actualiza la misma. Se vuelve a copiar y se muestra de nuevo.
+        readonly property Connections updates: Connections {
+            target: entry.gone ? null : entry.n
+
+            function onSummaryChanged(): void {
+                Qt.callLater(root.replaced, entry);
+            }
+            function onBodyChanged(): void {
+                Qt.callLater(root.replaced, entry);
+            }
+            function onImageChanged(): void {
+                Qt.callLater(root.replaced, entry);
+            }
         }
 
         function hide(): void {
@@ -96,7 +95,8 @@ Singleton {
             to: 0
             duration: entry.seconds * 1000
             running: entry.shown && entry.hasTimer
-            paused: entry.hovered
+            // Solo se puede pausar una animación en marcha (si no, Qt avisa en el log)
+            paused: running && entry.hovered
             onFinished: entry.hide()
         }
 
@@ -121,6 +121,53 @@ Singleton {
             entry.destroy();
     }
 
+    // Copia en la entrada lo que dibuja la tarjeta, ya traducido o reescrito por NotifRules
+    function copyInto(entry): void {
+        const n = entry.n;
+        const h = n.hints ?? {};
+        entry.desktopEntry = n.desktopEntry;
+        entry.image = n.image;
+        entry.critical = n.urgency === NotificationUrgency.Critical;
+        entry.kind = String(h["x-ombu-kind"] ?? "");
+        entry.risky = Number(h["x-ombu-risky"] ?? 0) === 1;
+        entry.compound = Number(h["x-ombu-compound"] ?? 0) === 1;
+        entry.cwd = String(h["x-ombu-cwd"] ?? "");
+        // expireTimeout de freedesktop viene en milisegundos (ej: 5000 = 5s)
+        entry.expireSeconds = n.expireTimeout > 0 ? (n.expireTimeout >= 100 ? Math.round(n.expireTimeout / 1000) : n.expireTimeout) : 0;
+        entry.actionList = Array.from(n.actions).map(a => ({
+                    identifier: a.identifier,
+                    text: NotifRules.translateAction(a.text)
+                }));
+        // Pasa el texto a español si hay una regla para esta app (o lo reescribe, ver NotifRules.speak)
+        const spoken = NotifRules.speak(n);
+        const rule = NotifRules.ruleFor(n);
+        entry.summary = spoken ? spoken[0] : NotifRules.translate(n, n.summary);
+        entry.body = spoken ? spoken[1] : NotifRules.translate(n, n.body);
+        entry.appName = rule && rule.asApp ? rule.asApp : n.appName;
+        entry.appIcon = rule && rule.icon ? rule.icon : n.appIcon;
+    }
+
+    // La app reemplazó el contenido del aviso: se actualiza, sube al principio y vuelve a mostrarse
+    function replaced(entry): void {
+        if (entry.gone || !history.includes(entry))
+            return;
+        copyInto(entry);
+        entry.time = new Date();
+        history = [entry, ...history.filter(e => e !== entry)];
+        if (dnd && !entry.critical)
+            return;
+        if (!toasts.includes(entry))
+            toasts = [entry, ...toasts];
+        entry.leave.stop();
+        entry.swiped = false;
+        entry.shown = true;
+        entry.remaining = 1;
+        if (entry.hasTimer) {
+            entry.countdown.restart();
+            entry.hardLimit.restart();
+        }
+    }
+
     function add(n): void {
         // Hay que marcarla como "tracked" para que el servidor no la descarte
         n.tracked = true;
@@ -135,17 +182,11 @@ Singleton {
         const entry = entryComponent.createObject(root, {
             n: n
         });
-        // Pasa el texto a español si hay una regla para esta app (o lo reescribe, ver NotifRules.speak)
-        const spoken = NotifRules.speak(n);
-        const rule = NotifRules.ruleFor(n);
-        entry.summary = spoken ? spoken[0] : NotifRules.translate(n, entry.summary);
-        entry.body = spoken ? spoken[1] : NotifRules.translate(n, entry.body);
-        if (rule && rule.asApp)
-            entry.appName = rule.asApp;
-        if (rule && rule.icon)
-            entry.appIcon = rule.icon;
         history = [entry, ...history];
-        n.closed.connect(() => root.remove(entry));
+        n.closed.connect(() => {
+            entry.gone = true;
+            root.remove(entry);
+        });
         received(entry);
 
         // Las que sobreviven a una recarga del shell (lastGeneration) ya se vieron: solo van al
@@ -160,6 +201,10 @@ Singleton {
     }
 
     function remove(entry): void {
+        // Puede llegar dos veces (la app la cierra mientras se cerraba a mano): la segunda no hace nada
+        const inHistory = history.includes(entry);
+        if (!inHistory && !toasts.includes(entry))
+            return;
         history = history.filter(e => e !== entry);
         if (toasts.includes(entry))
             entry.hide();
@@ -169,7 +214,7 @@ Singleton {
 
     function dismiss(entry): void {
         // Si la app ya la cerró, la notificación original ya no existe
-        if (entry.n)
+        if (entry.n && !entry.gone)
             entry.n.dismiss();
         else
             remove(entry);
@@ -235,7 +280,9 @@ Singleton {
         const info = entry.actionList.find(a => a.identifier === identifier);
         if (entry.kind !== "confirm" && (identifier === "default" || (info && opensApp(info))))
             focusApp(entry);
-        if (!n.resident)
+        // Si no es residente, invoke() ya la cerró (closed marca `gone`): cerrarla otra vez daba
+        // «Cannot close destroyed notification» en el log
+        if (!n.resident && !entry.gone)
             dismiss(entry);
     }
 

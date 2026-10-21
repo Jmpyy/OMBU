@@ -65,6 +65,12 @@ Singleton {
         }
     }
 
+    // Portada a mostrar. YouTube anuncia maxresdefault.jpg, que no existe en muchos videos (404): si esa
+    // falla (`failed`), se pide hqdefault.jpg, que está siempre.
+    function artUrl(url: string, failed: bool): string {
+        return failed && /\/maxresdefault\.jpg/.test(url) ? url.replace("maxresdefault", "hqdefault") : url;
+    }
+
     // Nombre de bus del reproductor ("org.mpris.MediaPlayer2.sung")
     function busName(): string {
         return player?.dbusName ?? "";
