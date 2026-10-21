@@ -54,8 +54,26 @@ Singleton {
             // "Terminó" de Claude Code y Antigravity (los manda bin/agent-notify.sh)
             match: n => ["claude code", "antigravity"].includes(n.appName.toLowerCase()),
             hideWhenVisible: "kitty"
+        },
+        {
+            // Sung avisa qué empieza a sonar (título = tema, texto = artista) y reemplaza su propio aviso en
+            // cada cambio de tema. Lleva la portada y no aparece si ya tenés Sung a la vista.
+            match: n => (n.desktopEntry ?? "").toLowerCase() === "sung" || n.appName.toLowerCase() === "sung",
+            asApp: "Sung · Ahora suena",
+            hideWhenVisible: "sung",
+            cover: true
         }
     ]
+
+    // Portada del tema que anuncia un aviso de música, sacada del reproductor por MPRIS. Solo si el
+    // reproductor ya muestra ese mismo tema: el aviso puede llegar antes que los datos nuevos y se vería la
+    // portada del anterior. YouTube: hqdefault siempre existe (maxresdefault no, ver Media.artUrl).
+    function coverFor(n: var): string {
+        const p = Media.all.find(x => (x.dbusName ?? "").toLowerCase().endsWith("." + (n.desktopEntry || n.appName).toLowerCase()));
+        if (!p || p.trackTitle !== n.summary)
+            return "";
+        return Media.artUrl(p.trackArtUrl ?? "", true);
+    }
 
     // Escritorios que se están viendo ahora (uno por monitor)
     readonly property var visibleWorkspaces: Hyprland.monitors.values.map(m => m.activeWorkspace?.id).filter(id => id !== undefined)

@@ -161,16 +161,21 @@ ShellRoot {
 
     // qs -c ombu ipc call media toggle|next|previous|status  -> el reproductor de música
     IpcHandler {
+        // Las teclas multimedia (binds.lua) llaman a estos: controlan el mismo reproductor que la tarjeta
+        // de música (playerctl elegía otro por su cuenta) y muestran qué suena
         function toggle(): void {
             Media.toggle();
+            Osd.showMedia();
         }
 
         function next(): void {
             Media.next();
+            Osd.showMedia();
         }
 
         function previous(): void {
             Media.previous();
+            Osd.showMedia();
         }
 
         function cycle(): void {
@@ -258,6 +263,11 @@ ShellRoot {
             Agenda.check();
         }
 
+        // ipc call agenda test  -> recordatorio de prueba en un minuto (solo local, nunca en Google)
+        function test(): string {
+            return Agenda.testReminder();
+        }
+
         // ipc call agenda summary  -> muestra el resumen del día ahora
         function summary(): void {
             Agenda.showSummary();
@@ -337,6 +347,12 @@ ShellRoot {
 
         function control(): void {
             const key = "control@" + (Hyprland.focusedMonitor?.name ?? "");
+            Ui.popup = Ui.popup === key ? "" : key;
+        }
+
+        // ipc call bar music  -> lo que suena, en grande (el menú del indicador de música)
+        function music(): void {
+            const key = "music@" + (Hyprland.focusedMonitor?.name ?? "");
             Ui.popup = Ui.popup === key ? "" : key;
         }
 

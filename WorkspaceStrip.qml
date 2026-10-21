@@ -68,12 +68,13 @@ Row {
             Rectangle {
                 anchors.centerIn: parent
                 visible: !ws.active && !ws.occupied
-                width: Theme.comic ? 5 : 6
-                height: Theme.comic ? 5 : 6
+                width: Theme.comic ? 6 : 6
+                height: Theme.comic ? 6 : 6
                 radius: Theme.comic ? 1 : 3
                 rotation: Theme.comic ? 45 : 0
                 color: area.containsMouse ? Theme.accent : Theme.textDim
-                opacity: area.containsMouse ? 1 : 0.5
+                // Al 50 % casi no se veían sobre el fondo oscuro
+                opacity: area.containsMouse ? 1 : 0.85
 
                 Behavior on rotation {
                     NumberAnimation {

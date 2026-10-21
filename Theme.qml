@@ -6,7 +6,7 @@ import Quickshell
 // Tokens de diseño: todo el aspecto sale de acá. Los colores base vienen del tema elegido (Themes.qml).
 Singleton {
     // Geometría
-    readonly property int barHeight: 32
+    readonly property int barHeight: 36
     readonly property int fillet: 16      // radio de las esquinas cóncavas
     readonly property int margin: 14
     readonly property int popupRadius: comic ? 8 : 16

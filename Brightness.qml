@@ -17,10 +17,31 @@ Singleton {
     // Brillo que se quiere (0-100) y el último que se mandó
     property int wanted: -1
     property int sent: -1
+    // Cuándo se leyó del monitor y los pasos de los atajos que esperan esa lectura
+    property double readAt: 0
+    property int pendingDelta: 0
+
+    // El brillo también se cambia con los botones del monitor: se vuelve a leer al abrir el centro de
+    // control. No pisa un cambio de ombu que todavía se está mandando.
+    function refresh(): void {
+        if (available && !reader.running && !setter.running && wanted === sent)
+            reader.running = true;
+    }
 
     function step(delta: int): void {
         if (!available)
             return;
+        // Si hace más de un minuto que no se lee, primero se lee: si no, el paso partía del valor viejo
+        // y el brillo saltaba (unos cientos de ms de demora, solo la primera vez)
+        if (Date.now() - readAt > 60000 && !setter.running && wanted === sent) {
+            pendingDelta += delta;
+            refresh();
+            return;
+        }
+        apply(delta);
+    }
+
+    function apply(delta: int): void {
         wanted = Math.max(0, Math.min(100, Math.round(level * 100) + delta));
         level = wanted / 100;
         Osd.showBrightness();
@@ -70,6 +91,13 @@ Singleton {
                 const m = text.match(/VCP 10 C (\d+) (\d+)/);
                 if (m && parseInt(m[2]) > 0)
                     root.level = parseInt(m[1]) / parseInt(m[2]);
+                // Aunque la lectura falle se marca la hora: así un atajo no queda esperando otra
+                root.readAt = Date.now();
+                if (root.pendingDelta !== 0) {
+                    const d = root.pendingDelta;
+                    root.pendingDelta = 0;
+                    root.apply(d);
+                }
             }
         }
     }

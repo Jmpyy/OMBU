@@ -9,6 +9,9 @@ DropPopup {
 
     readonly property var sink: Pipewire.defaultAudioSink
 
+    onOpenChanged: if (open)
+        Brightness.refresh()
+
     signal openDevices
     signal openFocus
     signal openWalls

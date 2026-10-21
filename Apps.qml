@@ -51,6 +51,20 @@ Singleton {
         recheck.restart();
     }
 
+    // Ir a una ventana; si estaba minimizada (Hyprland no minimiza: ombu la manda al escritorio especial
+    // «minimized»), además la trae al escritorio actual. La usan el launcher, el menú de apps y los avisos.
+    function focusWindow(t): void {
+        const address = "address:0x" + t.address;
+        if (t.workspace?.name === "special:minimized") {
+            let here = Hyprland.focusedWorkspace?.id ?? 1;
+            if (here < 1)
+                here = 1;
+            Hyprland.dispatch("function() hl.dispatch(hl.dsp.focus({ window = \"" + address + "\" })); hl.dispatch(hl.dsp.window.move({ workspace = \"" + here + "\" })) end");
+        } else {
+            Hyprland.dispatch("hl.dsp.focus({ window = \"" + address + "\" })");
+        }
+    }
+
     // Lanzar una app que ya está corriendo suele traer su ventana al frente
     function open(app): void {
         const entry = DesktopEntries.heuristicLookup(app.id) ?? DesktopEntries.heuristicLookup(app.name);

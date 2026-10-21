@@ -86,7 +86,34 @@ PanelWindow {
                 color: Osd.showMuted ? Theme.danger : (Theme.comic ? Theme.accent : Theme.text)
             }
 
+            // Con las teclas multimedia: tema y artista en vez de la barra
+            Column {
+                visible: Osd.isMedia
+                Layout.fillWidth: true
+                spacing: 0
+
+                Text {
+                    width: parent.width
+                    elide: Text.ElideRight
+                    text: Media.player?.trackTitle || Media.player?.identity || ""
+                    color: Theme.text
+                    font.family: Theme.comic ? Theme.displayFont : Theme.font
+                    font.pixelSize: Theme.comic ? 16 : 13
+                    font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                }
+
+                Text {
+                    width: parent.width
+                    visible: text !== ""
+                    elide: Text.ElideRight
+                    text: Media.player?.trackArtist ?? ""
+                    color: Theme.textDim
+                    font.pixelSize: 11
+                }
+            }
+
             Item {
+                visible: !Osd.isMedia
                 Layout.fillWidth: true
                 Layout.preferredHeight: 8
 
@@ -116,6 +143,7 @@ PanelWindow {
             }
 
             Text {
+                visible: !Osd.isMedia
                 Layout.preferredWidth: Theme.comic ? 56 : 40
                 horizontalAlignment: Text.AlignRight
                 text: Osd.showMuted ? (Theme.comic ? "¡MUTE!" : "Mute") : Math.round(Osd.level * 100) + "%"

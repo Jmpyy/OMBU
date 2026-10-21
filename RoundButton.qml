@@ -7,6 +7,8 @@ Rectangle {
     property string icon
     property bool primary: false
     property bool enabled: true
+    // Encendido (aleatorio, repetir...): el ícono va en el color de acento
+    property bool active: false
     property int size: primary ? 44 : 34
 
     signal clicked
@@ -27,7 +29,7 @@ Rectangle {
         anchors.centerIn: parent
         name: root.icon
         font.pixelSize: root.primary ? 26 : 20
-        color: root.primary ? Theme.accentText : Theme.text
+        color: root.primary ? Theme.accentText : (root.active ? Theme.accent : Theme.text)
     }
 
     MouseArea {

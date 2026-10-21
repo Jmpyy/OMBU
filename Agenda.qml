@@ -207,7 +207,7 @@ Singleton {
         const m = time.trim().match(/^(\d{1,2})(?::|\.|h)?(\d{2})$/);
         if (m && parseInt(m[1]) < 24 && parseInt(m[2]) < 60)
             hhmm = m[1].padStart(2, "0") + ":" + m[2];
-        if (apiConnected && createInGoogle) {
+        if (apiConnected && createInGoogle && !extra?.localOnly) {
             const args = ["add", day, hhmm, t, "30"];
             if (repeat)
                 args.push("--repeat", repeat);
@@ -247,6 +247,38 @@ Singleton {
                 id: localId,
                 local: true
             });
+    }
+
+    // Recordatorio de prueba (ipc call agenda test): un evento solo de ombu, nunca en Google, para dentro
+    // de un minuto. Avisa en menos de 90 s (check() corre cada 30) y se borra solo a los 3 minutos.
+    readonly property string testTag: "ombu-prueba"
+
+    function testReminder(): string {
+        removeTests();
+        const at = new Date(Date.now() + 60000);
+        add(ymd(at), Qt.formatTime(at, "HH:mm"), "Prueba de recordatorio", "", [0], {
+            tag: testTag,
+            localOnly: true
+        });
+        testCleanup.restart();
+        return "aviso de prueba a las " + Qt.formatTime(at, "HH:mm") + " (solo local, se borra solo)";
+    }
+
+    // staleOnly: solo las de hace más de 3 minutos (el id empieza con la hora en que se creó). Al arrancar
+    // se usa así: una prueba en curso tiene que sobrevivir a la recarga para comprobar que no se repite.
+    function removeTests(staleOnly): void {
+        const gone = e => e.tag === testTag && (staleOnly !== true || Date.now() - parseInt(e.id) > 180000);
+        if (local.some(gone)) {
+            local = local.filter(e => !gone(e));
+            saveLocal();
+        }
+    }
+
+    Timer {
+        id: testCleanup
+
+        interval: 180000
+        onTriggered: root.removeTests()
     }
 
     function toggle(id: string): void {
@@ -423,6 +455,8 @@ Singleton {
         }
         if (firedChanged)
             saveFired();
+        // El temporizador de limpieza de la prueba no sobrevive a una recarga: esto la borra igual
+        removeTests(true);
         // La compu que queda prendida de un día para el otro también recibe el resumen (si estás
         // bloqueado espera: este chequeo corre cada 30 s y sale apenas vuelvas)
         if (summaryDay !== "" && summaryDay !== ymd(now) && now.getHours() >= 7 && !Ui.locked && !summaryTimer.running)
@@ -637,6 +671,8 @@ Singleton {
             if (Array.isArray(saved))
                 local = saved;
         } catch (e) {}
+        // Una prueba vieja que quedó de antes de una recarga (su temporizador de limpieza no sobrevive)
+        removeTests(true);
         try {
             const cfg = JSON.parse(configFile.text());
             if (typeof cfg.url === "string")

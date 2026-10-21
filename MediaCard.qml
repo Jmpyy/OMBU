@@ -3,22 +3,29 @@ import QtQuick.Effects
 import QtQuick.Layouts
 
 // Lo que suena ahora (música, un video del navegador...) en versión compacta para el centro de
-// control: portada, título, artista y los tres controles. Solo aparece si hay algún reproductor.
+// control y el panel lateral: portada, título, artista, los tres controles y la línea de tiempo (se
+// arrastra para adelantar). Un clic en la portada o el título trae la app al frente. Solo aparece si
+// hay algún reproductor.
 Rectangle {
     id: root
 
     // El reproductor lo elige Media.qml (el último que sonó, aunque esté en pausa)
     readonly property var player: Media.player
+    // La línea de tiempo solo si el reproductor dice cuánto dura y deja saltar (un directo no)
+    readonly property bool hasTimeline: timeline.available
 
     visible: player !== null
-    implicitHeight: 60
+    implicitHeight: hasTimeline ? 80 : 60
     radius: Theme.controlRadius
     color: Theme.surface
     border.width: Theme.comic ? 1.5 : 0
     border.color: Theme.comic ? Theme.ink : "transparent"
 
     RowLayout {
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: 60
         anchors.leftMargin: 10
         anchors.rightMargin: 8
         spacing: 10
@@ -74,11 +81,27 @@ Rectangle {
                 color: Theme.textDim
                 font.pixelSize: 22
             }
+
+            HoverHandler {
+                cursorShape: root.player?.canRaise ? Qt.PointingHandCursor : Qt.ArrowCursor
+            }
+            TapHandler {
+                enabled: root.player?.canRaise ?? false
+                onTapped: root.player.raise()
+            }
         }
 
         Column {
             Layout.fillWidth: true
             spacing: 1
+
+            HoverHandler {
+                cursorShape: root.player?.canRaise ? Qt.PointingHandCursor : Qt.ArrowCursor
+            }
+            TapHandler {
+                enabled: root.player?.canRaise ?? false
+                onTapped: root.player.raise()
+            }
 
             Text {
                 width: parent.width
@@ -178,5 +201,18 @@ Rectangle {
                 }
             }
         }
+    }
+
+    // Línea de tiempo (se arrastra para adelantar)
+    MediaTimeline {
+        id: timeline
+
+        player: root.player
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 10
+        anchors.rightMargin: 10
+        anchors.bottomMargin: 6
     }
 }

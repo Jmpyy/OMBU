@@ -125,8 +125,9 @@ Singleton {
     function copyInto(entry): void {
         const n = entry.n;
         const h = n.hints ?? {};
+        const rule = NotifRules.ruleFor(n);
         entry.desktopEntry = n.desktopEntry;
-        entry.image = n.image;
+        entry.image = n.image || (rule && rule.cover ? NotifRules.coverFor(n) : "");
         entry.critical = n.urgency === NotificationUrgency.Critical;
         entry.kind = String(h["x-ombu-kind"] ?? "");
         entry.risky = Number(h["x-ombu-risky"] ?? 0) === 1;
@@ -140,11 +141,23 @@ Singleton {
                 }));
         // Pasa el texto a español si hay una regla para esta app (o lo reescribe, ver NotifRules.speak)
         const spoken = NotifRules.speak(n);
-        const rule = NotifRules.ruleFor(n);
-        entry.summary = spoken ? spoken[0] : NotifRules.translate(n, n.summary);
-        entry.body = spoken ? spoken[1] : NotifRules.translate(n, n.body);
+        entry.summary = spoken ? spoken[0] : plain(NotifRules.translate(n, n.summary));
+        entry.body = spoken ? spoken[1] : plain(NotifRules.translate(n, n.body));
         entry.appName = rule && rule.asApp ? rule.asApp : n.appName;
         entry.appIcon = rule && rule.icon ? rule.icon : n.appIcon;
+    }
+
+    // El servidor no interpreta HTML (bodyMarkupSupported: false), pero muchas apps escapan el texto igual
+    // (Sung manda el artista con toHtmlEscaped): «Simon &amp; Garfunkel» se veía tal cual
+    function plain(text: string): string {
+        return text.replace(/&(amp|lt|gt|quot|apos|#39);/g, (m, e) => ({
+                    amp: "&",
+                    lt: "<",
+                    gt: ">",
+                    quot: "\"",
+                    apos: "'",
+                    "#39": "'"
+                })[e]);
     }
 
     // La app reemplazó el contenido del aviso: se actualiza, sube al principio y vuelve a mostrarse
@@ -154,7 +167,8 @@ Singleton {
         copyInto(entry);
         entry.time = new Date();
         history = [entry, ...history.filter(e => e !== entry)];
-        if (dnd && !entry.critical)
+        // Lo que ya estás mirando (Sung a la vista al cambiar de tema) se actualiza sin aparecer
+        if ((dnd && !entry.critical) || NotifRules.shouldDrop(entry.n))
             return;
         if (!toasts.includes(entry))
             toasts = [entry, ...toasts];
@@ -250,18 +264,8 @@ Singleton {
     // «Responder» y no hacen nada: así el botón siempre te lleva a la app.
     function focusApp(entry): void {
         const t = windowFor(entry);
-        if (!t)
-            return;
-        const address = "address:0x" + t.address;
-        if (t.workspace?.name === "special:minimized") {
-            // Minimizada: se trae al escritorio actual
-            let here = Hyprland.focusedWorkspace?.id ?? 1;
-            if (here < 1)
-                here = 1;
-            Hyprland.dispatch("function() hl.dispatch(hl.dsp.focus({ window = \"" + address + "\" })); hl.dispatch(hl.dsp.window.move({ workspace = \"" + here + "\" })) end");
-        } else {
-            Hyprland.dispatch("hl.dsp.focus({ window = \"" + address + "\" })");
-        }
+        if (t)
+            Apps.focusWindow(t);
     }
 
     // Acciones que significan «ir a la app»; las demás (silenciar, posponer...) no enfocan nada

@@ -28,7 +28,7 @@ Rectangle {
     signal scrolled(var wheel)
 
     implicitWidth: content.implicitWidth + 20
-    implicitHeight: 22
+    implicitHeight: 24
     radius: Theme.comic ? 6 : height / 2
     color: area.containsMouse || active ? Theme.hover : "transparent"
 
@@ -71,8 +71,11 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             text: root.label
             color: root.labelColor
-            font.pixelSize: root.labelSize
-            font.weight: root.labelWeight
+            // Con los temas de cómic los números van en la tipografía del tema, como el reloj
+            font.pixelSize: Theme.comic ? root.labelSize + 3 : root.labelSize
+            font.weight: Theme.comic ? Font.Normal : root.labelWeight
+            font.family: Theme.comic ? Theme.displayFont : ""
+            font.letterSpacing: Theme.comic ? 0.5 : 0
         }
     }
 

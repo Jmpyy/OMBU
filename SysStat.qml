@@ -8,9 +8,10 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    // El chip de la barra necesita procesador y memoria todo el tiempo: eso corre en modo liviano (sin
-    // nvidia-smi, que es lo caro). La medición completa solo corre con el panel en su pestaña «Sistema».
-    property bool active: true
+    // Modo liviano (procesador y memoria, sin nvidia-smi) para algo que lo necesite siempre a la vista. Hoy
+    // nada: el chip de RAM de la barra se sacó (la persona no quiere monitores del sistema ahí), así que
+    // no corre nada de fondo. La medición completa solo corre con el panel en su pestaña «Sistema».
+    property bool active: false
     // Lo enciende el panel lateral (SidePanel) mientras muestra su pestaña «Sistema»
     property bool full: false
     // Última medición (ver bin/sysstat.py); {} hasta que llega la primera
@@ -42,7 +43,7 @@ Singleton {
     Process {
         id: fullMeter
 
-        running: root.active && root.full
+        running: root.full
         command: [Quickshell.shellPath("bin/sysstat.py"), "--watch", "2"]
         stdout: SplitParser {
             onRead: line => root.read(line)

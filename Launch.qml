@@ -81,17 +81,7 @@ Singleton {
         Ui.launcherOpen = false;
         const wins = forceNew ? [] : windowsOf(entry);
         if (wins.length > 0) {
-            const t = wins[0];
-            const address = "address:0x" + t.address;
-            if (t.workspace?.name === "special:minimized") {
-                // Minimizada: se trae al escritorio actual
-                let here = Hyprland.focusedWorkspace?.id ?? 1;
-                if (here < 1)
-                    here = 1;
-                Hyprland.dispatch("function() hl.dispatch(hl.dsp.focus({ window = \"" + address + "\" })); hl.dispatch(hl.dsp.window.move({ workspace = \"" + here + "\" })) end");
-            } else {
-                Hyprland.dispatch("hl.dsp.focus({ window = \"" + address + "\" })");
-            }
+            Apps.focusWindow(wins[0]);
             return;
         }
         if (entry.runInTerminal)

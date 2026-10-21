@@ -20,6 +20,7 @@ PanelWindow {
     property double dismissedControl: 0
     property double dismissedCalendar: 0
     property double dismissedNotifs: 0
+    property double dismissedMusic: 0
 
     readonly property real fullHeight: Theme.barHeight + Theme.fillet
     readonly property real sideMargin: Theme.margin + Theme.fillet / 2
@@ -261,28 +262,31 @@ PanelWindow {
                         const raw = clockButton.hovered || clockButton.isOpen ? Chrono.date.toLocaleString(Chrono.locale, "dddd d 'de' MMMM") : Chrono.date.toLocaleString(Chrono.locale, "ddd d MMM").replace(/\./g, "");
                         return Theme.comic ? raw.toUpperCase() : raw;
                     }
-                    color: Theme.textDim
-                    font.pixelSize: Theme.comic ? 13 : 12
+                    // Con textDim la fecha casi no se leía sobre el negro: texto normal, un poco apagado
+                    color: Theme.text
+                    opacity: 0.78
+                    font.pixelSize: Theme.comic ? 15 : 12
                     font.weight: Font.Medium
                     font.family: Theme.comic ? Theme.displayFont : ""
+                    font.letterSpacing: Theme.comic ? 0.5 : 0
                 }
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Chrono.date.toLocaleString(Chrono.locale, "HH:mm")
                     color: Theme.comic ? Theme.accent : Theme.text
-                    font.pixelSize: Theme.comic ? 18 : 14
+                    font.pixelSize: Theme.comic ? 20 : 14
                     font.weight: Font.DemiBold
                     font.family: Theme.comic ? Theme.displayFont : ""
                 }
             }
 
-            // Derecha: aviso de modo + una cápsula con los indicadores del sistema
+            // Derecha: aviso de modo + grupos de indicadores (bandeja, foco, sonido y avisos, ajustes, ventanas)
             Row {
                 anchors.right: parent.right
                 anchors.rightMargin: win.sideMargin
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 8
+                spacing: 10
 
                 // Aviso mientras un modo de atajos está activo (ej. redimensionar con flechas)
                 Rectangle {
@@ -307,314 +311,375 @@ PanelWindow {
                     }
                 }
 
+                // Bandeja del sistema (solo si hay apps en ella)
+                BarGroup {
+                    visible: tray.count > 0
+
+                    // Bandeja del sistema (solo aparece si hay apps en ella)
+                    TrayStrip {
+                        id: tray
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        barWindow: win
+                    }
+                }
+
+                // Modo foco: solo aparece mientras hay una sesión (en marcha o en pausa); el resto
+                // del tiempo se abre desde el centro de control. Es una píldora violeta con un anillo
+                // de avance y el tiempo en grande para que se note de lejos.
                 Rectangle {
+                    id: focusButton
+
+                    readonly property bool isOpen: Ui.popup === win.popupKey("focus")
+                    readonly property real progress: Focus.mode === "libre" ? 0 : 1 - Focus.remaining / Focus.lengthOf(Focus.phase)
+                    readonly property color tone: Focus.running ? Theme.accent : Theme.textDim
+
                     anchors.verticalCenter: parent.verticalCenter
-                    width: cluster.implicitWidth + 8
-                    height: 28
-                    radius: Theme.comic ? 8 : 14
-                    color: Theme.surface
-                    border.width: Theme.comic ? 1.5 : 0
-                    border.color: Theme.comic ? Theme.ink : "transparent"
+                    visible: win.focusShown
+                    implicitWidth: chipRow.implicitWidth + 22
+                    implicitHeight: 24
+                    radius: Theme.comic ? 6 : height / 2
+                    color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, isOpen || chipArea.containsMouse ? 0.28 : 0.16)
+                    border.width: Theme.comic ? 1.5 : 1
+                    border.color: Theme.comic ? Theme.ink : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, Focus.running ? 0.45 : 0.2)
+
+                    Rectangle {
+                        z: -1
+                        visible: Theme.comic
+                        x: 3
+                        y: 3
+                        width: parent.width
+                        height: parent.height
+                        radius: parent.radius
+                        color: Theme.shadow
+                    }
+
+                    onProgressChanged: chipRing.requestPaint()
+                    onToneChanged: chipRing.requestPaint()
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 120
+                        }
+                    }
 
                     Row {
-                        id: cluster
+                        id: chipRow
 
                         anchors.centerIn: parent
-                        spacing: 2
+                        spacing: 7
 
-                        // Bandeja del sistema (solo aparece si hay apps en ella)
-                        TrayStrip {
-                            id: tray
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            barWindow: win
-                        }
-
-                        Rectangle {
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: tray.count > 0
-                            width: 1
-                            height: 14
-                            color: Theme.border
-                        }
-
-                        // Modo foco: solo aparece mientras hay una sesión (en marcha o en pausa); el resto
-                        // del tiempo se abre desde el centro de control. Es una píldora violeta con un anillo
-                        // de avance y el tiempo en grande para que se note de lejos.
-                        Rectangle {
-                            id: focusButton
-
-                            readonly property bool isOpen: Ui.popup === win.popupKey("focus")
-                            readonly property real progress: Focus.mode === "libre" ? 0 : 1 - Focus.remaining / Focus.lengthOf(Focus.phase)
-                            readonly property color tone: Focus.running ? Theme.accent : Theme.textDim
+                        Canvas {
+                            id: chipRing
 
                             anchors.verticalCenter: parent.verticalCenter
-                            visible: win.focusShown
-                            implicitWidth: chipRow.implicitWidth + 22
-                            implicitHeight: 24
-                            radius: Theme.comic ? 6 : height / 2
-                            color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, isOpen || chipArea.containsMouse ? 0.28 : 0.16)
-                            border.width: Theme.comic ? 1.5 : 1
-                            border.color: Theme.comic ? Theme.ink : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, Focus.running ? 0.45 : 0.2)
-
-                            onProgressChanged: chipRing.requestPaint()
-                            onToneChanged: chipRing.requestPaint()
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: 120
+                            width: 16
+                            height: 16
+                            antialiasing: true
+                            onPaint: {
+                                const ctx = getContext("2d");
+                                ctx.reset();
+                                ctx.lineWidth = 2.4;
+                                ctx.lineCap = "round";
+                                ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.16);
+                                ctx.beginPath();
+                                ctx.arc(8, 8, 6.2, 0, Math.PI * 2);
+                                ctx.stroke();
+                                if (focusButton.progress > 0.01) {
+                                    ctx.strokeStyle = focusButton.tone;
+                                    ctx.beginPath();
+                                    ctx.arc(8, 8, 6.2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, focusButton.progress));
+                                    ctx.stroke();
                                 }
                             }
+                        }
 
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: Focus.clock(Focus.remaining)
+                            color: focusButton.tone
+                            font.pixelSize: 14
+                            font.weight: Font.Bold
+                            font.family: Theme.comic ? Theme.displayFont : ""
+                            font.features: {
+                                "tnum": 1
+                            }
+                        }
+
+                        MIcon {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: !Focus.running
+                            name: "pause"
+                            font.pixelSize: 14
+                            color: Theme.textDim
+                        }
+                    }
+
+                    MouseArea {
+                        id: chipArea
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (Date.now() - win.dismissedFocus > 300)
+                                win.togglePopup("focus");
+                        }
+                    }
+                }
+
+                // Lo que suena en tu app de música (Sung, ver Media.musicApps; un video de YouTube o Instagram
+                // no): solo mientras suena (en pausa desaparece, salvo con su menú abierto).
+                // Clic abre su menú (MusicMenu); clic del medio pausa.
+                BarGroup {
+                    visible: Media.musicPlaying || nowButton.isOpen
+
+                    Item {
+                        id: nowButton
+
+                        readonly property bool isOpen: Ui.popup === win.popupKey("music")
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        implicitWidth: nowRow.implicitWidth + 20
+                        implicitHeight: 24
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: Theme.comic ? 6 : height / 2
+                            color: nowArea.containsMouse || nowButton.isOpen ? Theme.hover : "transparent"
+                        }
+
+                        Row {
+                            id: nowRow
+
+                            anchors.centerIn: parent
+                            spacing: 8
+
+                            // Ecualizador: tres barras que suben y bajan a ritmos distintos
                             Row {
-                                id: chipRow
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: 12
+                                spacing: 2
 
-                                anchors.centerIn: parent
-                                spacing: 7
+                                Repeater {
+                                    model: 3
 
-                                Canvas {
-                                    id: chipRing
+                                    Rectangle {
+                                        required property int index
 
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: 16
-                                    height: 16
-                                    antialiasing: true
-                                    onPaint: {
-                                        const ctx = getContext("2d");
-                                        ctx.reset();
-                                        ctx.lineWidth = 2.4;
-                                        ctx.lineCap = "round";
-                                        ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.16);
-                                        ctx.beginPath();
-                                        ctx.arc(8, 8, 6.2, 0, Math.PI * 2);
-                                        ctx.stroke();
-                                        if (focusButton.progress > 0.01) {
-                                            ctx.strokeStyle = focusButton.tone;
-                                            ctx.beginPath();
-                                            ctx.arc(8, 8, 6.2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, focusButton.progress));
-                                            ctx.stroke();
+                                        anchors.bottom: parent.bottom
+                                        width: 3
+                                        height: 4
+                                        radius: 1.5
+                                        color: Theme.accent
+
+                                        SequentialAnimation on height {
+                                            running: Media.musicPlaying
+                                            loops: Animation.Infinite
+
+                                            NumberAnimation {
+                                                to: 12
+                                                duration: 280 + index * 110
+                                                easing.type: Easing.InOutSine
+                                            }
+                                            NumberAnimation {
+                                                to: 3
+                                                duration: 280 + index * 110
+                                                easing.type: Easing.InOutSine
+                                            }
                                         }
                                     }
                                 }
-
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: Focus.clock(Focus.remaining)
-                                    color: focusButton.tone
-                                    font.pixelSize: 14
-                                    font.weight: Font.Bold
-                                    font.family: Theme.comic ? Theme.displayFont : ""
-                                    font.features: {
-                                        "tnum": 1
-                                    }
-                                }
-
-                                MIcon {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    visible: !Focus.running
-                                    name: "pause"
-                                    font.pixelSize: 14
-                                    color: Theme.textDim
-                                }
                             }
 
-                            MouseArea {
-                                id: chipArea
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    if (Date.now() - win.dismissedFocus > 300)
-                                        win.togglePopup("focus");
-                                }
-                            }
-                        }
-
-                        // Volumen: clic abre la mezcladora, rueda cambia el volumen, clic del medio silencia
-                        BarButton {
-                            id: mixerButton
-
-                            readonly property bool isOpen: Ui.popup === win.popupKey("mixer")
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            active: isOpen
-                            icon: win.volumeIcon
-                            iconColor: win.muted ? Theme.danger : Theme.text
-                            label: win.muted ? "" : Math.round(win.volume * 100) + "%"
-                            labelMinWidth: 34
-                            onClicked: mouse => {
-                                if (mouse.button === Qt.MiddleButton) {
-                                    if (win.sink?.audio)
-                                        win.sink.audio.muted = !win.sink.audio.muted;
-                                } else if (Date.now() - win.dismissedMixer > 300) {
-                                    win.togglePopup("mixer");
-                                }
-                            }
-                            onScrolled: wheel => {
-                                if (win.sink?.audio)
-                                    win.sink.audio.volume = Math.max(0, Math.min(1, win.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05)));
-                            }
-                        }
-
-                        // Notificaciones: la campana suena cuando llega una; clic abre el historial
-                        BarButton {
-                            id: bellButton
-
-                            readonly property bool isOpen: Ui.popup === win.popupKey("notifs")
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            active: isOpen
-                            icon: Notifs.dnd ? "notifications_off" : (Notifs.count > 0 ? "notifications_unread" : "notifications")
-                            iconColor: Notifs.dnd ? Theme.textDim : Theme.text
-                            iconOrigin: Item.Top
-                            label: Notifs.count > 0 ? String(Notifs.count) : ""
-                            labelColor: Theme.accent
-                            onClicked: mouse => {
-                                if (mouse.button === Qt.MiddleButton)
-                                    Notifs.dnd = !Notifs.dnd;
-                                else if (Date.now() - win.dismissedNotifs > 300)
-                                    win.togglePopup("notifs");
-                            }
-
-                            // La campana se mece y el número "salta" al llegar una notificación
-                            SequentialAnimation {
-                                id: ring
-
-                                NumberAnimation {
-                                    target: bellButton
-                                    property: "iconRotation"
-                                    to: 20
-                                    duration: 80
-                                    easing.type: Easing.OutQuad
-                                }
-                                NumberAnimation {
-                                    target: bellButton
-                                    property: "iconRotation"
-                                    to: -16
-                                    duration: 120
-                                    easing.type: Easing.InOutQuad
-                                }
-                                NumberAnimation {
-                                    target: bellButton
-                                    property: "iconRotation"
-                                    to: 11
-                                    duration: 110
-                                    easing.type: Easing.InOutQuad
-                                }
-                                NumberAnimation {
-                                    target: bellButton
-                                    property: "iconRotation"
-                                    to: -6
-                                    duration: 100
-                                    easing.type: Easing.InOutQuad
-                                }
-                                NumberAnimation {
-                                    target: bellButton
-                                    property: "iconRotation"
-                                    to: 0
-                                    duration: 120
-                                    easing.type: Easing.OutQuad
-                                }
-                            }
-
-                            NumberAnimation {
-                                id: pop
-
-                                target: bellButton.labelItem
-                                property: "scale"
-                                from: 1.8
-                                to: 1
-                                duration: 380
-                                easing.type: Easing.OutBack
-                                easing.overshoot: 1.6
-                            }
-
-                            Connections {
-                                target: Notifs
-
-                                function onReceived(): void {
-                                    if (!Notifs.dnd)
-                                        ring.restart();
-                                    pop.restart();
-                                }
-                            }
-                        }
-
-                        // Centro de control: brillo, volumen y ajustes rápidos; el número avisa de
-                        // unidades conectadas
-                        BarButton {
-                            id: controlButton
-
-                            readonly property bool isOpen: Ui.popup === win.popupKey("control")
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            active: isOpen
-                            icon: "tune"
-                            label: Disks.removable.length > 0 ? String(Disks.removable.length) : ""
-                            labelColor: Theme.accent
-                            onClicked: {
-                                if (Date.now() - win.dismissedControl > 300)
-                                    win.togglePopup("control");
-                            }
-                        }
-
-                        // Monitor de hardware (RAM / CPU en vivo): chip inteligente estilo spider-tech
-                        BarButton {
-                            id: sysButton
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            active: Ui.sideOpen
-                            icon: "memory"
-                            iconColor: (SysStat.data.cpu ?? 0) > 80 ? Theme.danger : ((SysStat.data.cpu ?? 0) > 40 ? Theme.accent : Theme.textDim)
-                            label: SysStat.data.memUsed ? (sysButton.hovered ? (Math.round(SysStat.data.cpu ?? 0) + "%") : ((SysStat.data.memUsed / 1073741824).toFixed(1) + "G")) : "· · ·"
-                            labelColor: (SysStat.data.cpu ?? 0) > 80 ? Theme.danger : Theme.text
-                            labelMinWidth: 32
-                            onClicked: {
-                                Ui.sideTab = "sistema";
-                                Ui.sideOpen = !Ui.sideOpen;
-                            }
-                        }
-
-                        Rectangle {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 1
-                            height: 14
-                            color: Theme.border
-                        }
-
-                        // Apps abiertas: ventanas y las que siguen corriendo sin ventana
-                        BarButton {
-                            id: appsButton
-
-                            readonly property bool isOpen: Ui.popup === win.popupKey("apps")
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            active: isOpen
-                            icon: "expand_more"
-                            iconRotation: isOpen ? 180 : 0
-                            label: String(Apps.windows.length)
-                            onClicked: {
-                                if (Date.now() - win.dismissedApps > 300)
-                                    win.togglePopup("apps");
-                            }
-
-                            Behavior on iconRotation {
-                                NumberAnimation {
-                                    duration: Theme.popupDuration
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-
-                            // Apps que siguen corriendo sin ventana
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
-                                visible: Apps.background.length > 0
-                                text: "+" + Apps.background.length
-                                color: Theme.accent
-                                font.pixelSize: 12
-                                font.weight: Font.DemiBold
+                                width: Math.min(implicitWidth, 200)
+                                elide: Text.ElideRight
+                                text: Media.music?.trackTitle || Media.music?.identity || ""
+                                color: Theme.text
+                                font.pixelSize: Theme.comic ? 15 : 12
+                                font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                font.family: Theme.comic ? Theme.displayFont : ""
+                                font.letterSpacing: Theme.comic ? 0.5 : 0
                             }
+                        }
+
+                        MouseArea {
+                            id: nowArea
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                            onClicked: mouse => {
+                                if (mouse.button === Qt.MiddleButton)
+                                    Media.toggle(Media.music);
+                                else if (Date.now() - win.dismissedMusic > 300)
+                                    win.togglePopup("music");
+                            }
+                        }
+                    }
+                }
+
+                // Sonido y avisos
+                BarGroup {
+                    // Volumen: clic abre la mezcladora, rueda cambia el volumen, clic del medio silencia
+                    BarButton {
+                        id: mixerButton
+
+                        readonly property bool isOpen: Ui.popup === win.popupKey("mixer")
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        active: isOpen
+                        icon: win.volumeIcon
+                        iconColor: win.muted ? Theme.danger : Theme.text
+                        label: win.muted ? "" : Math.round(win.volume * 100) + "%"
+                        labelMinWidth: 34
+                        onClicked: mouse => {
+                            if (mouse.button === Qt.MiddleButton) {
+                                if (win.sink?.audio)
+                                    win.sink.audio.muted = !win.sink.audio.muted;
+                            } else if (Date.now() - win.dismissedMixer > 300) {
+                                win.togglePopup("mixer");
+                            }
+                        }
+                        onScrolled: wheel => {
+                            if (win.sink?.audio)
+                                win.sink.audio.volume = Math.max(0, Math.min(1, win.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05)));
+                        }
+                    }
+                    // Notificaciones: la campana suena cuando llega una; clic abre el historial
+                    BarButton {
+                        id: bellButton
+
+                        readonly property bool isOpen: Ui.popup === win.popupKey("notifs")
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        active: isOpen
+                        icon: Notifs.dnd ? "notifications_off" : (Notifs.count > 0 ? "notifications_unread" : "notifications")
+                        iconColor: Notifs.dnd ? Theme.textDim : Theme.text
+                        iconOrigin: Item.Top
+                        label: Notifs.count > 0 ? String(Notifs.count) : ""
+                        labelColor: Theme.accent
+                        onClicked: mouse => {
+                            if (mouse.button === Qt.MiddleButton)
+                                Notifs.dnd = !Notifs.dnd;
+                            else if (Date.now() - win.dismissedNotifs > 300)
+                                win.togglePopup("notifs");
+                        }
+
+                        // La campana se mece y el número "salta" al llegar una notificación
+                        SequentialAnimation {
+                            id: ring
+
+                            NumberAnimation {
+                                target: bellButton
+                                property: "iconRotation"
+                                to: 20
+                                duration: 80
+                                easing.type: Easing.OutQuad
+                            }
+                            NumberAnimation {
+                                target: bellButton
+                                property: "iconRotation"
+                                to: -16
+                                duration: 120
+                                easing.type: Easing.InOutQuad
+                            }
+                            NumberAnimation {
+                                target: bellButton
+                                property: "iconRotation"
+                                to: 11
+                                duration: 110
+                                easing.type: Easing.InOutQuad
+                            }
+                            NumberAnimation {
+                                target: bellButton
+                                property: "iconRotation"
+                                to: -6
+                                duration: 100
+                                easing.type: Easing.InOutQuad
+                            }
+                            NumberAnimation {
+                                target: bellButton
+                                property: "iconRotation"
+                                to: 0
+                                duration: 120
+                                easing.type: Easing.OutQuad
+                            }
+                        }
+
+                        NumberAnimation {
+                            id: pop
+
+                            target: bellButton.labelItem
+                            property: "scale"
+                            from: 1.8
+                            to: 1
+                            duration: 380
+                            easing.type: Easing.OutBack
+                            easing.overshoot: 1.6
+                        }
+
+                        Connections {
+                            target: Notifs
+
+                            function onReceived(): void {
+                                if (!Notifs.dnd)
+                                    ring.restart();
+                                pop.restart();
+                            }
+                        }
+                    }
+                }
+
+                // Ajustes: centro de control (brillo, volumen, foco, dispositivos)
+                BarGroup {
+                    // Centro de control: brillo, volumen y ajustes rápidos; el número avisa de
+                    // unidades conectadas
+                    BarButton {
+                        id: controlButton
+
+                        readonly property bool isOpen: Ui.popup === win.popupKey("control")
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        active: isOpen
+                        icon: "tune"
+                        label: Disks.removable.length > 0 ? String(Disks.removable.length) : ""
+                        labelColor: Theme.accent
+                        onClicked: {
+                            if (Date.now() - win.dismissedControl > 300)
+                                win.togglePopup("control");
+                        }
+                    }
+                }
+
+                // Ventanas abiertas
+                BarGroup {
+                    // Apps abiertas: ventanas y las que siguen corriendo sin ventana
+                    BarButton {
+                        id: appsButton
+
+                        readonly property bool isOpen: Ui.popup === win.popupKey("apps")
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        active: isOpen
+                        icon: "web_asset"
+                        label: String(Apps.windows.length)
+                        onClicked: {
+                            if (Date.now() - win.dismissedApps > 300)
+                                win.togglePopup("apps");
+                        }
+
+                        // Apps que siguen corriendo sin ventana
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: Apps.background.length > 0
+                            text: "+" + Apps.background.length
+                            color: Theme.accent
+                            font.pixelSize: 12
+                            font.weight: Font.DemiBold
                         }
                     }
                 }
@@ -630,6 +695,18 @@ PanelWindow {
         onDismissed: {
             win.dismissedFocus = Date.now();
             if (focusButton.isOpen)
+                Ui.popup = "";
+        }
+    }
+
+    MusicMenu {
+        barWindow: win
+        anchorItem: nowButton
+        open: nowButton.isOpen
+
+        onDismissed: {
+            win.dismissedMusic = Date.now();
+            if (nowButton.isOpen)
                 Ui.popup = "";
         }
     }
