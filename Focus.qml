@@ -12,6 +12,7 @@ import Quickshell.Io
 // El bloqueo avisa antes de cerrar (para no perder una partida) y se puede saltar con fricción:
 // hay que esperar 60 segundos. Se guarda en ~/.local/share/ombu/focus.json y el estado actual,
 // para que lo lean otros programas (el modo estudio de la IA), en ~/.local/state/ombu/modo.
+// Sobrevive a las recargas del shell (ver resume). Solo el modo estudio suma minutos y racha.
 // Por consola: qs -c ombu ipc call focus start|pause|stop|skip|mode estudio|idea "texto"|status
 Singleton {
     id: root
@@ -393,6 +394,7 @@ Singleton {
         remaining = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
         running = false;
         publish();
+        save();
     }
 
     function stop(): void {
@@ -402,6 +404,7 @@ Singleton {
         warned = ({});
         unlockLeft = 0;
         publish();
+        save();
     }
 
     // Pasa a la fase siguiente (al terminar el tiempo, o saltando con el botón)
@@ -513,6 +516,27 @@ Singleton {
         saveTimer.restart();
     }
 
+    // Retoma el bloque que estaba en curso o en pausa antes de una recarga del shell. Si el bloque
+    // terminó mientras el shell no corría (se cayó, se apagó la PC), no se inventa nada: queda parado.
+    function resume(saved: var): void {
+        if (!["estudio", "descanso", "largo"].includes(saved.phase))
+            return;
+        if (typeof saved.overrideUntil === "number")
+            overrideUntil = saved.overrideUntil;
+        const now = Date.now();
+        if (saved.running === true && typeof saved.endsAt === "number" && saved.endsAt > now) {
+            phase = saved.phase;
+            endsAt = saved.endsAt;
+            remaining = Math.ceil((endsAt - now) / 1000);
+            running = true;
+            console.log("FOCO: se retoma " + phase + " con " + clock(remaining) + " por delante");
+        } else if (saved.running === false && saved.remaining > 0 && saved.remaining <= lengthOf(saved.phase)) {
+            // En pausa: vuelve en pausa, con el tiempo que le quedaba
+            phase = saved.phase;
+            remaining = saved.remaining;
+        }
+    }
+
     // Cada segundo: cuenta, cambia de fase y cierra de día
     Timer {
         interval: 1000
@@ -526,6 +550,7 @@ Singleton {
                 if (root.unlockLeft === 0) {
                     root.overrideUntil = Date.now() + root.overrideMinutes * 60000;
                     root.notify("Bloqueo pausado", "Tenés " + root.overrideMinutes + " minutos. Después vuelve solo.");
+                    root.save();
                 }
             }
 
@@ -533,14 +558,20 @@ Singleton {
                 return;
 
             if (root.day !== root.today()) {
+                // Lo estudiado antes de medianoche queda en el día que terminó
+                root.recordHistory();
                 root.day = root.today();
                 root.studyToday = 0;
                 root.cycles = 0;
             }
 
             root.remaining = Math.max(0, Math.ceil((root.endsAt - Date.now()) / 1000));
-            if (root.phase === "estudio") {
+            // Solo el modo estudio suma minutos, racha y días del calendario: el trabajo no es estudio
+            if (root.phase === "estudio" && root.mode === "estudio") {
                 root.studyToday += 1;
+                // Se guarda cada minuto: el shell se recarga al guardar un .qml y se perdía el bloque en curso
+                if (root.studyToday % 60 === 0)
+                    root.save();
                 // Cuenta para la racha el día en que se completan 25 minutos
                 if (root.studyToday >= root.studyLength && root.lastStudyDay !== root.today()) {
                     const y = new Date();
@@ -620,7 +651,14 @@ Singleton {
                 cycles: root.cycles,
                 streak: root.streak,
                 lastStudyDay: root.lastStudyDay,
-                history: root.history
+                history: root.history,
+                // El bloque en curso: el shell se recarga cada vez que se guarda un .qml y el
+                // temporizador volvía a cero. Con esto se retoma donde estaba (ver Component.onCompleted)
+                running: root.running,
+                phase: root.phase,
+                endsAt: root.endsAt,
+                remaining: root.remaining,
+                overrideUntil: root.overrideUntil
             }, null, 2) + "\n");
         }
     }
@@ -660,6 +698,7 @@ Singleton {
                 if (lastStudyDay !== Qt.formatDate(y, "yyyy-MM-dd"))
                     streak = 0;
             }
+            resume(saved);
         } catch (e) {
             day = today();
         }
