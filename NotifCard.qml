@@ -91,9 +91,10 @@ Rectangle {
     // Los avisos con cuenta regresiva llevan una barra de tiempo abajo
     readonly property bool timed: floating && entry.hasTimer
 
-    // Badge de cómic / Sentido Arácnido
+    // Onomatopeya de cómic (THWIP!, SPIDEY-SENSE!...): el toque de historieta que queda en los avisos aunque
+    // el resto de la interfaz sea sobria. Va con cualquier tema de cómic (comicArt), solo en estos casos
     readonly property string badgeText: {
-        if (!Theme.comic)
+        if (!Theme.comicArt)
             return "";
         if (entry.critical || entry.risky)
             return "¡LOOK OUT!";
@@ -134,7 +135,7 @@ Rectangle {
     }
 
     implicitHeight: content.implicitHeight + (timed ? 32 : 26)
-    radius: 14
+    radius: Theme.comic ? 14 : 16
     color: floating ? Theme.bg : Theme.surface
     border.width: floating ? (Theme.comic ? 2 : 1) : (Theme.comic ? 1 : 0)
     border.color: hover.hovered ? (Theme.comic ? Theme.accent : Qt.rgba(1, 1, 1, 0.32)) : (Theme.comic ? Theme.ink : Theme.outline)
@@ -288,9 +289,9 @@ Rectangle {
                     font.weight: Font.DemiBold
                 }
 
-                // Badge de cómic / Sentido Arácnido
+                // Onomatopeya: sticker inclinado con borde de tinta, en la letra de historieta
                 Rectangle {
-                    visible: Theme.comic && root.badgeText !== ""
+                    visible: root.badgeText !== ""
                     color: root.badgeColor
                     radius: 4
                     border.width: 1.5
@@ -303,8 +304,8 @@ Rectangle {
                         id: badgeLabel
                         anchors.centerIn: parent
                         text: root.badgeText
-                        font.family: Theme.displayFont || Qt.application.font.family
-                        font.pixelSize: 11
+                        font.family: Theme.artFont || Qt.application.font.family
+                        font.pixelSize: 12
                         font.letterSpacing: 0.8
                         font.weight: Font.Bold
                         color: root.badgeTextColor

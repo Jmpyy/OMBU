@@ -31,10 +31,28 @@ case "${1:-}" in
     ;;
 -r)
     echo "Reiniciando ombu…"
+    old=$(qs list --all 2>/dev/null | awk '/Process ID:/ { print $3; exit }')
     qs -c "$cfg" kill >/dev/null 2>&1
-    sleep 1
+    # Quickshell a veces queda trabado al cerrarse («Exiting due to IPC request» y sigue vivo, sin atender
+    # D-Bus ni IPC: no salen las notificaciones). Si en 4 s no terminó, se lo cierra por su PID; si no,
+    # el nuevo ve que «ya hay uno», no arranca, y queda el colgado.
+    if [ -n "$old" ]; then
+        for _ in {1..8}; do kill -0 "$old" 2>/dev/null || break; sleep 0.5; done
+        if kill -0 "$old" 2>/dev/null; then
+            echo "  El ombu viejo ($old) quedó trabado al cerrarse: se lo cierra a la fuerza."
+            kill -TERM "$old" 2>/dev/null
+            sleep 2
+            kill -0 "$old" 2>/dev/null && kill -KILL "$old" 2>/dev/null
+            sleep 0.5
+        fi
+    fi
     setsid -f quickshell -c "$cfg" -n -d >/dev/null 2>&1
     sleep 4
+    # El nuevo tiene que responder (si no, sus avisos de abajo serían del registro del viejo)
+    if ! timeout 5 qs -c "$cfg" ipc call chat status >/dev/null 2>&1; then
+        echo "✗ El ombu nuevo no responde por IPC: revisá qs list --all"
+        exit 2
+    fi
     ;;
 "") ;;
 *)

@@ -1,11 +1,11 @@
 #!/bin/sh
 # Crea un proyecto de C listo para estudiar: CMake con avisos estrictos, Makefile con atajos
 # (run, leaks con valgrind, asan, debug con gdb) y compile_commands.json para clangd.
-# Uso: cproj.sh nombre [carpeta]   (por defecto en ~/universidad)
+# Uso: cproj.sh nombre [carpeta]   (por defecto en ~/Universidad)
 set -eu
 
 name=${1:?uso: cproj.sh nombre [carpeta]}
-base=${2:-$HOME/universidad}
+base=${2:-$HOME/Universidad}
 dir=$base/$name
 
 case $name in

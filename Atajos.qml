@@ -12,7 +12,7 @@ Singleton {
     // [{category, text, alternatives: [[tecla, tecla, ...], ...]}]
     property var entries: []
 
-    readonly property var categoryOrder: ["Apps", "Ventanas", "Escritorios", "Capturas", "Notificaciones", "Sistema"]
+    readonly property var categoryOrder: ["Apps", "Estudio e IA", "Ventanas", "Escritorios", "Capturas", "Notificaciones", "Sistema"]
     readonly property var keyNames: ({
             "Return": "Enter",
             "Escape": "Esc",

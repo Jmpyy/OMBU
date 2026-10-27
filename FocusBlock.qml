@@ -12,7 +12,8 @@ PanelWindow {
 
     required property var modelData
 
-    property real p: Focus.noticeVisible ? 1 : 0
+    // Arranca en 0: la animación de entrada empieza con el primer cuadro (ver FirstFrame más abajo)
+    property real p: 0
     // Monitor en el que apareció, para completar la animación de salida
     property bool activeOnScreen: false
 
@@ -24,6 +25,8 @@ PanelWindow {
     }
 
     Connections {
+        id: opening
+
         target: Focus
 
         function onNoticeVisibleChanged() {
@@ -34,6 +37,15 @@ PanelWindow {
 
     onPChanged: if (p <= 0.001)
         activeOnScreen = false
+
+    // Se crea recién al abrirse (LazyLoader en shell.qml): el aviso de apertura ya pasó, así que se
+    // corre acá; la animación de entrada espera al primer cuadro de la ventana para no verse como un salto
+    Component.onCompleted: if (Focus.noticeVisible)
+        opening.onNoticeVisibleChanged()
+
+    FirstFrame {
+        onReady: win.p = Qt.binding(() => Focus.noticeVisible ? 1 : 0)
+    }
 
     screen: modelData
     visible: p > 0.001 && activeOnScreen

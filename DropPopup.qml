@@ -15,6 +15,8 @@ PopupWindow {
     property real bodyHeight: 120
     // true = centrado bajo el botón; false = borde derecho alineado con el botón
     property bool centered: false
+    // true = borde izquierdo alineado con el botón (el menú de la araña, a la izquierda de la barra)
+    property bool alignLeft: false
 
     default property alias content: body.data
 
@@ -35,7 +37,7 @@ PopupWindow {
     property real p: (open && ready) ? 1 : 0
 
     // Punto de la barra del que crece el menú (el centro del botón, sobre el borde de arriba)
-    readonly property real originX: centered ? implicitWidth / 2 : implicitWidth - Theme.fillet - anchorItem.width / 2
+    readonly property real originX: centered ? implicitWidth / 2 : (alignLeft ? Theme.fillet + anchorItem.width / 2 : implicitWidth - Theme.fillet - anchorItem.width / 2)
 
     Behavior on p {
         NumberAnimation {
@@ -56,6 +58,12 @@ PopupWindow {
             anchor.rect = Qt.rect(mid.x, y, 1, 1);
             return;
         }
+        if (alignLeft) {
+            const left = anchorItem.mapToItem(barWindow.contentItem, 0, 0);
+            // El borde izquierdo del cuerpo queda alineado con el borde izquierdo del botón
+            anchor.rect = Qt.rect(left.x - Theme.fillet, y, 1, 1);
+            return;
+        }
         const pos = anchorItem.mapToItem(barWindow.contentItem, anchorItem.width, 0);
         // El borde derecho del cuerpo queda alineado con el borde derecho del botón
         anchor.rect = Qt.rect(pos.x + Theme.fillet, y, 1, 1);
@@ -64,7 +72,10 @@ PopupWindow {
     onOpenChanged: {
         if (open) {
             place();
-            root.entered = root.pointerInside;
+            // Recién cuenta como «entró» cuando el mouse llega al cuerpo del menú: al abrirse, el menú
+            // toma el mouse y la barra recibe un «salió» aunque no se haya movido, y con entered en
+            // true desde el arranque el menú se cerraba solo a los 100 ms
+            root.entered = false;
             leaveTimer.stop();
         } else {
             root.entered = false;
@@ -89,8 +100,8 @@ PopupWindow {
     implicitWidth: bodyWidth + 2 * Theme.fillet
     implicitHeight: fullHeight
     anchor.window: barWindow
-    anchor.edges: centered ? Edges.Bottom : (Edges.Bottom | Edges.Right)
-    anchor.gravity: centered ? Edges.Bottom : (Edges.Bottom | Edges.Left)
+    anchor.edges: centered ? Edges.Bottom : (alignLeft ? (Edges.Bottom | Edges.Left) : (Edges.Bottom | Edges.Right))
+    anchor.gravity: centered ? Edges.Bottom : (alignLeft ? (Edges.Bottom | Edges.Right) : (Edges.Bottom | Edges.Left))
 
     HyprlandFocusGrab {
         active: root.open
@@ -141,7 +152,8 @@ PopupWindow {
         if (!root.open)
             return;
         if (pointerInside) {
-            root.entered = true;
+            if (popupHover.hovered)
+                root.entered = true;
             leaveTimer.stop();
         } else if (root.entered) {
             leaveTimer.restart();

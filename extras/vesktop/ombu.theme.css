@@ -1,0 +1,152 @@
+/**
+ * @name Ombu
+ * @description Discord (Vesktop) con los colores del tema de ombu: sobrio, el acento solo en lo importante.
+ * @author ombu (sobre Midnight de refact0r, MIT)
+ * @version 1.0.0
+ *
+ * Plantilla: bin/qt-theme.py cambia los @NOMBRE@ por los colores del tema elegido en ombu y la escribe en
+ * el QuickCSS de Vesktop (~/.config/vesktop/settings/quickCss.css), que se recarga solo: Discord cambia
+ * de colores en vivo junto con el resto del escritorio.
+ */
+@import url("https://refact0r.github.io/midnight-discord/build/midnight.css");
+
+body {
+  /* Tipografía de Discord (gg sans) y la monoespaciada del sistema */
+  --font: "";
+  --code-font: "";
+  font-weight: 400;
+
+  /* Más compacto y prolijo que el original: separaciones chicas y bordes finos */
+  --gap: 8px;
+  --divider-thickness: 3px;
+  --border-thickness: 1px;
+
+  --animations: on;
+  --list-item-transition: 0.15s ease;
+  --dms-icon-svg-transition: 0.3s ease;
+  --border-hover-transition: 0.15s ease;
+
+  /* Barra de arriba mínima: Hyprland dibuja el borde de la ventana, no hacen falta sus botones */
+  --top-bar-height: var(--gap);
+  --top-bar-button-position: titlebar;
+  --top-bar-title-position: off;
+  --subtle-top-bar-title: on;
+  --custom-window-controls: off;
+
+  /* El ícono de mensajes directos, el de Discord de siempre */
+  --custom-dms-icon: off;
+  --custom-dms-background: off;
+
+  --background-image: off;
+  --transparency-tweaks: off;
+  --remove-bg-layer: off;
+  --panel-blur: off;
+  --bg-floating: @BG@;
+
+  --custom-chatbar: off;
+  --chatbar-height: 47px;
+  --small-user-panel: on;
+}
+
+:root {
+  --colors: on;
+
+  /* Texto */
+  --text-0: @ON_ACCENT@;                                    /* sobre el acento */
+  --text-1: @TEXT@;
+  --text-2: @TEXT@;                                         /* títulos */
+  --text-3: color-mix(in srgb, @TEXT@, @DIM@ 15%);          /* texto normal */
+  --text-4: @DIM@;                                          /* íconos y canales */
+  --text-5: color-mix(in srgb, @DIM@, @BG@ 30%);            /* silenciados y horas */
+
+  /* Fondos: el panel en el color de fondo de ombu y las separaciones un poco más oscuras */
+  --bg-1: color-mix(in srgb, @TRACK@, white 8%);
+  --bg-2: @TRACK@;
+  --bg-3: color-mix(in srgb, @BG@, black 30%);
+  --bg-4: @BG@;
+  --hover: color-mix(in srgb, @TEXT@, transparent 94%);
+  --active: color-mix(in srgb, @TEXT@, transparent 90%);
+  --active-2: color-mix(in srgb, @TEXT@, transparent 82%);
+  --message-hover: color-mix(in srgb, @TEXT@, transparent 96%);
+
+  /* Acento: solo enlaces, menciones, lo elegido y el botón principal */
+  --accent-1: color-mix(in srgb, @ACCENT@, white 35%);
+  --accent-2: @ACCENT@;
+  --accent-3: @ACCENT@;
+  --accent-4: color-mix(in srgb, @ACCENT@, white 12%);
+  --accent-5: color-mix(in srgb, @ACCENT@, black 12%);
+  --accent-new: @DANGER@;
+  --mention: linear-gradient(to right, color-mix(in srgb, @ACCENT@, transparent 86%) 40%, transparent);
+  --mention-hover: linear-gradient(to right, color-mix(in srgb, @ACCENT@, transparent 92%) 40%, transparent);
+  --reply: linear-gradient(to right, color-mix(in srgb, @TEXT@, transparent 92%) 40%, transparent);
+  --reply-hover: linear-gradient(to right, color-mix(in srgb, @TEXT@, transparent 96%) 40%, transparent);
+
+  /* Estados: los de siempre, un poco más suaves */
+  --online: #4fb87a;
+  --dnd: @DANGER@;
+  --idle: @WARN@;
+  --streaming: #8b6fd6;
+  --offline: @DIM@;
+
+  --border-light: transparent;
+  --border: color-mix(in srgb, @TEXT@, transparent 92%);
+  --button-border: transparent;
+
+  /* Colores base (los usa Midnight para estados y detalles) */
+  --red-1: color-mix(in srgb, @DANGER@, white 35%);
+  --red-2: @DANGER@;
+  --red-3: @DANGER@;
+  --red-4: color-mix(in srgb, @DANGER@, black 10%);
+  --red-5: color-mix(in srgb, @DANGER@, black 20%);
+  --green-1: #a7e3bf;
+  --green-2: #4fb87a;
+  --green-3: #43a46c;
+  --green-4: #3a905f;
+  --green-5: #317c52;
+  --blue-1: color-mix(in srgb, @ACCENT2@, white 35%);
+  --blue-2: @ACCENT2@;
+  --blue-3: @ACCENT2@;
+  --blue-4: color-mix(in srgb, @ACCENT2@, black 10%);
+  --blue-5: color-mix(in srgb, @ACCENT2@, black 20%);
+  --yellow-1: color-mix(in srgb, @WARN@, white 35%);
+  --yellow-2: @WARN@;
+  --yellow-3: @WARN@;
+  --yellow-4: color-mix(in srgb, @WARN@, black 10%);
+  --yellow-5: color-mix(in srgb, @WARN@, black 20%);
+  --purple-1: #c9b8ff;
+  --purple-2: #8b6fd6;
+  --purple-3: #7a5ec7;
+  --purple-4: #6a4fb5;
+  --purple-5: #5a41a0;
+}
+
+/* ---------- Menos ruido: lo comercial de Discord fuera ---------- */
+
+/* Tienda, Nitro y Misiones en la lista de mensajes directos (por su dirección: no depende del idioma) */
+a[href="/store"],
+a[href="/shop"],
+a[href="/quest-home"],
+a[href^="/discovery/quests"] {
+  display: none !important;
+}
+
+/* Botón de regalo en la barra del chat (por el texto del botón, en español y en inglés) */
+button[aria-label="Enviar un regalo"],
+button[aria-label="Enviar regalo"],
+button[aria-label="Send a gift"] {
+  display: none !important;
+}
+
+/* Publicidad de misiones arriba del panel de usuario («¡Obtener recompensa!») */
+[class*="questPromoContent"],
+[class*="questsContainer"],
+[class*="questWidget"],
+div:has(> [class*="questPromoContent"]) {
+  display: none !important;
+}
+
+/* Minimizar, maximizar y cerrar: en Hyprland las ventanas se manejan con el teclado y el borde */
+[class*="winButton"] {
+  display: none !important;
+}
+

@@ -122,11 +122,11 @@ def proyectos():
         dirty = len([l for l in git(p, "status", "--porcelain").splitlines() if l.strip()])
         out.append({"name": os.path.basename(p), "when": int(ts), "subject": subject, "dirty": dirty})
     # La facultad no es un repo: lo último que tocaste
-    uni = os.path.join(HOME, "universidad")
+    uni = os.path.join(HOME, "Universidad")
     try:
         files = [os.path.join(uni, f) for f in os.listdir(uni) if not f.startswith(".")]
         newest = max(files, key=os.path.getmtime)
-        out.append({"name": "universidad", "when": int(os.path.getmtime(newest)), "subject": os.path.basename(newest), "dirty": 0})
+        out.append({"name": "Universidad", "when": int(os.path.getmtime(newest)), "subject": os.path.basename(newest), "dirty": 0})
     except (OSError, ValueError):
         pass
     out.sort(key=lambda x: -x["when"])

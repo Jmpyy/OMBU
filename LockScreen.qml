@@ -49,22 +49,22 @@ Item {
 
             Text {
                 text: Chrono.date.toLocaleString(Chrono.locale, "HH")
-                color: Theme.comic ? Theme.text : "#f4f4fa"
-                font.family: Theme.displayFont || Qt.application.font.family
-                font.pixelSize: Theme.comic ? 150 : 132
-                font.weight: Theme.comic ? Font.Normal : Font.Light
-                font.letterSpacing: Theme.comic ? 4 : 0
+                color: Theme.comicArt ? Theme.text : "#f4f4fa"
+                font.family: Theme.artFont || Qt.application.font.family
+                font.pixelSize: Theme.comicArt ? 150 : 132
+                font.weight: Theme.comicArt ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comicArt ? 4 : 0
             }
 
             Text {
                 id: colon
 
                 text: ":"
-                color: Theme.comic ? Theme.text : "#f4f4fa"
-                font.family: Theme.displayFont || Qt.application.font.family
-                font.pixelSize: Theme.comic ? 150 : 132
-                font.weight: Theme.comic ? Font.Normal : Font.Light
-                font.letterSpacing: Theme.comic ? 4 : 0
+                color: Theme.comicArt ? Theme.text : "#f4f4fa"
+                font.family: Theme.artFont || Qt.application.font.family
+                font.pixelSize: Theme.comicArt ? 150 : 132
+                font.weight: Theme.comicArt ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comicArt ? 4 : 0
 
                 // Parpadea una vez por segundo con un fundido corto (una animación continua haría
                 // redibujar toda la pantalla 60 veces por segundo)
@@ -89,11 +89,11 @@ Item {
 
             Text {
                 text: Chrono.date.toLocaleString(Chrono.locale, "mm")
-                color: Theme.comic ? Theme.text : "#f4f4fa"
-                font.family: Theme.displayFont || Qt.application.font.family
-                font.pixelSize: Theme.comic ? 150 : 132
-                font.weight: Theme.comic ? Font.Normal : Font.Light
-                font.letterSpacing: Theme.comic ? 4 : 0
+                color: Theme.comicArt ? Theme.text : "#f4f4fa"
+                font.family: Theme.artFont || Qt.application.font.family
+                font.pixelSize: Theme.comicArt ? 150 : 132
+                font.weight: Theme.comicArt ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comicArt ? 4 : 0
             }
         }
 
@@ -105,12 +105,12 @@ Item {
         }
 
         Item {
-            Layout.preferredHeight: Theme.comic ? 28 : 44
+            Layout.preferredHeight: Theme.comicArt ? 28 : 44
         }
 
         // Sticker estilo Peter Parker en temas de cómic, o Avatar común en el resto
         NameBadge {
-            visible: Theme.comic
+            visible: Theme.comicArt
             Layout.alignment: Qt.AlignHCenter
             name: root.displayName
             alert: Auth.state === "failed"
@@ -120,14 +120,14 @@ Item {
         }
 
         AvatarRing {
-            visible: !Theme.comic
+            visible: !Theme.comicArt
             Layout.alignment: Qt.AlignHCenter
             letter: root.userName.charAt(0).toUpperCase()
             alert: Auth.state === "failed"
         }
 
         Text {
-            visible: !Theme.comic
+            visible: !Theme.comicArt
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 14
             text: root.greeting + ", " + root.userName
@@ -142,7 +142,7 @@ Item {
 
             visible: root.isPrimary
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: root.isPrimary ? (Theme.comic ? 28 : 22) : 0
+            Layout.topMargin: root.isPrimary ? (Theme.comicArt ? 28 : 22) : 0
             Layout.preferredWidth: input.activeFocus ? 380 : 340
             Layout.preferredHeight: root.isPrimary ? 54 : 0
 
@@ -154,6 +154,7 @@ Item {
             }
 
             HardShadow {
+                art: true
                 target: field
                 offset: 5
             }
@@ -162,10 +163,10 @@ Item {
                 id: field
 
                 anchors.fill: parent
-                radius: Theme.comic ? 10 : 27
+                radius: Theme.comicArt ? 10 : 27
                 color: Theme.bg
-                border.width: Theme.comic ? 2 : 1
-                border.color: Auth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : (Theme.comic ? Theme.ink : Theme.border))
+                border.width: Theme.comicArt ? 2 : 1
+                border.color: Auth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : (Theme.comicArt ? Theme.ink : Theme.border))
                 transform: Translate {
                     x: root.shakeX
                 }
@@ -268,6 +269,8 @@ Item {
                         }
 
                         TapHandler {
+                            // Se queda con el clic: si no, también lo recibe la fila que lo contiene
+                            gesturePolicy: TapHandler.ReleaseWithinBounds
                             onTapped: input.echoMode = input.echoMode === TextInput.Password ? TextInput.Normal : TextInput.Password
                         }
                     }
@@ -275,10 +278,10 @@ Item {
                     Rectangle {
                         Layout.preferredWidth: 38
                         Layout.preferredHeight: 38
-                        radius: Theme.comic ? 8 : 19
+                        radius: Theme.comicArt ? 8 : 19
                         color: input.text.length > 0 ? Theme.accent : Theme.surface
-                        border.width: Theme.comic ? 1.5 : 0
-                        border.color: Theme.comic ? Theme.ink : "transparent"
+                        border.width: Theme.comicArt ? 1.5 : 0
+                        border.color: Theme.comicArt ? Theme.ink : "transparent"
 
                         Behavior on color {
                             ColorAnimation {
@@ -294,6 +297,8 @@ Item {
                         }
 
                         TapHandler {
+                            // Se queda con el clic: si no, también lo recibe la fila que lo contiene
+                            gesturePolicy: TapHandler.ReleaseWithinBounds
                             onTapped: input.accepted()
                         }
                     }
@@ -434,5 +439,11 @@ Item {
                 root.focusInput();
             }
         }
+    }
+
+    // Con la sesión bloqueada nada se dibuja por encima del bloqueo: la despedida va acá (ver Goodbye)
+    GoodbyeView {
+        anchors.fill: parent
+        z: 1000
     }
 }

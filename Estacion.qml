@@ -52,13 +52,18 @@ Singleton {
 
     // Se llama al abrir el panel: la red solo si la copia tiene más de 30 minutos
     function load(): void {
+        refreshNet();
+        projProc.running = false;
+        projProc.running = true;
+    }
+
+    // Solo clima y dólar (sin releer los repos): lo usan los stickers del escritorio vacío
+    function refreshNet(): void {
         if (!loading && !(net.updated > 0 && Date.now() - net.updated * 1000 < 30 * 60000)) {
             loading = true;
             netProc.command = [Quickshell.shellPath("bin/estacion.py"), "net"].concat(city !== "" ? ["--city", city] : []);
             netProc.running = true;
         }
-        projProc.running = false;
-        projProc.running = true;
     }
 
     FileView {

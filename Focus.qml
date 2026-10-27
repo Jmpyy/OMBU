@@ -33,21 +33,16 @@ Singleton {
     readonly property int studySeconds_: studyLength
 
     // Entorno de estudio: qué se abre al empezar según lo que toque estudiar
-    //   programacion  NotebookLM en Zen + el editor en la carpeta de la facultad + la IA en una terminal
-    //   matematica    NotebookLM + la IA (sin editor)
-    //   otro          solo NotebookLM
+    //   programacion  NotebookLM en Zen (en el TV) + el editor en la carpeta de la facultad
+    //   otro          solo NotebookLM (en el TV)
     property string kit: "programacion"
     property bool autoOpen: true
+    // Sin terminal: la IA está en el chat del panel lateral (Super+Shift+A). NotebookLM abre en el TV
     readonly property var kits: [
         {
             id: "programacion",
             name: "Programación",
-            tools: ["notebook", "ide", "ai"]
-        },
-        {
-            id: "matematica",
-            name: "Matemática",
-            tools: ["notebook", "ai"]
+            tools: ["notebook", "ide"]
         },
         {
             id: "otro",
@@ -55,8 +50,10 @@ Singleton {
             tools: ["notebook"]
         }
     ]
+    // El monitor que no es el principal (el TV vertical); vacío si hay uno solo
+    readonly property string sideMonitor: Screens.list.map(s => s.name).find(n => n !== Screens.primary?.name) ?? ""
     readonly property string notebookUrl: "https://notebooklm.google.com"
-    readonly property string studyDir: (Quickshell.env("HOME") ?? "") + "/universidad"
+    readonly property string studyDir: (Quickshell.env("HOME") ?? "") + "/Universidad"
     // El PATH de la sesión de Hyprland no trae ~/.local/bin: la IA se llama con su ruta completa
     readonly property string aiCommand: (Quickshell.env("HOME") ?? "") + "/.local/bin/agy"
     property var pendingTools: []
@@ -344,7 +341,10 @@ Singleton {
     // Abre una herramienta de estudio; la carpeta de la facultad se crea si todavía no existe
     function openTool(tool: string): void {
         if (tool === "notebook") {
-            Quickshell.execDetached(["zen-browser", notebookUrl]);
+            // En una ventana propia (`zen-browser url` la agregaba como pestaña a la ventana abierta) y
+            // en el otro monitor, si hay
+            const zen = ["zen-browser", "--new-window", notebookUrl];
+            Quickshell.execDetached(sideMonitor !== "" ? [Quickshell.shellPath("bin/to-monitor.sh"), "NotebookLM", sideMonitor, "25", "--"].concat(zen) : zen);
         } else if (tool === "ide") {
             Quickshell.execDetached(["sh", "-c", "mkdir -p \"$1\" && exec zeditor \"$1\"", "ide", studyDir]);
         } else if (tool === "ai") {
@@ -353,7 +353,7 @@ Singleton {
     }
 
     // Abre todo lo del tipo de estudio elegido, de a una cada 0,7 s para que las ventanas no
-    // se pisen el foco; la última (la terminal con la IA) queda enfocada
+    // se pisen el foco; la última (Zed, si es Programación) queda enfocada
     function openKit(): void {
         const k = kits.find(x => x.id === kit);
         if (!k)

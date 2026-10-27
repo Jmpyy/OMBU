@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 
 // Inactividad: a los idleLockSeconds se bloquea la sesión (con el salvapantallas a la
@@ -24,8 +25,63 @@ Singleton {
     // apagarlos y encenderlos (rearm). Solo hace falta al cambiar los tiempos en marcha (pruebas).
     property bool monitorsOn: true
 
-    // Basta con nombrarlo desde shell.qml para que exista
+    // Pedidos de «no bloquees» de los videos: Zen/Firefox los mandan por org.freedesktop.ScreenSaver, que
+    // en Hyprland no atendía nadie, y ombu bloqueaba a los 5 minutos aunque estuvieras mirando un video.
+    // Los atiende bin/screensaver.py (corre aparte, así no pierde los pedidos cuando ombu se recarga) y
+    // escribe el estado en ombu-inhibit.json. Si ese proceso muriera, el archivo deja de actualizarse y a
+    // los 3 minutos se deja de respetar: un pedido colgado nunca puede dejar la sesión sin bloquear.
+    property var inhibitApps: []
+    property double inhibitAt: 0
+    property double nowSec: Date.now() / 1000
+    readonly property bool inhibited: !testMode && inhibitApps.length > 0 && nowSec - inhibitAt < 180
+
+    function readInhibit(): void {
+        try {
+            const d = JSON.parse(inhibitFile.text());
+            inhibitApps = Array.isArray(d.apps) ? d.apps : [];
+            inhibitAt = Number(d.at ?? 0);
+        } catch (e) {
+            inhibitApps = [];
+        }
+        nowSec = Date.now() / 1000;
+    }
+
+    // Para depurar (ipc call idle status)
+    function describe(): string {
+        return (inhibited ? "no bloquea: lo pide " + inhibitApps.join(", ") : "bloquea a los " + lockSeconds + " s sin actividad") + (testMode ? " (modo prueba)" : "");
+    }
+
+    FileView {
+        id: inhibitFile
+
+        path: (Quickshell.env("XDG_RUNTIME_DIR") ?? "/tmp") + "/ombu-inhibit.json"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: root.readInhibit()
+    }
+
+    // El archivo lo crea el servicio al arrancar: se vuelve a leer un momento después por si no existía
+    Timer {
+        interval: 2500
+        running: true
+        onTriggered: inhibitFile.reload()
+    }
+
+    // Mientras hay un pedido, se revisa que siga fresco (el servicio reescribe la hora cada minuto)
+    Timer {
+        interval: 60000
+        repeat: true
+        running: root.inhibitApps.length > 0
+        onTriggered: root.nowSec = Date.now() / 1000
+    }
+
+    onInhibitedChanged: console.log("ombu: " + (inhibited ? "no se bloquea, lo pide " + inhibitApps.join(", ") : "vuelve el bloqueo por inactividad"))
+
+    // Basta con nombrarlo desde shell.qml para que exista. Arranca el servicio de pedidos (si ya corre
+    // uno, el nuevo sale solo)
     function start(): void {
+        Quickshell.execDetached(["python3", "-I", Quickshell.shellPath("bin/screensaver.py")]);
     }
 
     function rearm(): void {
@@ -61,7 +117,7 @@ Singleton {
     }
 
     IdleMonitor {
-        enabled: root.monitorsOn
+        enabled: root.monitorsOn && !root.inhibited
         timeout: root.lockSeconds
         // En uso normal respeta los pedidos de "no bloquear" de los reproductores de video;
         // el modo de prueba los ignora para poder verificar la detección
@@ -73,7 +129,7 @@ Singleton {
     }
 
     IdleMonitor {
-        enabled: root.monitorsOn
+        enabled: root.monitorsOn && !root.inhibited
         timeout: root.screenOffSeconds
         respectInhibitors: !root.testMode
         onIsIdleChanged: root.setScreens(!isIdle)

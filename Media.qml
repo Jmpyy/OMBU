@@ -26,7 +26,7 @@ Singleton {
     readonly property var player: all.includes(selected) ? selected : (all.find(p => p.isPlaying) ?? all[0] ?? null)
     readonly property bool playing: player?.isPlaying ?? false
 
-    // Apps de música: el indicador de la barra y su menú (MusicMenu) solo muestran estas, no un video de
+    // Apps de música: `music` solo elige entre estas, no un video de
     // YouTube o un reel de Instagram del navegador. Es el final del nombre de bus MPRIS
     // (org.mpris.MediaPlayer2.sung); para sumar otra, agregala acá (ej. "spotify").
     readonly property var musicApps: ["sung"]
@@ -94,8 +94,7 @@ Singleton {
         Quickshell.execDetached(["busctl", "--user", "call", p.dbusName, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", method]);
     }
 
-    // Los controles actúan sobre el reproductor elegido o, si se pasa uno, sobre ese (MusicMenu pasa
-    // `music`, para no pausar un video que suena al mismo tiempo)
+    // Los controles actúan sobre el reproductor elegido o, si se pasa uno, sobre ese
     // Play/pausa: por Quickshell si el reproductor dice que se puede; si no, directo por D-Bus
     function toggle(target: var): void {
         const p = target ?? player;

@@ -74,16 +74,19 @@ hl.config({
         },
     },
     decoration = {
-        rounding = 14,
+        -- Esquinas como las de macOS: curva «squircle» (rounding_power > 2)
+        rounding = 12,
+        rounding_power = 3.5,
         active_opacity = 1.0,
         inactive_opacity = 1.0,
         blur = { size = 4, passes = 2 },
         shadow = {
             enabled = true,
-            range = 24,
-            render_power = 3,
-            color = "rgba(00000070)",
-            color_inactive = "rgba(00000030)",
+            range = 26,
+            render_power = 2,
+            offset = { 0, 8 },
+            color = "rgba(000000a0)",
+            color_inactive = "rgba(00000060)",
         },
     },
 })
@@ -104,6 +107,10 @@ hl.bind(mainMod .. " + CONTROL + SHIFT + Space", hl.dsp.exec_cmd(ipc .. "menu op
 hl.bind(mainMod .. " + CONTROL + Space",         hl.dsp.exec_cmd(ipc .. "wallpaper menu"))
 -- Panel lateral (también se abre pegando el mouse al borde izquierdo del monitor principal)
 hl.bind(mainMod .. " + A",                       hl.dsp.exec_cmd(ipc .. "side toggle"))
+-- Directo al chat con la IA (Claude Code o Antigravity), con el cursor en el campo
+hl.bind(mainMod .. " + SHIFT + A",               hl.dsp.exec_cmd(ipc .. "side open chat"))
+-- Anotador rápido: parciales, entregas y notas como en el papel
+hl.bind(mainMod .. " + ALT + N",                 hl.dsp.exec_cmd(ipc .. "note toggle"))
 
 -- Notificaciones (estilo Omarchy). Se usa el código de tecla de la coma (59) para que
 -- funcione igual con cualquier distribución de teclado.
@@ -129,6 +136,15 @@ hl.window_rule({ match = { class = "^(dev\\.zed\\.Zed)$" }, opacity = "1.0 overr
 
 -- Editor de capturas (satty): ventana flotante al centro
 hl.window_rule({ match = { class = "^(com\\.gabm\\.satty)$" }, float = true, center = true, opacity = "1.0 override", size = { "monitor_w*0.70", "monitor_h*0.75" } })
+-- Diálogos (abrir, guardar, permisos...) flotantes y centrados: si no, aparecen donde estaba la ventana que
+-- los abrió y, con varias ventanas en mosaico, salen corridos y cortados
+for _, m in ipairs({
+    { title = "^(Open|Authentication Required|Choose Files|Save As|Confirm to replace files|File Operation Progress)$" },
+    { initial_title = "^(Open File)$" },
+    { class = "^([Xx]dg-desktop-portal-gtk)$" },
+    { class = "^(.*dialog.*)$" },
+    { title = "^(.*dialog.*)$" },
+}) do hl.window_rule({ match = m, float = true, center = true }) end
 
 -- Brillo del monitor por DDC (teclas de brillo y Super+F11 / Super+F12)
 hl.bind("XF86MonBrightnessUp",       hl.dsp.exec_cmd(ipc .. "brightness up"),   { locked = true, repeating = true })

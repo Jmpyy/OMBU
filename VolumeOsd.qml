@@ -97,7 +97,7 @@ PanelWindow {
                     elide: Text.ElideRight
                     text: Media.player?.trackTitle || Media.player?.identity || ""
                     color: Theme.text
-                    font.family: Theme.comic ? Theme.displayFont : Theme.font
+                    font.family: Theme.comic ? Theme.displayFont : Qt.application.font.family
                     font.pixelSize: Theme.comic ? 16 : 13
                     font.weight: Theme.comic ? Font.Normal : Font.DemiBold
                 }
@@ -148,7 +148,7 @@ PanelWindow {
                 horizontalAlignment: Text.AlignRight
                 text: Osd.showMuted ? (Theme.comic ? "¡MUTE!" : "Mute") : Math.round(Osd.level * 100) + "%"
                 color: Osd.showMuted ? Theme.danger : Theme.text
-                font.family: Theme.comic ? Theme.displayFont : Theme.font
+                font.family: Theme.comic ? Theme.displayFont : Qt.application.font.family
                 font.pixelSize: Theme.comic ? 16 : 13
                 font.weight: Theme.comic ? Font.Normal : Font.Medium
             }

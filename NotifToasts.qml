@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
@@ -144,6 +145,17 @@ PanelWindow {
                     entry: slot.entry
                     floating: true
                     scale: slot.show ? 1 : 0.95
+
+                    // Sombra suave y difusa, como los avisos de macOS (en los temas de cómic va la dura)
+                    layer.enabled: !Theme.comic
+                    layer.effect: MultiEffect {
+                        shadowEnabled: true
+                        shadowColor: "#000000"
+                        shadowOpacity: 0.5
+                        shadowBlur: 0.9
+                        shadowVerticalOffset: 6
+                        autoPaddingEnabled: true
+                    }
                     rotation: slot.tingleAngle
                     transformOrigin: Item.Right
 

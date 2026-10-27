@@ -14,22 +14,18 @@ Row {
         {
             label: "Reiniciar",
             icon: "restart_alt",
-            command: ["systemctl", "reboot"],
+            goodbye: "reboot",
             confirm: true
         },
         {
             label: "Apagar",
             icon: "power_settings_new",
-            command: ["systemctl", "poweroff"],
+            goodbye: "poweroff",
             confirm: true
         }
     ]
 
     spacing: 10
-
-    Process {
-        id: runner
-    }
 
     Timer {
         id: disarm
@@ -99,8 +95,8 @@ Row {
                         return;
                     }
                     root.armed = -1;
-                    runner.command = button.modelData.command;
-                    runner.running = true;
+                    // Despedida (se ve dentro del bloqueo, LockScreen) y recién después la orden
+                    Goodbye.run(button.modelData.goodbye);
                 }
             }
         }

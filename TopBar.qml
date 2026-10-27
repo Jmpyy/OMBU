@@ -3,6 +3,7 @@ import QtQuick.Shapes
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Services.Pipewire
+import Quickshell.Services.SystemTray
 import Quickshell.Wayland
 
 PanelWindow {
@@ -13,14 +14,13 @@ PanelWindow {
     // 0 = escondida arriba del borde, 1 = completamente visible (durante la bienvenida baja al final)
     property real reveal: Ui.barShown && !Welcome.playing ? 1 : 0
     // Evitan que el clic que cierra un menú lo vuelva a abrir
+    property double dismissedMain: 0
     property double dismissedMixer: 0
     property double dismissedFocus: 0
     property double dismissedApps: 0
-    property double dismissedDevices: 0
     property double dismissedControl: 0
     property double dismissedCalendar: 0
     property double dismissedNotifs: 0
-    property double dismissedMusic: 0
 
     readonly property real fullHeight: Theme.barHeight + Theme.fillet
     readonly property real sideMargin: Theme.margin + Theme.fillet / 2
@@ -41,6 +41,19 @@ PanelWindow {
         property: "focusFrom"
         value: win.focusShown ? focusButton : controlButton
         when: Ui.popup !== win.popupKey("focus")
+    }
+
+    // Hay una sola barra (la del monitor principal, ver shell.qml). Los atajos piden los menús en el monitor
+    // con foco: si es otro (el TV), el menú se abre igual acá en vez de quedar sin barra donde colgar
+    Connections {
+        target: Ui
+
+        function onPopupChanged(): void {
+            const at = Ui.popup.lastIndexOf("@");
+            const mine = win.screen.name;
+            if (at >= 0 && Ui.popup.slice(at + 1) !== mine)
+                Ui.popup = Ui.popup.slice(0, at + 1) + mine;
+        }
     }
 
     function popupKey(kind: string): string {
@@ -181,9 +194,9 @@ PanelWindow {
                     width: 30
                     height: 24
                     radius: Theme.comic ? 6 : 12
-                    color: logoArea.containsMouse || Ui.sysMenuOpen ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.12) : Theme.hover) : "transparent"
+                    color: win.logoHot || Ui.sysMenuOpen ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.12) : Theme.hover) : "transparent"
                     border.width: Theme.comic ? 1.5 : 0
-                    border.color: Theme.comic ? (logoArea.containsMouse || Ui.sysMenuOpen ? Theme.accent : Theme.ink) : "transparent"
+                    border.color: Theme.comic ? (win.logoHot || Ui.sysMenuOpen ? Theme.accent : Theme.ink) : "transparent"
 
                     // El logo de CachyOS, o el del tema (araña, reactor) cuando hay uno
                     Image {
@@ -215,13 +228,14 @@ PanelWindow {
 
                         anchors.fill: parent
                         hoverEnabled: true
+                        onEntered: win.logoHot = true
+                        onExited: win.logoHot = false
+                        onPositionChanged: win.logoHot = true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            // El menú del sistema (el de energía sigue en Super+Esc y en Sistema)
-                            Ui.powerOpen = false;
-                            Ui.launcherOpen = false;
-                            Ui.clipOpen = false;
-                            Ui.keysOpen = false;
+                            // El menú de la araña (MainMenu); el clic que lo cierra no lo vuelve a abrir
+                            if (Date.now() - win.dismissedMain < 300)
+                                return;
                             Ui.popup = "";
                             Ui.sysMenuStart = "";
                             Ui.sysMenuOpen = !Ui.sysMenuOpen;
@@ -281,7 +295,8 @@ PanelWindow {
                 }
             }
 
-            // Derecha: aviso de modo + grupos de indicadores (bandeja, foco, sonido y avisos, ajustes, ventanas)
+            // Derecha: aviso de modo, lo que va y viene (segundo plano, cronómetro de foco) y el grupo de
+            // estado fijo al final (volumen, avisos, centro de control)
             Row {
                 anchors.right: parent.right
                 anchors.rightMargin: win.sideMargin
@@ -311,16 +326,24 @@ PanelWindow {
                     }
                 }
 
-                // Bandeja del sistema (solo si hay apps en ella)
+                // En segundo plano: ventanas minimizadas y apps corriendo sin ventana (Discord en la bandeja,
+                // Sung, Steam...). Las ventanas en uso no cuentan; sin nada guardado, el botón no está
                 BarGroup {
-                    visible: tray.count > 0
+                    visible: Apps.tucked > 0 || appsButton.isOpen
 
-                    // Bandeja del sistema (solo aparece si hay apps en ella)
-                    TrayStrip {
-                        id: tray
+                    BarButton {
+                        id: appsButton
+
+                        readonly property bool isOpen: Ui.popup === win.popupKey("apps")
 
                         anchors.verticalCenter: parent.verticalCenter
-                        barWindow: win
+                        active: isOpen
+                        icon: "layers"
+                        label: String(Apps.tucked)
+                        onClicked: {
+                            if (Date.now() - win.dismissedApps > 300)
+                                win.togglePopup("apps");
+                        }
                     }
                 }
 
@@ -339,7 +362,7 @@ PanelWindow {
                     implicitWidth: chipRow.implicitWidth + 22
                     implicitHeight: 24
                     radius: Theme.comic ? 6 : height / 2
-                    color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, isOpen || chipArea.containsMouse ? 0.28 : 0.16)
+                    color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, isOpen || win.chipHot ? 0.28 : 0.16)
                     border.width: Theme.comic ? 1.5 : 1
                     border.color: Theme.comic ? Theme.ink : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, Focus.running ? 0.45 : 0.2)
 
@@ -420,6 +443,9 @@ PanelWindow {
 
                         anchors.fill: parent
                         hoverEnabled: true
+                        onEntered: win.chipHot = true
+                        onExited: win.chipHot = false
+                        onPositionChanged: win.chipHot = true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             if (Date.now() - win.dismissedFocus > 300)
@@ -428,101 +454,7 @@ PanelWindow {
                     }
                 }
 
-                // Lo que suena en tu app de música (Sung, ver Media.musicApps; un video de YouTube o Instagram
-                // no): solo mientras suena (en pausa desaparece, salvo con su menú abierto).
-                // Clic abre su menú (MusicMenu); clic del medio pausa.
-                BarGroup {
-                    visible: Media.musicPlaying || nowButton.isOpen
-
-                    Item {
-                        id: nowButton
-
-                        readonly property bool isOpen: Ui.popup === win.popupKey("music")
-
-                        anchors.verticalCenter: parent.verticalCenter
-                        implicitWidth: nowRow.implicitWidth + 20
-                        implicitHeight: 24
-
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: Theme.comic ? 6 : height / 2
-                            color: nowArea.containsMouse || nowButton.isOpen ? Theme.hover : "transparent"
-                        }
-
-                        Row {
-                            id: nowRow
-
-                            anchors.centerIn: parent
-                            spacing: 8
-
-                            // Ecualizador: tres barras que suben y bajan a ritmos distintos
-                            Row {
-                                anchors.verticalCenter: parent.verticalCenter
-                                height: 12
-                                spacing: 2
-
-                                Repeater {
-                                    model: 3
-
-                                    Rectangle {
-                                        required property int index
-
-                                        anchors.bottom: parent.bottom
-                                        width: 3
-                                        height: 4
-                                        radius: 1.5
-                                        color: Theme.accent
-
-                                        SequentialAnimation on height {
-                                            running: Media.musicPlaying
-                                            loops: Animation.Infinite
-
-                                            NumberAnimation {
-                                                to: 12
-                                                duration: 280 + index * 110
-                                                easing.type: Easing.InOutSine
-                                            }
-                                            NumberAnimation {
-                                                to: 3
-                                                duration: 280 + index * 110
-                                                easing.type: Easing.InOutSine
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: Math.min(implicitWidth, 200)
-                                elide: Text.ElideRight
-                                text: Media.music?.trackTitle || Media.music?.identity || ""
-                                color: Theme.text
-                                font.pixelSize: Theme.comic ? 15 : 12
-                                font.weight: Theme.comic ? Font.Normal : Font.DemiBold
-                                font.family: Theme.comic ? Theme.displayFont : ""
-                                font.letterSpacing: Theme.comic ? 0.5 : 0
-                            }
-                        }
-
-                        MouseArea {
-                            id: nowArea
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-                            onClicked: mouse => {
-                                if (mouse.button === Qt.MiddleButton)
-                                    Media.toggle(Media.music);
-                                else if (Date.now() - win.dismissedMusic > 300)
-                                    win.togglePopup("music");
-                            }
-                        }
-                    }
-                }
-
-                // Sonido y avisos
+                // Estado: volumen, avisos y centro de control juntos, siempre al final
                 BarGroup {
                     // Volumen: clic abre la mezcladora, rueda cambia el volumen, clic del medio silencia
                     BarButton {
@@ -632,12 +564,7 @@ PanelWindow {
                             }
                         }
                     }
-                }
-
-                // Ajustes: centro de control (brillo, volumen, foco, dispositivos)
-                BarGroup {
-                    // Centro de control: brillo, volumen y ajustes rápidos; el número avisa de
-                    // unidades conectadas
+                    // Centro de control: brillo, volumen y ajustes rápidos
                     BarButton {
                         id: controlButton
 
@@ -646,45 +573,71 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         active: isOpen
                         icon: "tune"
-                        label: Disks.removable.length > 0 ? String(Disks.removable.length) : ""
-                        labelColor: Theme.accent
                         onClicked: {
                             if (Date.now() - win.dismissedControl > 300)
                                 win.togglePopup("control");
                         }
                     }
                 }
-
-                // Ventanas abiertas
-                BarGroup {
-                    // Apps abiertas: ventanas y las que siguen corriendo sin ventana
-                    BarButton {
-                        id: appsButton
-
-                        readonly property bool isOpen: Ui.popup === win.popupKey("apps")
-
-                        anchors.verticalCenter: parent.verticalCenter
-                        active: isOpen
-                        icon: "web_asset"
-                        label: String(Apps.windows.length)
-                        onClicked: {
-                            if (Date.now() - win.dismissedApps > 300)
-                                win.togglePopup("apps");
-                        }
-
-                        // Apps que siguen corriendo sin ventana
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: Apps.background.length > 0
-                            text: "+" + Apps.background.length
-                            color: Theme.accent
-                            font.pixelSize: 12
-                            font.weight: Font.DemiBold
-                        }
-                    }
-                }
             }
         }
+    }
+
+    // Menús de opciones de las apps de la bandeja (las de siempre del clic derecho). La bandeja ya no está en
+    // la barra: se abren con el ⋯ de cada app en el menú de segundo plano (o con ipc call bar tray) y cuelgan
+    // del botón de capas
+    Variants {
+        model: SystemTray.items.values
+
+        TrayMenu {
+            required property var modelData
+            readonly property string key: "tray-" + modelData.id + "@" + win.screen.name
+
+            barWindow: win
+            anchorItem: appsButton
+            trayItem: modelData
+            open: Ui.popup === key
+
+            onDismissed: {
+                win.dismissedApps = Date.now();
+                if (Ui.popup === key)
+                    Ui.popup = "";
+            }
+        }
+    }
+
+    // El menú de la araña. Abrir otro menú de la barra lo cierra
+    MainMenu {
+        barWindow: win
+        anchorItem: logoButton
+        open: Ui.sysMenuOpen
+
+        onDismissed: {
+            win.dismissedMain = Date.now();
+            Ui.sysMenuOpen = false;
+        }
+    }
+
+    Connections {
+        target: Ui
+
+        function onPopupChanged(): void {
+            if (Ui.popup !== "")
+                Ui.sysMenuOpen = false;
+            win.forgetHover();
+        }
+        function onSysMenuOpenChanged(): void {
+            win.forgetHover();
+        }
+    }
+
+    // «Mouse encima» del logo y del cronómetro de foco, con marca propia como BarButton.hovered
+    property bool logoHot: false
+    property bool chipHot: false
+
+    function forgetHover(): void {
+        logoHot = false;
+        chipHot = false;
     }
 
     FocusMenu {
@@ -695,18 +648,6 @@ PanelWindow {
         onDismissed: {
             win.dismissedFocus = Date.now();
             if (focusButton.isOpen)
-                Ui.popup = "";
-        }
-    }
-
-    MusicMenu {
-        barWindow: win
-        anchorItem: nowButton
-        open: nowButton.isOpen
-
-        onDismissed: {
-            win.dismissedMusic = Date.now();
-            if (nowButton.isOpen)
                 Ui.popup = "";
         }
     }
@@ -740,43 +681,14 @@ PanelWindow {
         anchorItem: controlButton
         open: controlButton.isOpen
 
-        onOpenDevices: win.togglePopup("devices")
         onOpenFocus: win.togglePopup("focus")
         onOpenWalls: {
             Ui.popup = "";
             Ui.wallMenuOpen = true;
         }
-        onOpenPayments: win.togglePopup("payments")
         onDismissed: {
             win.dismissedControl = Date.now();
             if (controlButton.isOpen)
-                Ui.popup = "";
-        }
-    }
-
-    PaymentsMenu {
-        readonly property bool isOpen: Ui.popup === win.popupKey("payments")
-
-        barWindow: win
-        anchorItem: controlButton
-        open: isOpen
-
-        onDismissed: {
-            if (isOpen)
-                Ui.popup = "";
-        }
-    }
-
-    DevicesMenu {
-        readonly property bool isOpen: Ui.popup === win.popupKey("devices")
-
-        barWindow: win
-        anchorItem: controlButton
-        open: isOpen
-
-        onDismissed: {
-            win.dismissedDevices = Date.now();
-            if (isOpen)
                 Ui.popup = "";
         }
     }

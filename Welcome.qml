@@ -25,7 +25,9 @@ Singleton {
     // «video» (la intro) o «rain» (la animación de código, de respaldo)
     property string mode: "video"
     readonly property string videoPath: (Quickshell.env("HOME") ?? "") + "/.local/share/ombu/intro.mp4"
-    property alias player: player
+    // El reproductor existe solo mientras se reproduce la intro (LazyLoader): crearlo carga FFmpeg con
+    // CUDA, NVDEC, VA-API y Mesa, y eso quedaba en memoria toda la sesión aunque la intro no se viera
+    readonly property var player: playerLoader.item
     // Línea que se escribe y cuántos caracteres van
     property string line: ""
     // Cuántos caracteres van escritos: sigue el reloj de la animación, no el del sistema
@@ -43,8 +45,9 @@ Singleton {
         fade = 1;
         shown = true;
         playing = true;
-        player.source = "file://" + videoPath;
-        player.play();
+        playerLoader.active = true;
+        playerLoader.item.source = "file://" + videoPath;
+        playerLoader.item.play();
         // Respaldo por si el video no llegara a avanzar
         finish.interval = 7000;
         finish.restart();
@@ -55,9 +58,10 @@ Singleton {
         if (mode !== "video" || !playing)
             return;
         mode = "rain";
-        player.stop();
+        if (playerLoader.item)
+            playerLoader.item.stop();
         Saver.beginWelcome();
-        line = (Theme.comic ? "¡THWIP! · " : "") + (Quickshell.env("USER") ?? "") + "@ombu · sesión iniciada · " + Qt.formatTime(new Date(), "HH:mm");
+        line = (Theme.comicArt ? "¡THWIP! · " : "") + (Quickshell.env("USER") ?? "") + "@ombu · sesión iniciada · " + Qt.formatTime(new Date(), "HH:mm");
         finish.interval = 12000;
         finish.restart();
     }
@@ -80,23 +84,25 @@ Singleton {
         }
     }
 
-    MediaPlayer {
-        id: player
+    LazyLoader {
+        id: playerLoader
 
-        audioOutput: AudioOutput {
-            volume: 0.85
+        MediaPlayer {
+            audioOutput: AudioOutput {
+                volume: 0.85
+            }
+            onErrorOccurred: (error, errorString) => {
+                console.log("BIENVENIDA: el video falló (" + errorString + "); se usa la animación de código");
+                root.fallbackToRain();
+            }
+            // El obturador del final deja negro a los 3,7 s: ahí empieza el desvanecimiento hacia el escritorio
+            onPositionChanged: pos => {
+                if (root.mode === "video" && pos >= 3700)
+                    root.finishNow();
+            }
+            onPlaybackStateChanged: if (root.mode === "video" && playbackState === MediaPlayer.StoppedState && root.playing)
+                root.finishNow()
         }
-        onErrorOccurred: (error, errorString) => {
-            console.log("BIENVENIDA: el video falló (" + errorString + "); se usa la animación de código");
-            root.fallbackToRain();
-        }
-        // El obturador del final deja negro a los 3,7 s: ahí empieza el desvanecimiento hacia el escritorio
-        onPositionChanged: pos => {
-            if (root.mode === "video" && pos >= 3700)
-                root.finishNow();
-        }
-        onPlaybackStateChanged: if (root.mode === "video" && playbackState === MediaPlayer.StoppedState && root.playing)
-            root.finishNow()
     }
 
     FileView {
@@ -136,7 +142,9 @@ Singleton {
         interval: 900
         onTriggered: {
             root.shown = false;
-            player.stop();
+            if (playerLoader.item)
+                playerLoader.item.stop();
+            playerLoader.active = false;
             if (root.mode === "rain")
                 Saver.endWelcome();
         }

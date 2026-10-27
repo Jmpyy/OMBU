@@ -33,24 +33,25 @@ PanelWindow {
             label: "Cerrar sesión",
             icon: "logout",
             // Cierra Hyprland; greetd vuelve a mostrar el greeter
-            command: ["hyprctl", "dispatch", "hl.dsp.exit()"],
+            goodbye: "logout",
             confirm: true
         },
         {
             label: "Reiniciar",
             icon: "restart_alt",
-            command: ["systemctl", "reboot"],
+            goodbye: "reboot",
             confirm: true
         },
         {
             label: "Apagar",
             icon: "power_settings_new",
-            command: ["systemctl", "poweroff"],
+            goodbye: "poweroff",
             confirm: true
         }
     ]
 
-    property real p: Ui.powerOpen ? 1 : 0
+    // Arranca en 0: la animación de entrada empieza con el primer cuadro (ver FirstFrame más abajo)
+    property real p: 0
 
     Behavior on p {
         NumberAnimation {
@@ -63,6 +64,8 @@ PanelWindow {
     property bool activeOnScreen: false
 
     Connections {
+        id: opening
+
         target: Ui
         function onPowerOpenChanged() {
             if (Ui.powerOpen && Hyprland.focusedMonitor?.name === modelData.name)
@@ -71,6 +74,15 @@ PanelWindow {
     }
 
     onPChanged: if (p <= 0.001) activeOnScreen = false
+
+    // Se crea recién al abrirse (LazyLoader en shell.qml): el aviso de apertura ya pasó, así que se
+    // corre acá; la animación de entrada espera al primer cuadro de la ventana para no verse como un salto
+    Component.onCompleted: if (Ui.powerOpen)
+        opening.onPowerOpenChanged()
+
+    FirstFrame {
+        onReady: win.p = Qt.binding(() => Ui.powerOpen ? 1 : 0)
+    }
 
     screen: modelData
     visible: (p > 0.001 && activeOnScreen) || (Ui.powerOpen && Hyprland.focusedMonitor?.name === modelData.name)
@@ -88,10 +100,6 @@ PanelWindow {
 
     onVisibleChanged: if (!visible)
         armed = -1
-
-    Process {
-        id: runner
-    }
 
     Timer {
         id: disarm
@@ -231,8 +239,8 @@ PanelWindow {
                                     Ui.locked = true;
                                     return;
                                 }
-                                runner.command = tile.modelData.command;
-                                runner.running = true;
+                                // Despedida y recién después la orden (ver Goodbye)
+                                Goodbye.run(tile.modelData.goodbye);
                             }
                         }
                     }

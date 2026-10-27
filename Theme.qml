@@ -27,9 +27,16 @@ Singleton {
     // temas de acento claro y crema en los de acento rojo, donde el oscuro no se lee bien.
     // Sombra dura de las tarjetas (HardShadow): transparente salvo en los temas de cómic
     readonly property color shadow: Themes.active.shadow ?? "transparent"
-    // Los temas de cómic llevan sombra dura, puntos de impresión y una tipografía de historieta
-    readonly property bool comic: shadow.a > 0
-    readonly property string displayFont: Themes.active.display ?? ""
+    // Los temas de cómic llevan sombra dura, bordes de tinta, puntos de impresión y una tipografía de
+    // historieta. Se usan en los «momentos» (bloqueo, salvapantallas, bienvenida, despedida, login,
+    // stickers del escritorio vacío: comicArt/artFont) y no en la interfaz de todos los días (barra,
+    // menús, panel, launcher, avisos), que con todo eso se veía saturada. comicChrome = true lo vuelve
+    // a poner también en el día a día.
+    readonly property bool comicArt: shadow.a > 0
+    readonly property bool comicChrome: false
+    readonly property bool comic: comicArt && comicChrome
+    readonly property string artFont: Themes.active.display ?? ""
+    readonly property string displayFont: comic ? artFont : ""
     readonly property color accentText: Themes.active.onAccent ?? "#14131a"
     // El negro cálido de los bordes de tinta de los temas de cómic
     readonly property color ink: "#0a0708"

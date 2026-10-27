@@ -1,0 +1,33 @@
+/* ombu: Zen con los colores del tema de ombu (sobrio, el acento solo en lo importante).
+ * Plantilla: bin/qt-theme.py cambia los @NOMBRE@ por los colores del tema y la escribe en
+ * <perfil de Zen>/chrome/userChrome.css (junto con user.js, que habilita leer este archivo y pone el
+ * color de acento de Zen). Zen la lee al arrancar: el cambio se ve la próxima vez que lo abras. */
+
+:root {
+  /* Fondo de la ventana (barra lateral, alrededor de la página) y paneles */
+  --zen-main-browser-background: @BG@ !important;
+  --zen-main-browser-background-toolbar: @BG@ !important;
+  --zen-themed-toolbar-bg: @BG@ !important;
+  --zen-dialog-background: @SURFACE@ !important;
+
+  /* Grises de la interfaz: pestañas, botones, campos */
+  --zen-colors-primary: @TRACK@ !important;
+  --zen-colors-secondary: @SURFACE@ !important;
+  --zen-colors-tertiary: color-mix(in srgb, @BG@, black 20%) !important;
+  --zen-colors-border: color-mix(in srgb, @TEXT@, transparent 90%) !important;
+
+  /* Acento: solo pestaña activa, enlaces y lo elegido */
+  --zen-primary-color: @ACCENT@ !important;
+
+  --toolbar-color: @TEXT@ !important;
+  --toolbar-field-color: @TEXT@ !important;
+  --toolbar-field-background-color: @SURFACE@ !important;
+  --toolbar-field-focus-background-color: @TRACK@ !important;
+  --arrowpanel-background: @SURFACE@ !important;
+  --arrowpanel-color: @TEXT@ !important;
+}
+
+/* Pestaña elegida: un fondo apenas más claro, sin colores fuertes */
+.tabbrowser-tab[selected] .tab-background {
+  background-color: color-mix(in srgb, @TEXT@, transparent 90%) !important;
+}

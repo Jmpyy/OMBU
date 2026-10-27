@@ -157,6 +157,7 @@ Singleton {
                 (e.time ? timed : out).push({
                     kind: "local",
                     id: e.id,
+                    tag: e.tag ?? "",
                     time: e.time,
                     title: e.title,
                     done: e.repeat ? false : e.done,
@@ -184,6 +185,7 @@ Singleton {
                 out.push({
                     day: day,
                     kind: it.kind,
+                    tag: it.tag ?? "",
                     time: it.time,
                     title: it.title
                 });

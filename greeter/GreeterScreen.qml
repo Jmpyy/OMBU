@@ -44,11 +44,11 @@ Item {
 
             Text {
                 text: Chrono.date.toLocaleString(Chrono.locale, "HH")
-                color: Theme.comic ? Theme.text : "#f4f4fa"
-                font.family: Theme.displayFont || Qt.application.font.family
-                font.pixelSize: Theme.comic ? 150 : 132
-                font.weight: Theme.comic ? Font.Normal : Font.Light
-                font.letterSpacing: Theme.comic ? 4 : 0
+                color: Theme.comicArt ? Theme.text : "#f4f4fa"
+                font.family: Theme.artFont || Qt.application.font.family
+                font.pixelSize: Theme.comicArt ? 150 : 132
+                font.weight: Theme.comicArt ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comicArt ? 4 : 0
             }
 
             Text {
@@ -57,11 +57,11 @@ Item {
                 property bool lit: true
 
                 text: ":"
-                color: Theme.comic ? Theme.text : "#f4f4fa"
-                font.family: Theme.displayFont || Qt.application.font.family
-                font.pixelSize: Theme.comic ? 150 : 132
-                font.weight: Theme.comic ? Font.Normal : Font.Light
-                font.letterSpacing: Theme.comic ? 4 : 0
+                color: Theme.comicArt ? Theme.text : "#f4f4fa"
+                font.family: Theme.artFont || Qt.application.font.family
+                font.pixelSize: Theme.comicArt ? 150 : 132
+                font.weight: Theme.comicArt ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comicArt ? 4 : 0
                 opacity: lit ? 1 : 0.28
 
                 Behavior on opacity {
@@ -81,11 +81,11 @@ Item {
 
             Text {
                 text: Chrono.date.toLocaleString(Chrono.locale, "mm")
-                color: Theme.comic ? Theme.text : "#f4f4fa"
-                font.family: Theme.displayFont || Qt.application.font.family
-                font.pixelSize: Theme.comic ? 150 : 132
-                font.weight: Theme.comic ? Font.Normal : Font.Light
-                font.letterSpacing: Theme.comic ? 4 : 0
+                color: Theme.comicArt ? Theme.text : "#f4f4fa"
+                font.family: Theme.artFont || Qt.application.font.family
+                font.pixelSize: Theme.comicArt ? 150 : 132
+                font.weight: Theme.comicArt ? Font.Normal : Font.Light
+                font.letterSpacing: Theme.comicArt ? 4 : 0
             }
         }
 
@@ -98,12 +98,12 @@ Item {
 
         Item {
             visible: root.interactive
-            Layout.preferredHeight: Theme.comic ? 28 : 44
+            Layout.preferredHeight: Theme.comicArt ? 28 : 44
         }
 
         // Cartel «HELLO my name is…» en los temas de cómic (igual que el bloqueo); el círculo con la inicial en el resto
         NameBadge {
-            visible: root.interactive && Theme.comic
+            visible: root.interactive && Theme.comicArt
             Layout.alignment: Qt.AlignHCenter
             name: root.displayName
             alert: GreeterAuth.state === "failed"
@@ -113,14 +113,14 @@ Item {
         }
 
         AvatarRing {
-            visible: root.interactive && !Theme.comic
+            visible: root.interactive && !Theme.comicArt
             Layout.alignment: Qt.AlignHCenter
             letter: root.userName.charAt(0).toUpperCase()
             alert: GreeterAuth.state === "failed"
         }
 
         Text {
-            visible: root.interactive && !Theme.comic
+            visible: root.interactive && !Theme.comicArt
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 14
             text: root.greeting + ", " + root.userName
@@ -135,20 +135,20 @@ Item {
 
             visible: root.interactive
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: Theme.comic ? 28 : 22
+            Layout.topMargin: Theme.comicArt ? 28 : 22
             Layout.preferredWidth: input.activeFocus ? 380 : 340
             Layout.preferredHeight: 54
-            radius: Theme.comic ? 10 : 27
+            radius: Theme.comicArt ? 10 : 27
             color: Theme.bg
-            border.width: Theme.comic ? 2 : 1
-            border.color: GreeterAuth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : (Theme.comic ? Theme.ink : Theme.border))
+            border.width: Theme.comicArt ? 2 : 1
+            border.color: GreeterAuth.state === "failed" ? Theme.danger : (input.activeFocus ? Theme.accent : (Theme.comicArt ? Theme.ink : Theme.border))
             transform: Translate {
                 x: root.shakeX
             }
 
             // Sombra dura de viñeta (solo temas de cómic), igual que el campo de la pantalla de bloqueo
             Rectangle {
-                visible: Theme.comic
+                visible: Theme.comicArt
                 z: -1
                 x: 5
                 y: 5

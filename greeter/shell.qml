@@ -14,7 +14,7 @@ ShellRoot {
 
     // Tipografía del tema (generada por build.sh junto a este archivo; sin ella se usa la común)
     FontLoader {
-        source: Theme.displayFont !== "" ? Qt.resolvedUrl(Theme.displayFont + "-Regular.ttf") : ""
+        source: Theme.artFont !== "" ? Qt.resolvedUrl(Theme.artFont + "-Regular.ttf") : ""
     }
 
     Variants {

@@ -3,15 +3,16 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 
-// Lista de ventanas abiertas (clic para ir a ellas, ✕ para cerrarlas)
-// y, debajo, los íconos de la bandeja si hay alguno.
+// Lo que está «guardado»: las ventanas minimizadas (clic para traerlas) y, debajo, las apps que siguen
+// corriendo sin ventana (Discord en la bandeja, Sung, Steam...). Las ventanas que estás usando no aparecen
+// acá: antes las listaba todas y la persona solo quería ver lo que quedó en segundo plano.
 DropPopup {
     id: root
 
     readonly property int rowHeight: 48
     readonly property int maxRows: 7
     readonly property var windows: {
-        const list = Array.from(Apps.windows);
+        const list = Array.from(Apps.minimized);
         // Los workspaces especiales (minimizadas, scratchpad) tienen id negativo: van al final
         const rank = t => {
             const id = t.workspace?.id ?? 0;
@@ -78,10 +79,11 @@ DropPopup {
         spacing: 10
 
         RowLayout {
+            visible: root.windows.length > 0
             Layout.fillWidth: true
 
             Text {
-                text: "APPS ABIERTAS"
+                text: "MINIMIZADAS"
                 color: Theme.comic ? Theme.accent : Theme.textDim
                 font.pixelSize: Theme.comic ? 13 : 11
                 font.weight: Font.DemiBold
@@ -102,9 +104,9 @@ DropPopup {
         }
 
         Text {
-            visible: root.windows.length === 0
+            visible: Apps.tucked === 0
             Layout.fillWidth: true
-            text: "No hay ventanas abiertas."
+            text: "No hay apps minimizadas ni en segundo plano."
             color: Theme.textDim
             font.pixelSize: 12
         }
@@ -212,6 +214,8 @@ DropPopup {
                                     id: minHover
                                 }
                                 TapHandler {
+                                    // Se queda con el clic: si no, también lo recibe la fila que lo contiene
+                                    gesturePolicy: TapHandler.ReleaseWithinBounds
                                     onTapped: root.minimizeWindow(row.modelData)
                                 }
                             }
@@ -234,6 +238,8 @@ DropPopup {
                                     id: closeHover
                                 }
                                 TapHandler {
+                                    // Se queda con el clic: si no, también lo recibe la fila que lo contiene
+                                    gesturePolicy: TapHandler.ReleaseWithinBounds
                                     onTapped: row.modelData.wayland?.close()
                                 }
                             }
@@ -253,13 +259,16 @@ DropPopup {
             }
         }
 
-        // Apps que siguen corriendo sin ventana (ej. Vesktop cerrado a la bandeja)
+        // En segundo plano: las apps de la bandeja (con su menú de opciones) y las que siguen corriendo sin
+        // ventana ni ícono en la bandeja
         ColumnLayout {
-            visible: Apps.background.length > 0
+            visible: Apps.trayItems.length + Apps.backgroundOnly.length > 0
             Layout.fillWidth: true
             spacing: 4
 
+            // La línea separa de las minimizadas; sin minimizadas no hace falta
             Rectangle {
+                visible: root.windows.length > 0
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
                 Layout.bottomMargin: 6
@@ -282,10 +291,127 @@ DropPopup {
                 }
 
                 Text {
-                    text: Apps.background.length
+                    text: Apps.trayItems.length + Apps.backgroundOnly.length
                     color: Theme.textDim
                     font.pixelSize: 11
                     font.weight: Font.DemiBold
+                }
+            }
+
+            // Apps de la bandeja: clic la abre, ⋯ muestra su menú de opciones (el del clic derecho de siempre),
+            // que cuelga del botón de la barra; clic del medio, su acción secundaria
+            Repeater {
+                model: Apps.trayItems
+
+                Rectangle {
+                    id: trayRow
+
+                    required property var modelData
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: root.rowHeight
+                    radius: 12
+                    color: trayHover.hovered ? Theme.hover : "transparent"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 8
+                        anchors.rightMargin: 8
+                        spacing: 12
+
+                        Item {
+                            Layout.preferredWidth: 30
+                            Layout.preferredHeight: 30
+
+                            Image {
+                                anchors.fill: parent
+                                // Algunas apps traen un ícono que no es el de su marca (ver Icons)
+                                source: Icons.override(trayRow.modelData.id) || trayRow.modelData.icon
+                                sourceSize: Qt.size(60, 60)
+                                smooth: true
+                            }
+                        }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 1
+
+                            Text {
+                                Layout.fillWidth: true
+                                // El nombre de la app instalada primero: el título de la bandeja a veces es el
+                                // identificador en minúscula («sung»)
+                                text: DesktopEntries.heuristicLookup(trayRow.modelData.id)?.name || trayRow.modelData.title || trayRow.modelData.tooltipTitle || trayRow.modelData.id
+                                elide: Text.ElideRight
+                                color: Theme.text
+                                font.pixelSize: Theme.fontSize
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: "En la bandeja"
+                                elide: Text.ElideRight
+                                color: Theme.textDim
+                                font.pixelSize: 11
+                            }
+                        }
+
+                        // Menú de opciones de la app
+                        Rectangle {
+                            visible: trayRow.modelData.hasMenu
+                            Layout.preferredWidth: 28
+                            Layout.preferredHeight: 28
+                            radius: 14
+                            color: trayMoreHover.hovered ? Theme.accent : Theme.surface
+
+                            MIcon {
+                                anchors.centerIn: parent
+                                name: "more_horiz"
+                                font.pixelSize: 18
+                                color: trayMoreHover.hovered ? Theme.accentText : Theme.textDim
+                            }
+
+                            HoverHandler {
+                                id: trayMoreHover
+
+                                cursorShape: Qt.PointingHandCursor
+                            }
+                            TapHandler {
+                                // Se queda con el clic: si no, también lo recibe la fila que lo contiene
+                                gesturePolicy: TapHandler.ReleaseWithinBounds
+                                onTapped: Ui.popup = "tray-" + trayRow.modelData.id + "@" + root.barWindow.screen.name
+                            }
+                        }
+                    }
+
+                    HoverHandler {
+                        id: trayHover
+
+                        cursorShape: Qt.PointingHandCursor
+                    }
+                    TapHandler {
+                        acceptedButtons: Qt.LeftButton
+                        onTapped: {
+                            if (trayMoreHover.hovered)
+                                return;
+                            if (trayRow.modelData.onlyMenu && trayRow.modelData.hasMenu) {
+                                Ui.popup = "tray-" + trayRow.modelData.id + "@" + root.barWindow.screen.name;
+                                return;
+                            }
+                            trayRow.modelData.activate();
+                            root.dismissed();
+                        }
+                    }
+                    TapHandler {
+                        acceptedButtons: Qt.RightButton
+                        onTapped: {
+                            if (trayRow.modelData.hasMenu)
+                                Ui.popup = "tray-" + trayRow.modelData.id + "@" + root.barWindow.screen.name;
+                        }
+                    }
+                    TapHandler {
+                        acceptedButtons: Qt.MiddleButton
+                        onTapped: trayRow.modelData.secondaryActivate()
+                    }
                 }
             }
 
@@ -293,7 +419,7 @@ DropPopup {
                 model: ScriptModel {
                     // Los datos vienen de un script (objetos nuevos en cada lectura): se identifican por id
                     objectProp: "id"
-                    values: Apps.background
+                    values: Apps.backgroundOnly
                 }
 
                 Rectangle {
@@ -375,6 +501,8 @@ DropPopup {
                                 id: bgCloseHover
                             }
                             TapHandler {
+                                // Se queda con el clic: si no, también lo recibe la fila que lo contiene
+                                gesturePolicy: TapHandler.ReleaseWithinBounds
                                 onTapped: {
                                     if (bgRow.armed) {
                                         root.armedPid = -1;

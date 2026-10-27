@@ -2,8 +2,10 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Pipewire
 
-// Centro de control: brillo y volumen, y los ajustes rápidos que no hace falta tener siempre
-// a la vista en la barra (layout de teclado, No molestar, dispositivos).
+// Centro de control, versión mínima: brillo y volumen (con nombre y valor) y tres interruptores (modo
+// foco, No molestar, teclado). Los pagos y la música están en el panel lateral, y el fondo se elige con
+// Super+Ctrl+Espacio o desde el menú del sistema. Con los temas de cómic todo es
+// viñeta: borde de tinta y sombra dura.
 DropPopup {
     id: root
 
@@ -12,12 +14,10 @@ DropPopup {
     onOpenChanged: if (open)
         Brightness.refresh()
 
-    signal openDevices
     signal openFocus
     signal openWalls
-    signal openPayments
 
-    // Botón: el ícono va en un círculo que se pinta de violeta cuando está activo
+    // Interruptor cuadrado: ícono arriba (se pinta de acento cuando está activo), nombre y estado
     component Tile: Rectangle {
         id: tile
 
@@ -28,10 +28,10 @@ DropPopup {
 
         signal clicked
 
-        implicitHeight: 48
+        implicitHeight: 82
         radius: Theme.controlRadius
         color: area.containsMouse ? Theme.hover : Theme.surface
-        border.width: Theme.comic ? 1.5 : 0
+        border.width: Theme.comic ? 2 : 0
         border.color: Theme.comic ? (tile.on ? Theme.accent : Theme.ink) : "transparent"
 
         Behavior on color {
@@ -40,16 +40,28 @@ DropPopup {
             }
         }
 
-        RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 10
-            anchors.rightMargin: 10
-            spacing: 10
+        // Sombra dura (temas de cómic): hija con z negativo para no correr nada de lugar
+        Rectangle {
+            z: -1
+            visible: Theme.comic
+            x: 3
+            y: 3
+            width: parent.width
+            height: parent.height
+            radius: parent.radius
+            color: Theme.shadow
+        }
+
+        Column {
+            anchors.centerIn: parent
+            width: parent.width - 12
+            spacing: 4
 
             Rectangle {
-                Layout.preferredWidth: 30
-                Layout.preferredHeight: 30
-                radius: Theme.comic ? 6 : 8
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 34
+                height: 34
+                radius: Theme.comic ? 6 : 10
                 color: tile.on ? Theme.accent : Theme.track
                 border.width: Theme.comic ? 1.5 : 0
                 border.color: Theme.comic ? Theme.ink : "transparent"
@@ -63,32 +75,30 @@ DropPopup {
                 MIcon {
                     anchors.centerIn: parent
                     name: tile.icon
-                    font.pixelSize: 18
+                    font.pixelSize: 19
                     color: tile.on ? Theme.accentText : Theme.text
                 }
             }
 
-            Column {
-                Layout.fillWidth: true
-                spacing: 1
+            Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text: Theme.comic ? tile.title.toUpperCase() : tile.title
+                elide: Text.ElideRight
+                color: Theme.text
+                font.pixelSize: Theme.comic ? 14 : 12
+                font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                font.family: Theme.comic ? Theme.displayFont : ""
+                font.letterSpacing: Theme.comic ? 0.5 : 0
+            }
 
-                Text {
-                    width: parent.width
-                    text: tile.title
-                    elide: Text.ElideRight
-                    color: Theme.text
-                    font.pixelSize: Theme.comic ? 14 : 13
-                    font.weight: Font.DemiBold
-                    font.family: Theme.comic ? Theme.displayFont : ""
-                }
-
-                Text {
-                    width: parent.width
-                    text: tile.subtitle
-                    elide: Text.ElideRight
-                    color: tile.on ? Theme.accent : Theme.textDim
-                    font.pixelSize: 11
-                }
+            Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                text: tile.subtitle
+                elide: Text.ElideRight
+                color: tile.on ? Theme.accent : Theme.textDim
+                font.pixelSize: 11
             }
         }
 
@@ -103,20 +113,21 @@ DropPopup {
     }
 
     bodyWidth: 340
-    bodyHeight: column.implicitHeight + 26
+    bodyHeight: column.implicitHeight + 28
 
     ColumnLayout {
         id: column
 
         x: 16
-        y: 2
+        y: 4
         width: root.bodyWidth - 32
-        spacing: 8
+        spacing: 10
 
         PillSlider {
             Layout.fillWidth: true
             visible: Brightness.available
             icon: "brightness_6"
+            label: "Brillo"
             value: Brightness.level
             onMoved: v => Brightness.setLevel(v)
         }
@@ -125,6 +136,7 @@ DropPopup {
             Layout.fillWidth: true
             iconClickable: true
             icon: (root.sink?.audio?.muted ?? false) || (root.sink?.audio?.volume ?? 0) <= 0 ? "volume_off" : ((root.sink?.audio?.volume ?? 0) < 0.5 ? "volume_down" : "volume_up")
+            label: "Volumen"
             value: root.sink?.audio?.volume ?? 0
             muted: root.sink?.audio?.muted ?? false
             onMoved: v => {
@@ -137,31 +149,18 @@ DropPopup {
             }
         }
 
-        // Lo que suena (solo aparece si hay un reproductor)
-        MediaCard {
-            Layout.fillWidth: true
-        }
-
         GridLayout {
             Layout.fillWidth: true
-            columns: 2
-            columnSpacing: 8
-            rowSpacing: 8
-
-            Tile {
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-                icon: "keyboard"
-                title: "Teclado"
-                subtitle: Keyboard.code
-                onClicked: Keyboard.toggle()
-            }
+            Layout.topMargin: 2
+            columns: 3
+            columnSpacing: 9
+            rowSpacing: 9
 
             Tile {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
                 icon: Focus.running ? (Focus.phase === "estudio" ? "school" : "coffee") : "timer"
-                title: "Modo foco"
+                title: "Foco"
                 subtitle: Focus.running ? Focus.clock(Focus.remaining) : "Apagado"
                 on: Focus.running
                 onClicked: root.openFocus()
@@ -172,7 +171,7 @@ DropPopup {
                 Layout.preferredWidth: 1
                 icon: Notifs.dnd ? "notifications_off" : "notifications_active"
                 title: "No molestar"
-                subtitle: Notifs.dnd ? "Activado" : "Desactivado"
+                subtitle: Notifs.dnd ? "Activado" : "Apagado"
                 on: Notifs.dnd
                 onClicked: Notifs.dnd = !Notifs.dnd
             }
@@ -180,29 +179,10 @@ DropPopup {
             Tile {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
-                icon: Disks.removable.length > 0 ? "usb" : "hard_drive"
-                title: "Dispositivos"
-                subtitle: Disks.removable.length > 0 ? Disks.removable.length + (Disks.removable.length === 1 ? " conectado" : " conectados") : "Discos"
-                onClicked: root.openDevices()
-            }
-
-            Tile {
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-                icon: "payments"
-                title: "Pagos"
-                subtitle: Subs.upcoming.length > 0 ? Subs.upcoming[0].sub.name + " · " + (Subs.upcoming[0].days <= 0 ? "hoy" : (Subs.upcoming[0].days === 1 ? "mañana" : Subs.upcoming[0].days + " d")) : "Sin suscripciones"
-                on: Subs.upcoming.length > 0 && Subs.upcoming[0].days <= 1
-                onClicked: root.openPayments()
-            }
-
-            Tile {
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-                icon: "wallpaper"
-                title: "Fondo"
-                subtitle: Walls.list.length + " imágenes"
-                onClicked: root.openWalls()
+                icon: "keyboard"
+                title: "Teclado"
+                subtitle: Keyboard.code
+                onClicked: Keyboard.toggle()
             }
         }
     }

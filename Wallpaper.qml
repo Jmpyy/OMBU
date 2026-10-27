@@ -47,4 +47,11 @@ PanelWindow {
         opacity: 0.08
         smooth: false
     }
+
+    // Stickers del escritorio vacío (hora, clima, agenda, racha): solo en el monitor principal
+    DesktopStickers {
+        anchors.fill: parent
+        screenName: win.modelData.name
+        enabled: Screens.primary !== null && win.modelData.name === Screens.primary.name
+    }
 }

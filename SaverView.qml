@@ -19,9 +19,10 @@ Item {
     readonly property real lh: fm.lineSpacing
     readonly property int cols: Math.floor(width / cw)
     readonly property int rows: Math.floor(height / lh)
-    // Dónde queda la grilla de texto (está centrada)
-    readonly property real gridX: Math.round((width - cols * cw) / 2)
-    readonly property real gridY: Math.round((height - rows * lh) / 2)
+    // Dónde queda la grilla de texto: la compartida (Saver.cols x Saver.rows, la más grande de todos los
+    // monitores) centrada en este; en un monitor más chico queda por fuera y se recorta (clip)
+    readonly property real gridX: Math.round((width - Saver.cols * cw) / 2)
+    readonly property real gridY: Math.round((height - Saver.rows * lh) / 2)
 
     // Rampa de la lluvia: con Ombú, los violetas de siempre; con los demás temas, derivada de su acento
     readonly property bool ombuLook: Theme.accent.toString().toLowerCase() === "#a78bfa"
@@ -39,17 +40,19 @@ Item {
     clip: true
     opacity: amount
     visible: amount > 0.01
-    // La lluvia y el logo se calculan una sola vez para todos los monitores: manda el principal (el de
-    // menor x). Con el último en configurar, el logo salía descentrado en el principal.
-    readonly property var myScreen: QsWindow.window ? QsWindow.window.screen : null
-    readonly property bool primary: myScreen === null || Screens.list.every(s => s.x >= myScreen.x)
-    function configureIfPrimary(): void {
-        if (primary)
-            Saver.configure(cols, rows);
+    // La lluvia y el logo se calculan una sola vez para todos los monitores, del tamaño del más grande en
+    // cada dirección (ver Saver.report). Antes mandaba «el principal», pero al crearse la ventana todavía
+    // no sabe en qué monitor está y cualquiera se creía el principal: con el TV vertical ganaba él y el
+    // logo del monitor principal quedaba fuera de pantalla.
+    readonly property string sizeKey: "vista-" + Math.random().toString(36).slice(2)
+    function reportSize(): void {
+        if (cols > 0 && rows > 0)
+            Saver.report(sizeKey, cols, rows);
     }
-    onColsChanged: configureIfPrimary()
-    onRowsChanged: configureIfPrimary()
-    onPrimaryChanged: configureIfPrimary()
+    onColsChanged: reportSize()
+    onRowsChanged: reportSize()
+    Component.onCompleted: reportSize()
+    Component.onDestruction: Saver.forget(sizeKey)
 
     FontMetrics {
         id: fm
@@ -66,8 +69,8 @@ Item {
     SaverLayer {
         cellWidth: root.cw
         cellHeight: root.lh
-        gridCols: root.cols
-        gridRows: root.rows
+        gridCols: Saver.cols
+        gridRows: Saver.rows
         text: Saver.dim
         color: root.dimColor
     }
@@ -75,8 +78,8 @@ Item {
     SaverLayer {
         cellWidth: root.cw
         cellHeight: root.lh
-        gridCols: root.cols
-        gridRows: root.rows
+        gridCols: Saver.cols
+        gridRows: Saver.rows
         text: Saver.mid
         color: root.midColor
     }
@@ -84,8 +87,8 @@ Item {
     SaverLayer {
         cellWidth: root.cw
         cellHeight: root.lh
-        gridCols: root.cols
-        gridRows: root.rows
+        gridCols: Saver.cols
+        gridRows: Saver.rows
         text: Saver.bright
         color: root.brightColor
     }
@@ -93,8 +96,8 @@ Item {
     SaverLayer {
         cellWidth: root.cw
         cellHeight: root.lh
-        gridCols: root.cols
-        gridRows: root.rows
+        gridCols: Saver.cols
+        gridRows: Saver.rows
         text: Saver.head
         color: root.headColor
     }
@@ -102,8 +105,8 @@ Item {
     SaverLayer {
         cellWidth: root.cw
         cellHeight: root.lh
-        gridCols: root.cols
-        gridRows: root.rows
+        gridCols: Saver.cols
+        gridRows: Saver.rows
         text: Saver.logo
         color: root.logoColor
     }
@@ -111,9 +114,15 @@ Item {
     SaverLayer {
         cellWidth: root.cw
         cellHeight: root.lh
-        gridCols: root.cols
-        gridRows: root.rows
+        gridCols: Saver.cols
+        gridRows: Saver.rows
         text: Saver.logoHi
         color: root.logoHiColor
+    }
+
+    // Toques de historieta encima de la lluvia (solo temas de cómic y no en la bienvenida, que dura 4 s)
+    SaverComic {
+        anchors.fill: parent
+        visible: Theme.comicArt && !Saver.welcome
     }
 }

@@ -12,7 +12,8 @@ DropPopup {
     // Submenús abiertos, del más externo al más interno
     property var stack: []
 
-    readonly property var current: stack.length > 0 ? stack[stack.length - 1] : trayItem.menu
+    // Sin `?.` fallaba cuando la app se cerraba: el menú vive un instante más que su ícono de la bandeja
+    readonly property var current: stack.length > 0 ? stack[stack.length - 1] : (trayItem?.menu ?? null)
 
     onOpenChanged: if (!open)
         stack = []

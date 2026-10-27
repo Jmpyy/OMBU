@@ -82,6 +82,7 @@ Item {
 
                 // Trama suave de fondo
                 Halftone {
+                    art: true
                     strength: 0.04
                     anchors.margins: 2
                 }
@@ -94,7 +95,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         text: root.name
                         color: "#110c0e"
-                        font.family: Theme.displayFont || Qt.application.font.family
+                        font.family: Theme.artFont || Qt.application.font.family
                         font.pixelSize: 32
                         font.letterSpacing: 2
                         font.weight: Font.Bold
@@ -116,7 +117,7 @@ Item {
                             anchors.centerIn: parent
                             text: "!"
                             color: "#ffffff"
-                            font.family: Theme.displayFont || Qt.application.font.family
+                            font.family: Theme.artFont || Qt.application.font.family
                             font.pixelSize: 15
                             font.weight: Font.Bold
                         }

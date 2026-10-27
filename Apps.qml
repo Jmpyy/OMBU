@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
+import Quickshell.Services.SystemTray
 
 // Apps que siguen corriendo aunque no tengan ventana abierta.
 Singleton {
@@ -39,6 +40,30 @@ Singleton {
     }
 
     readonly property var background: running.filter(a => !a.pids.some(p => windowPids[p]) && !windowEntryIds[a.id.toLowerCase()])
+    // Ventanas minimizadas (Hyprland no minimiza: ombu las manda al escritorio especial «minimized»)
+    readonly property var minimized: windows.filter(t => t.workspace?.name === "special:minimized")
+    // Apps de la bandeja del sistema (Discord, Steam, Sung...): ya no van en la barra, sino en el menú de
+    // segundo plano, cada una con su menú de opciones
+    readonly property var trayItems: Array.from(SystemTray.items.values)
+    // Una app sin ventana que también está en la bandeja se muestra una sola vez (como app de la bandeja)
+    function inTray(a: var): bool {
+        const aid = (a.id ?? "").toLowerCase(), an = (a.name ?? "").toLowerCase();
+        return (trayItems ?? []).some(t => {
+            const tid = (t.id ?? "").toLowerCase(), tt = (t.title ?? "").toLowerCase();
+            return tid !== "" && (aid.includes(tid) || tid.includes(aid) || tid === an || (tt !== "" && tt === an));
+        });
+    }
+    readonly property var backgroundOnly: (background ?? []).filter(a => !inTray(a))
+    // Lo que está «guardado»: minimizado, en la bandeja o corriendo sin ventana. Es lo que muestran el
+    // botón de la barra y su menú (AppsMenu); las ventanas en uso no.
+    // Al arrancar, las listas se calculan en cualquier orden y alguna puede no existir todavía: se cuenta
+    // lo que tenga largo (una lista de QML no pasa Array.isArray).
+    readonly property int tucked: {
+        let n = 0;
+        for (const l of [minimized, trayItems, backgroundOnly])
+            n += l && l.length > 0 ? l.length : 0;
+        return n;
+    }
 
     function refresh(): void {
         Hyprland.refreshToplevels();

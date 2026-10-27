@@ -354,6 +354,8 @@ DropPopup {
                                     cursorShape: Qt.PointingHandCursor
                                 }
                                 TapHandler {
+                                    // Se queda con el clic: si no, también lo recibe la fila que lo contiene
+                                    gesturePolicy: TapHandler.ReleaseWithinBounds
                                     onTapped: Agenda.toggleQuiet(calRow.modelData.id)
                                 }
                             }
@@ -585,7 +587,7 @@ DropPopup {
                         const m = Chrono.capitalize(Chrono.locale.monthName(root.month, Locale.LongFormat)) + " " + root.year;
                         return Theme.comic ? m.toUpperCase() : m;
                     }
-                    color: Theme.accent
+                    color: Theme.comic ? Theme.accent : Theme.text
                     font.pixelSize: Theme.comic ? 16 : 14
                     font.weight: Font.DemiBold
                     font.family: Theme.comic ? Theme.displayFont : ""
@@ -647,7 +649,8 @@ DropPopup {
                     font.pixelSize: 11
                     font.weight: Font.Medium
                     // Sábado y domingo
-                    color: model.day === 0 || model.day === 6 ? Theme.accent : Theme.textDim
+                    // Fines de semana un poco más apagados, como en macOS (el acento queda para hoy y los feriados)
+                    color: model.day === 0 || model.day === 6 ? Qt.rgba(Theme.textDim.r, Theme.textDim.g, Theme.textDim.b, 0.7) : Theme.textDim
                 }
             }
         }
@@ -732,7 +735,7 @@ DropPopup {
                             font.pixelSize: Theme.comic ? 14 : 13
                             font.weight: day.model.today ? Font.Bold : Font.Normal
                             font.family: Theme.comic ? Theme.displayFont : ""
-                            color: day.model.today ? Theme.accentText : (!day.inMonth ? Theme.track : (day.marks.holiday ? Agenda.holidayColor : (day.isWeekend ? Theme.accent : Theme.text)))
+                            color: day.model.today ? Theme.accentText : (!day.inMonth ? Theme.track : (day.marks.holiday ? Agenda.holidayColor : (day.isWeekend ? Theme.textDim : Theme.text)))
                         }
 
                         // Puntos: evento propio, Google y día de estudio

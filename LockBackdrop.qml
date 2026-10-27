@@ -32,6 +32,9 @@ Item {
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         visible: false
+        // Se desenfoca entero: a un cuarto de resolución se ve igual y ocupa 2 MB en vez de ~16
+        // (el fondo actual es de 2666x1500)
+        sourceSize: Qt.size(960, 540)
     }
 
     MultiEffect {

@@ -45,9 +45,10 @@ local D = {
     ["SUPER + CONTROL + Tab"]       = "Escritorios|Volver al escritorio anterior",
     ["SUPER + mouse_down"]          = "Escritorios|Pasar de escritorio con la rueda|Super + rueda",
     ["SUPER + S"]                   = "Escritorios|Mostrar u ocultar el escritorio especial",
-    ["SUPER + SHIFT + S"]           = "Escritorios|Mandar la ventana al escritorio especial",
+    ["SUPER + ALT + S"]             = "Escritorios|Mandar la ventana al escritorio especial",
 
     -- Capturas
+    ["SUPER + SHIFT + S"]           = "Capturas|Región y editor (Satty)",
     ["Print"]                       = "Capturas|Región y editor",
     ["SHIFT + Print"]               = "Capturas|Región directa",
     ["SUPER + Print"]               = "Capturas|Todo el monitor",
@@ -63,7 +64,9 @@ local D = {
     -- Sistema
     ["SUPER + K"]                   = "Sistema|Esta lista de atajos",
     ["SUPER + ALT + Space"]         = "Sistema|Menú del sistema (estilo, ajustes, capturas...)",
-    ["SUPER + A"]                   = "Sistema|Panel lateral (resumen, noticias, estado de la PC)",
+    ["SUPER + A"]                   = "Sistema|Panel lateral (resumen, chat con la IA, estado de la PC)",
+    ["SUPER + ALT + N"]             = "Estudio e IA|Anotar parcial, entrega o nota",
+    ["SUPER + SHIFT + A"]           = "Estudio e IA|Chat con la IA (Claude o Antigravity)",
     ["SUPER + CONTROL + Space"]     = "Sistema|Elegir el fondo de pantalla|Super + Ctrl + Espacio",
     ["SUPER + CONTROL + SHIFT + Space"] = "Sistema|Elegir el tema de colores|Super + Ctrl + Shift + Espacio",
     ["SUPER + Escape"]              = "Sistema|Menú de energía|Super + Esc  /  Super + X",

@@ -19,6 +19,9 @@ state="${XDG_RUNTIME_DIR:-/tmp}/ombu-agent-$agent.start"
 # Antigravity espera un JSON de salida; Claude Code toma como contexto lo que se imprima
 reply() { [ "$agent" = "agy" ] && printf '{}\n'; return 0; }
 
+# Los turnos del chat del panel lateral (bin/agent-chat.py) ya se ven ahí: sin aviso
+[ -n "${OMBU_CHAT:-}" ] && { cat >/dev/null 2>&1; reply; exit 0; }
+
 # Ícono del aviso: el de Claude es un archivo propio del usuario (no se sube al repo: es una
 # marca de otra empresa); si no existe, el aviso sale con el ícono genérico
 case "$agent" in

@@ -32,16 +32,23 @@ ShellRoot {
         Wallpaper {}
     }
 
+    // La barra va solo en el monitor principal: en el TV vertical no hacía falta (pedido de la persona) y
+    // cada barra crea todos sus menús (~40-60 MB). El TV queda entero para lo que se ponga ahí.
     Variants {
-        model: Screens.list
+        model: Screens.primary ? [Screens.primary] : []
 
         TopBar {}
     }
 
-    Variants {
-        model: Screens.list
+    // La bienvenida solo existe mientras dura (video y lluvia de código ocupan memoria)
+    LazyLoader {
+        active: Welcome.shown
 
-        WelcomeWindow {}
+        Variants {
+            model: Screens.list
+
+            WelcomeWindow {}
+        }
     }
 
     Variants {
@@ -56,19 +63,59 @@ ShellRoot {
         NotifToasts {}
     }
 
+    // Despedida antes de apagar, reiniciar o cerrar sesión (ver Goodbye): solo existe mientras dura
+    LazyLoader {
+        active: Goodbye.action !== ""
+
+        Variants {
+            model: Screens.list
+
+            GoodbyeWindow {}
+        }
+    }
+
+    // La vista previa del bloqueo (ipc call lock preview) casi nunca está abierta: se crea al abrirla.
+    // El bloqueo real (Lock) no pasa por acá: ext-session-lock crea sus superficies al bloquear.
     Variants {
         model: Screens.list
 
-        LockPreview {}
+        LazyLoader {
+            id: lockPreview
+
+            required property var modelData
+
+            active: Ui.locked && Ui.lockPreview
+
+            LockPreview {
+                modelData: lockPreview.modelData
+            }
+        }
     }
 
     Lock {}
 
 
+    // Menús que casi nunca están abiertos (energía, cartel del modo foco, atajos, menú del sistema, fondos):
+    // se crean al abrirlos y se destruyen al terminar de cerrarse (~20 MB menos; la primera aparición
+    // tarda ~100-150 ms más). Siguen abiertos mientras su ventana se ve, para la animación de cierre.
     Variants {
         model: Screens.list
 
-        PowerMenu {}
+        LazyLoader {
+            id: powerMenuLoader
+
+            required property var modelData
+            // La ventana se ve (la actualiza ella misma): así sigue viva durante la animación de cierre
+            property bool shown: false
+
+            active: Ui.powerOpen || shown
+
+            PowerMenu {
+                modelData: powerMenuLoader.modelData
+                onVisibleChanged: powerMenuLoader.shown = visible
+                Component.onCompleted: powerMenuLoader.shown = visible
+            }
+        }
     }
 
     Variants {
@@ -80,7 +127,21 @@ ShellRoot {
     Variants {
         model: Screens.list
 
-        FocusBlock {}
+        LazyLoader {
+            id: focusBlockLoader
+
+            required property var modelData
+            // La ventana se ve (la actualiza ella misma): así sigue viva durante la animación de cierre
+            property bool shown: false
+
+            active: Focus.noticeVisible || shown
+
+            FocusBlock {
+                modelData: focusBlockLoader.modelData
+                onVisibleChanged: focusBlockLoader.shown = visible
+                Component.onCompleted: focusBlockLoader.shown = visible
+            }
+        }
     }
 
     Variants {
@@ -92,13 +153,41 @@ ShellRoot {
     Variants {
         model: Screens.list
 
-        KeysMenu {}
+        LazyLoader {
+            id: keysMenuLoader
+
+            required property var modelData
+            // La ventana se ve (la actualiza ella misma): así sigue viva durante la animación de cierre
+            property bool shown: false
+
+            active: Ui.keysOpen || shown
+
+            KeysMenu {
+                modelData: keysMenuLoader.modelData
+                onVisibleChanged: keysMenuLoader.shown = visible
+                Component.onCompleted: keysMenuLoader.shown = visible
+            }
+        }
     }
 
     Variants {
         model: Screens.list
 
-        SystemMenu {}
+        LazyLoader {
+            id: noteMenuLoader
+
+            required property var modelData
+            // La ventana se ve (la actualiza ella misma): así sigue viva durante la animación de cierre
+            property bool shown: false
+
+            active: Ui.noteOpen || shown
+
+            AnotarMenu {
+                modelData: noteMenuLoader.modelData
+                onVisibleChanged: noteMenuLoader.shown = visible
+                Component.onCompleted: noteMenuLoader.shown = visible
+            }
+        }
     }
 
     // El panel lateral y su borde sensible viven solo en el monitor principal: el que está más a la
@@ -118,7 +207,21 @@ ShellRoot {
     Variants {
         model: Screens.list
 
-        WallpaperPicker {}
+        LazyLoader {
+            id: wallpaperPickerLoader
+
+            required property var modelData
+            // La ventana se ve (la actualiza ella misma): así sigue viva durante la animación de cierre
+            property bool shown: false
+
+            active: Ui.wallMenuOpen || shown
+
+            WallpaperPicker {
+                modelData: wallpaperPickerLoader.modelData
+                onVisibleChanged: wallpaperPickerLoader.shown = visible
+                Component.onCompleted: wallpaperPickerLoader.shown = visible
+            }
+        }
     }
 
     // qs -c ombu ipc call bar toggle  -> mostrar/ocultar la barra
@@ -140,7 +243,7 @@ ShellRoot {
         target: "keys"
     }
 
-    // qs -c ombu ipc call side toggle|open <resumen|noticias|sistema>|close  -> panel lateral (Super+A)
+    // qs -c ombu ipc call side toggle|open <resumen|chat|sistema>|close  -> panel lateral (Super+A)
     IpcHandler {
         function toggle(): void {
             Ui.sideTab = "";
@@ -157,6 +260,75 @@ ShellRoot {
         }
 
         target: "side"
+    }
+
+    // qs -c ombu ipc call note toggle|open "texto"|close|parse "texto"  -> anotador rápido (Super+Alt+N)
+    IpcHandler {
+        function toggle(): void {
+            Ui.launcherOpen = false;
+            Ui.keysOpen = false;
+            Ui.popup = "";
+            Ui.noteOpen = !Ui.noteOpen;
+        }
+
+        function open(text: string): void {
+            Ui.notePrefill = text;
+            Ui.noteOpen = false;
+            Ui.noteOpen = true;
+        }
+
+        function close(): void {
+            Ui.noteOpen = false;
+        }
+
+        // Lo que entendió el anotador del texto (lo último que se parseó; para probar)
+        function parsed(): string {
+            return JSON.stringify(Facu.parsed);
+        }
+
+        target: "note"
+    }
+
+    // qs -c ombu ipc call chat send "texto"|status|reset|stop|model <id>|attach clip|shot|file  -> chat del panel lateral (para probar)
+    IpcHandler {
+        function send(text: string): string {
+            Ui.sideTab = "chat";
+            Ui.sideOpen = true;
+            return Chat.send(text) ? "ok" : "ocupado o vacío";
+        }
+
+        function status(): string {
+            return JSON.stringify({
+                agent: Chat.agent,
+                model: Chat.model[Chat.agent],
+                cwd: Chat.cwd,
+                session: Chat.conv.session,
+                busy: Chat.busy,
+                messages: Chat.messages.length,
+                lastTokens: Chat.lastTokens,
+                limits: Chat.limits
+            });
+        }
+
+        function reset(): void {
+            Chat.reset();
+        }
+
+        function model(id: string): string {
+            Chat.setModel(id);
+            return Chat.model[Chat.agent];
+        }
+
+        // clip | shot | file
+        function attach(kind: string): void {
+            Chat.attach(kind);
+        }
+
+        function stop(): void {
+            Chat.stop();
+        }
+
+        target: "chat"
     }
 
     // qs -c ombu ipc call media toggle|next|previous|status  -> el reproductor de música
@@ -189,7 +361,7 @@ ShellRoot {
         target: "media"
     }
 
-    // qs -c ombu ipc call menu toggle  -> menú del sistema (Super+Alt+Espacio)
+    // qs -c ombu ipc call menu toggle|open "Tema"|close|theme <id>  -> menú de la araña (Super+Alt+Espacio)
     IpcHandler {
         function toggle(): void {
             Ui.powerOpen = false;
@@ -204,7 +376,7 @@ ShellRoot {
             Ui.sysMenuOpen = false;
         }
 
-        // ipc call menu open "Estilo>Tema"  -> abre el menú directo en esa sección
+        // ipc call menu open "Tema"  -> abre el menú directo en la página de temas
         function open(path: string): void {
             Ui.powerOpen = false;
             Ui.launcherOpen = false;
@@ -340,30 +512,14 @@ ShellRoot {
             Ui.popup = Ui.popup === key ? "" : key;
         }
 
-        function payments(): void {
-            const key = "payments@" + (Hyprland.focusedMonitor?.name ?? "");
-            Ui.popup = Ui.popup === key ? "" : key;
-        }
-
         function control(): void {
             const key = "control@" + (Hyprland.focusedMonitor?.name ?? "");
-            Ui.popup = Ui.popup === key ? "" : key;
-        }
-
-        // ipc call bar music  -> lo que suena, en grande (el menú del indicador de música)
-        function music(): void {
-            const key = "music@" + (Hyprland.focusedMonitor?.name ?? "");
             Ui.popup = Ui.popup === key ? "" : key;
         }
 
         function walls(): void {
             Ui.popup = "";
             Ui.wallMenuOpen = !Ui.wallMenuOpen;
-        }
-
-        function devices(): void {
-            const key = "devices@" + (Hyprland.focusedMonitor?.name ?? "");
-            Ui.popup = Ui.popup === key ? "" : key;
         }
 
         function focus(): void {
@@ -401,7 +557,7 @@ ShellRoot {
             Focus.closeBlocked();
         }
 
-        // focus kit programacion|matematica|otro · focus open (todo el entorno) · focus tool notebook|ide|ai
+        // focus kit programacion|otro · focus open (todo el entorno) · focus tool notebook|ide|ai
         function kit(name: string): void {
             Focus.setKit(name);
         }
@@ -570,6 +726,11 @@ ShellRoot {
             Idle.rearm();
         }
 
+        // ipc call idle status  -> si algo (un video) está frenando el bloqueo por inactividad
+        function status(): string {
+            return Idle.describe();
+        }
+
         function reset(): void {
             Idle.testMode = false;
             Idle.lockSeconds = Theme.idleLockSeconds;
@@ -590,9 +751,14 @@ ShellRoot {
     }
 
     // qs -c ombu ipc call power toggle
+    // qs -c ombu ipc call power goodbye  -> muestra la despedida de apagar SIN apagar (para probarla)
     IpcHandler {
         function toggle(): void {
             Ui.powerOpen = !Ui.powerOpen;
+        }
+
+        function goodbye(): void {
+            Goodbye.test();
         }
 
         target: "power"

@@ -15,6 +15,9 @@ Singleton {
     // Historial del portapapeles abierto
     property bool clipOpen: false
     property bool keysOpen: false
+    // Anotador rápido (AnotarMenu) y el texto con el que abre
+    property bool noteOpen: false
+    property string notePrefill: ""
     property bool sysMenuOpen: false
     // Panel lateral (SidePanel) y la pestaña por la que abre (vacío = la última)
     property bool sideOpen: false

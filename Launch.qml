@@ -23,7 +23,7 @@ Singleton {
 
     // Cosas del sistema que no se muestran en la lista principal (sí al buscarlas por nombre)
     readonly property var hiddenCategories: ["Settings", "DesktopSettings", "HardwareSettings", "X-XFCE-SettingsDialog"]
-    readonly property var hiddenPattern: /avahi|qv4l2|qvidcap|xgps|rofi|uuctl|schedext|limine|cachyos-hello|noctalia/i
+    readonly property var hiddenPattern: /avahi|qv4l2|qvidcap|xgps|rofi|uuctl|schedext|limine|cachyos-hello|noctalia|jconsole|jshell|java.*console|java-java/i
 
     readonly property string dataDir: (Quickshell.env("HOME") ?? "") + "/.local/share/ombu"
 

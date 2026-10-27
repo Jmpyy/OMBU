@@ -49,7 +49,12 @@ def exec_key(command: str):
     if not parts:
         return None
     key = os.path.basename(parts[0]).lower()
-    return None if key in SKIP_EXEC else key
+    if key in SKIP_EXEC:
+        return None
+    # Los accesos directos de juegos de Steam (steam steam://rungameid/...) no son el cliente Steam
+    if key == "steam" and any("rungameid" in p for p in parts[1:]):
+        return None
+    return key
 
 
 def load_entries():

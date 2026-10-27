@@ -480,6 +480,8 @@ PanelWindow {
                                         cursorShape: Qt.PointingHandCursor
                                     }
                                     TapHandler {
+                                        // Se queda con el clic: si no, también lo recibe la fila que lo contiene
+                                        gesturePolicy: TapHandler.ReleaseWithinBounds
                                         onTapped: win.togglePin(item.modelData)
                                     }
                                 }
@@ -503,6 +505,8 @@ PanelWindow {
                                         cursorShape: Qt.PointingHandCursor
                                     }
                                     TapHandler {
+                                        // Se queda con el clic: si no, también lo recibe la fila que lo contiene
+                                        gesturePolicy: TapHandler.ReleaseWithinBounds
                                         onTapped: Clip.remove(item.modelData)
                                     }
                                 }

@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 
 // Línea de tiempo de un reproductor MPRIS: transcurrido, barra y duración. Se arrastra para adelantar o
-// atrasar (mientras se arrastra se ve adónde va y salta al soltar). La usan MediaCard y MusicMenu.
+// atrasar (mientras se arrastra se ve adónde va y salta al soltar). La usa MediaCard.
 RowLayout {
     id: root
 

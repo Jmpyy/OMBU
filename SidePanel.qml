@@ -5,15 +5,14 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 
 // Panel lateral del monitor principal: se abre pegando el mouse al borde izquierdo (SideEdge) o con
-// Super+A. Tres pestañas: Resumen (hoy, pagos, música), Noticias y Sistema. Todo lo que mide o baja
-// lo hace solo mientras está abierto; cerrado no consume nada.
+// Super+A. Tres pestañas: Resumen (hoy, pagos, música), Chat (Claude Code o Antigravity, ChatView) y
+// Sistema. Todo lo que mide o baja lo hace solo mientras está abierto; cerrado no consume nada.
 PanelWindow {
     id: win
 
     required property var modelData
 
     property string tab: "resumen"
-    property string newsCategory: "todo"
     // El mouse entró alguna vez al panel desde que se abrió: recién ahí empieza a valer «salir cierra»
     property bool entered: false
 
@@ -44,39 +43,6 @@ PanelWindow {
         return h >= 24 ? Math.floor(h / 24) + " d " + (h % 24) + " h" : h + " h " + m + " min";
     }
 
-    readonly property var newsItems: {
-        if (newsCategory === "todo")
-            return News.all;
-        const c = News.categories.find(x => x.id === newsCategory);
-        return c ? c.items.map(it => Object.assign({}, it, {
-                category: c.name,
-                categoryId: c.id
-            })) : [];
-    }
-
-    // Cada categoría de noticias tiene su color (el sticker de cada titular y su botón)
-    function catColor(id: string): color {
-        switch (id) {
-        case "argentina":
-            return Theme.accent;
-        case "economia":
-            return Theme.warn;
-        case "tecnologia":
-            return Themes.active.border2 ?? "#5fb0ae";
-        case "seguridad":
-            return Theme.danger;
-        case "programacion":
-            return "#6f9bf0";
-        default:
-            return Theme.accent;
-        }
-    }
-
-    // Texto legible sobre un color: tinta sobre los claros, crema sobre los oscuros
-    function onColor(c: color): color {
-        return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) > 0.5 ? Theme.ink : Theme.accentText;
-    }
-
     // Lo que se mide o se baja depende de la pestaña abierta
     Binding {
         target: SysStat
@@ -85,8 +51,19 @@ PanelWindow {
         when: win.activeOnScreen
     }
 
-    onTabChanged: if (Ui.sideOpen && tab === "noticias")
-        News.load(false)
+    Binding {
+        target: Seguridad
+        property: "active"
+        value: Ui.sideOpen && win.tab === "sistema"
+        when: win.activeOnScreen
+    }
+
+    onTabChanged: {
+        if (Ui.sideOpen && tab === "chat")
+            chat.focusInput();
+        if (Ui.sideOpen && tab === "sistema")
+            Seguridad.load(false);
+    }
 
     property real p: Ui.sideOpen ? 1 : 0
 
@@ -112,9 +89,12 @@ PanelWindow {
                 win.tab = Ui.sideTab;
                 Ui.sideTab = "";
             }
-            if (win.tab === "noticias")
-                News.load(false);
+            if (win.tab === "chat")
+                chat.focusInput();
+            if (win.tab === "sistema")
+                Seguridad.load(false);
             Focus.recordHistory();
+            Facu.refreshSubjects();
             Estacion.load();
             summaryFlick.contentY = 0;
         }
@@ -151,14 +131,15 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "ombu-side"
-    WlrLayershell.keyboardFocus: Ui.sideOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    // En el chat toma el teclado (se escribe apenas abre, como el launcher; Esc cierra); en el resto, solo al hacer clic
+    WlrLayershell.keyboardFocus: Ui.sideOpen ? (tab === "chat" ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand) : WlrKeyboardFocus.None
 
     // Salir con el mouse cierra el panel casi enseguida (la pausa evita que un roce al borde lo cierre)
     Timer {
         id: leave
 
         interval: 150
-        onTriggered: if (win.entered && !hover.hovered)
+        onTriggered: if (win.entered && !hover.hovered && !(win.tab === "chat" && chat.holding))
             Ui.sideOpen = false
     }
 
@@ -211,8 +192,8 @@ PanelWindow {
                             name: "Resumen"
                         },
                         {
-                            id: "noticias",
-                            name: "Noticias"
+                            id: "chat",
+                            name: "Chat"
                         },
                         {
                             id: "sistema",
@@ -325,191 +306,118 @@ PanelWindow {
                         }
 
                         readonly property var todays: Agenda.itemsFor(Agenda.ymd(Chrono.date), true)
-                        readonly property var next: Agenda.upcoming(4)
+                        // Sin los pagos: tienen su tarjeta
+                        readonly property var later: Agenda.upcoming(14).filter(x => x.day !== Agenda.ymd(Agenda.now) && !x.tag.startsWith("sub:")).slice(0, 4)
 
-                        // Hoy
+                        // Anotar como en el papel (abre AnotarMenu)
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: 38
+                            radius: Theme.controlRadius
+                            color: noteHover.hovered ? Theme.hover : Theme.surface
+                            border.width: Theme.comic ? 2 : 1
+                            border.color: Theme.comic ? Theme.ink : Theme.border
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 12
+                                anchors.rightMargin: 10
+                                spacing: 8
+
+                                MIcon {
+                                    name: "edit_note"
+                                    font.pixelSize: 18
+                                    color: Theme.accent
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Anotar parcial, entrega o nota…"
+                                    color: Theme.textDim
+                                    font.pixelSize: 13
+                                }
+
+                                Rectangle {
+                                    implicitWidth: keyHint.implicitWidth + 12
+                                    implicitHeight: 20
+                                    radius: 5
+                                    color: Theme.track
+
+                                    Text {
+                                        id: keyHint
+
+                                        anchors.centerIn: parent
+                                        text: "Super Alt N"
+                                        color: Theme.textDim
+                                        font.pixelSize: 10
+                                    }
+                                }
+                            }
+
+                            HoverHandler {
+                                id: noteHover
+
+                                cursorShape: Qt.PointingHandCursor
+                            }
+                            TapHandler {
+                                onTapped: Ui.noteOpen = true
+                            }
+                        }
+
+                        NowCard {
+                            Layout.fillWidth: true
+                        }
+
+                        FacuCard {
+                            Layout.fillWidth: true
+                        }
+
+                        // Agenda: lo que queda de hoy y los próximos días
                         ComicCard {
                             Layout.fillWidth: true
-                            title: "Hoy"
-                            tint: Theme.accent
+                            title: "Agenda"
+                            tint: Themes.active.border2 ?? Theme.accent
+
+                            Text {
+                                text: "HOY"
+                                color: Theme.textDim
+                                font.pixelSize: 10
+                                font.weight: Font.Bold
+                                font.letterSpacing: 1
+                            }
 
                             Text {
                                 visible: summary.todays.length === 0
                                 text: Agenda.googleLoading ? "Cargando agenda…" : "Nada agendado para hoy"
                                 color: Theme.textDim
-                                font.pixelSize: 13
+                                font.pixelSize: 12
                             }
 
                             Repeater {
                                 model: summary.todays.slice(0, 5)
 
-                                RowLayout {
-                                    required property var modelData
-
+                                AgendaRow {
                                     Layout.fillWidth: true
-                                    spacing: 8
-
-                                    Rectangle {
-                                        Layout.preferredWidth: 6
-                                        Layout.preferredHeight: 6
-                                        radius: 3
-                                        color: modelData.kind === "holiday" ? Agenda.holidayColor : (modelData.kind === "google" ? Agenda.googleColor : Agenda.localColor)
-                                    }
-
-                                    Text {
-                                        visible: modelData.time !== ""
-                                        text: modelData.time
-                                        color: Theme.textDim
-                                        font.pixelSize: 12
-                                    }
-
-                                    Text {
-                                        Layout.fillWidth: true
-                                        text: modelData.title
-                                        elide: Text.ElideRight
-                                        color: Theme.text
-                                        font.pixelSize: 13
-                                    }
-                                }
-                            }
-                        }
-
-                        // Lo que viene
-                        ComicCard {
-                            visible: summary.next.length > 0
-                            Layout.fillWidth: true
-                            title: "Próximos"
-                            tint: Themes.active.border2 ?? Theme.accent
-
-                            Repeater {
-                                model: summary.next
-
-                                RowLayout {
-                                    required property var modelData
-
-                                    Layout.fillWidth: true
-                                    spacing: 8
-
-                                    Text {
-                                        Layout.preferredWidth: 96
-                                        text: Chrono.capitalize(Agenda.parseDay(modelData.day).toLocaleDateString(Chrono.locale, "ddd d MMM")) + (modelData.time !== "" ? " " + modelData.time : "")
-                                        color: Theme.textDim
-                                        font.pixelSize: 12
-                                        elide: Text.ElideRight
-                                    }
-
-                                    Text {
-                                        Layout.fillWidth: true
-                                        text: modelData.title
-                                        elide: Text.ElideRight
-                                        color: Theme.text
-                                        font.pixelSize: 13
-                                    }
-                                }
-                            }
-                        }
-
-                        // Pagos que se vienen
-                        ComicCard {
-                            visible: Subs.upcoming.length > 0
-                            Layout.fillWidth: true
-                            title: "Pagos"
-                            tint: Theme.warn
-
-                            Repeater {
-                                model: Subs.upcoming.slice(0, 3)
-
-                                RowLayout {
-                                    required property var modelData
-
-                                    Layout.fillWidth: true
-                                    spacing: 8
-
-                                    Text {
-                                        Layout.fillWidth: true
-                                        text: modelData.sub.name
-                                        elide: Text.ElideRight
-                                        color: Theme.text
-                                        font.pixelSize: 13
-                                    }
-
-                                    Text {
-                                        text: Subs.whenText(modelData.days)
-                                        color: modelData.days <= 1 ? Theme.warn : Theme.textDim
-                                        font.pixelSize: 12
-                                    }
-
-                                    Text {
-                                        text: Subs.money(modelData.sub.amount, modelData.sub.currency)
-                                        color: Theme.text
-                                        font.pixelSize: 13
-                                        font.weight: Font.DemiBold
-                                    }
-                                }
-                            }
-                        }
-
-                        // Dólar
-                        ComicCard {
-                            visible: Estacion.dolar !== null
-                            Layout.fillWidth: true
-                            title: "Dólar"
-                            tint: "#5fb98a"
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 8
-
-                                Repeater {
-                                    model: [
-                                        {
-                                            key: "oficial",
-                                            name: "Oficial"
-                                        },
-                                        {
-                                            key: "blue",
-                                            name: "Blue"
-                                        },
-                                        {
-                                            key: "cripto",
-                                            name: "Cripto"
-                                        }
-                                    ]
-
-                                    Column {
-                                        required property var modelData
-
-                                        Layout.fillWidth: true
-                                        Layout.preferredWidth: 1
-
-                                        Text {
-                                            text: Estacion.dolar?.[modelData.key] ? Estacion.money(Estacion.dolar[modelData.key].venta) : "—"
-                                            color: Theme.text
-                                            font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
-                                            font.pixelSize: Theme.comic ? 22 : 15
-                                            font.weight: Theme.comic ? Font.Normal : Font.DemiBold
-                                            font.letterSpacing: Theme.comic ? 1 : 0
-                                        }
-
-                                        Text {
-                                            text: modelData.name
-                                            color: Theme.textDim
-                                            font.pixelSize: 11
-                                        }
-                                    }
                                 }
                             }
 
-                            // El próximo pago en dólares, en pesos al blue
                             Text {
-                                readonly property var usd: Subs.upcoming.find(u => u.sub.currency === "USD") ?? null
-
-                                visible: usd !== null && !!Estacion.dolar?.blue
-                                Layout.fillWidth: true
-                                text: usd && Estacion.dolar?.blue ? usd.sub.name + " (" + Subs.money(usd.sub.amount, "USD") + ") ≈ " + Estacion.money(usd.sub.amount * Estacion.dolar.blue.venta) + " al blue" : ""
-                                elide: Text.ElideRight
+                                visible: summary.later.length > 0
+                                Layout.topMargin: 4
+                                text: "PRÓXIMOS DÍAS"
                                 color: Theme.textDim
-                                font.pixelSize: 11
+                                font.pixelSize: 10
+                                font.weight: Font.Bold
+                                font.letterSpacing: 1
+                            }
+
+                            Repeater {
+                                model: summary.later
+
+                                AgendaRow {
+                                    Layout.fillWidth: true
+                                    showDay: true
+                                }
                             }
                         }
 
@@ -633,15 +541,15 @@ PanelWindow {
                             }
                         }
 
-                        // Cajón de ideas
+                        // Pagos que se vienen
                         ComicCard {
-                            visible: Focus.ideas.length > 0
+                            visible: Subs.upcoming.length > 0
                             Layout.fillWidth: true
-                            title: "Cajón de ideas"
-                            tint: Themes.active.border2 ?? Theme.accent
+                            title: "Pagos"
+                            tint: Theme.warn
 
                             Repeater {
-                                model: Focus.ideas.slice(0, 3)
+                                model: Subs.upcoming.slice(0, 3)
 
                                 RowLayout {
                                     required property var modelData
@@ -650,26 +558,26 @@ PanelWindow {
                                     spacing: 8
 
                                     Text {
-                                        text: modelData.date.slice(8) + "/" + modelData.date.slice(5, 7)
-                                        color: Theme.textDim
-                                        font.pixelSize: 11
-                                    }
-
-                                    Text {
                                         Layout.fillWidth: true
-                                        text: modelData.text
+                                        text: modelData.sub.name
                                         elide: Text.ElideRight
                                         color: Theme.text
                                         font.pixelSize: 13
                                     }
-                                }
-                            }
 
-                            Text {
-                                visible: Focus.ideas.length > 3
-                                text: "y " + (Focus.ideas.length - 3) + " más…"
-                                color: Theme.textDim
-                                font.pixelSize: 11
+                                    Text {
+                                        text: Subs.whenText(modelData.days)
+                                        color: modelData.days <= 1 ? Theme.warn : Theme.textDim
+                                        font.pixelSize: 12
+                                    }
+
+                                    Text {
+                                        text: Subs.money(modelData.sub.amount, modelData.sub.currency)
+                                        color: Theme.text
+                                        font.pixelSize: 13
+                                        font.weight: Font.DemiBold
+                                    }
+                                }
                             }
                         }
 
@@ -729,254 +637,123 @@ PanelWindow {
                             }
                         }
 
+                        // Cajón de ideas
+                        ComicCard {
+                            visible: Focus.ideas.length > 0
+                            Layout.fillWidth: true
+                            title: "Cajón de ideas"
+                            tint: Themes.active.border2 ?? Theme.accent
+
+                            Repeater {
+                                model: Focus.ideas.slice(0, 3)
+
+                                RowLayout {
+                                    required property var modelData
+
+                                    Layout.fillWidth: true
+                                    spacing: 8
+
+                                    Text {
+                                        text: modelData.date.slice(8) + "/" + modelData.date.slice(5, 7)
+                                        color: Theme.textDim
+                                        font.pixelSize: 11
+                                    }
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: modelData.text
+                                        elide: Text.ElideRight
+                                        color: Theme.text
+                                        font.pixelSize: 13
+                                    }
+                                }
+                            }
+
+                            Text {
+                                visible: Focus.ideas.length > 3
+                                text: "y " + (Focus.ideas.length - 3) + " más…"
+                                color: Theme.textDim
+                                font.pixelSize: 11
+                            }
+                        }
+
+                        // Dólar
+                        ComicCard {
+                            visible: Estacion.dolar !== null
+                            Layout.fillWidth: true
+                            title: "Dólar"
+                            tint: "#5fb98a"
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Repeater {
+                                    model: [
+                                        {
+                                            key: "oficial",
+                                            name: "Oficial"
+                                        },
+                                        {
+                                            key: "blue",
+                                            name: "Blue"
+                                        },
+                                        {
+                                            key: "cripto",
+                                            name: "Cripto"
+                                        }
+                                    ]
+
+                                    Column {
+                                        required property var modelData
+
+                                        Layout.fillWidth: true
+                                        Layout.preferredWidth: 1
+
+                                        Text {
+                                            text: Estacion.dolar?.[modelData.key] ? Estacion.money(Estacion.dolar[modelData.key].venta) : "—"
+                                            color: Theme.text
+                                            font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
+                                            font.pixelSize: Theme.comic ? 22 : 15
+                                            font.weight: Theme.comic ? Font.Normal : Font.DemiBold
+                                            font.letterSpacing: Theme.comic ? 1 : 0
+                                        }
+
+                                        Text {
+                                            text: modelData.name
+                                            color: Theme.textDim
+                                            font.pixelSize: 11
+                                        }
+                                    }
+                                }
+                            }
+
+                            // El próximo pago en dólares, en pesos al blue
+                            Text {
+                                readonly property var usd: Subs.upcoming.find(u => u.sub.currency === "USD") ?? null
+
+                                visible: usd !== null && !!Estacion.dolar?.blue
+                                Layout.fillWidth: true
+                                text: usd && Estacion.dolar?.blue ? usd.sub.name + " (" + Subs.money(usd.sub.amount, "USD") + ") ≈ " + Estacion.money(usd.sub.amount * Estacion.dolar.blue.venta) + " al blue" : ""
+                                elide: Text.ElideRight
+                                color: Theme.textDim
+                                font.pixelSize: 11
+                            }
+                        }
+
                         MediaCard {
                             Layout.fillWidth: true
                         }
                     }
                 }
 
-                // ---------------- Noticias ----------------
-                ColumnLayout {
-                    visible: win.tab === "noticias"
+                // ---------------- Chat ----------------
+                ChatView {
+                    id: chat
+
+                    visible: win.tab === "chat"
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    spacing: 8
-
-                    Flow {
-                        Layout.fillWidth: true
-                        spacing: 6
-
-                        Repeater {
-                            model: [
-                                {
-                                    id: "todo",
-                                    name: "Todo"
-                                }
-                            ].concat(News.categories.map(c => ({
-                                        id: c.id,
-                                        name: c.name
-                                    })))
-
-                            Rectangle {
-                                id: chip
-
-                                required property var modelData
-                                readonly property bool on: win.newsCategory === modelData.id
-
-                                readonly property color cc: win.catColor(modelData.id)
-
-                                width: chipText.implicitWidth + 20
-                                height: 28
-                                radius: Theme.comic ? 5 : 8
-                                color: on ? (Theme.comic ? cc : Qt.rgba(cc.r, cc.g, cc.b, 0.22)) : (chipHover.hovered ? Theme.hover : Theme.surface)
-                                border.width: Theme.comic ? 1.5 : 0
-                                border.color: Theme.comic ? (on ? Theme.ink : Qt.rgba(chip.cc.r, chip.cc.g, chip.cc.b, 0.55)) : "transparent"
-
-                                Text {
-                                    id: chipText
-
-                                    anchors.centerIn: parent
-                                    text: chip.modelData.name
-                                    color: chip.on ? (Theme.comic ? win.onColor(chip.cc) : chip.cc) : Theme.textDim
-                                    font.family: Theme.displayFont && Theme.comic ? Theme.displayFont : Qt.application.font.family
-                                    font.pixelSize: Theme.comic ? 14 : 12
-                                    font.letterSpacing: Theme.comic ? 1 : 0
-                                    font.weight: Theme.comic ? Font.Normal : Font.DemiBold
-                                }
-
-                                HoverHandler {
-                                    id: chipHover
-
-                                    cursorShape: Qt.PointingHandCursor
-                                }
-                                TapHandler {
-                                    onTapped: win.newsCategory = chip.modelData.id
-                                }
-                            }
-                        }
-                    }
-
-                    Text {
-                        visible: News.loading && win.newsItems.length === 0
-                        text: "Buscando noticias…"
-                        color: Theme.textDim
-                        font.pixelSize: 13
-                    }
-
-                    Text {
-                        visible: !News.loading && win.newsItems.length === 0
-                        Layout.fillWidth: true
-                        text: News.error !== "" ? News.error : "Sin noticias por ahora"
-                        wrapMode: Text.Wrap
-                        color: Theme.textDim
-                        font.pixelSize: 13
-                    }
-
-                    ListView {
-                        id: newsList
-
-                        visible: win.newsItems.length > 0
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        clip: true
-                        spacing: 0
-                        model: win.newsItems
-                        boundsBehavior: Flickable.StopAtBounds
-
-                        delegate: Item {
-                            id: row
-
-                            required property var modelData
-                            required property int index
-                            readonly property color cc: win.catColor(modelData.categoryId ?? "")
-                            readonly property bool seen: News.seen[modelData.link] === true
-                            readonly property bool lead: index === 0
-
-                            width: ListView.view.width
-                            height: card.height + 10
-
-                            // Sombra dura de viñeta (solo temas de cómic)
-                            Rectangle {
-                                visible: Theme.comic
-                                x: card.x + 3
-                                y: card.y + 3
-                                width: card.width
-                                height: card.height
-                                radius: card.radius
-                                color: Theme.shadow
-                                opacity: row.seen ? 0.5 : 1
-                            }
-
-                            Rectangle {
-                                id: card
-
-                                x: 0
-                                width: parent.width - 4
-                                height: body.implicitHeight + 20
-                                radius: Theme.comic ? 6 : 10
-                                color: rowHover.hovered ? Qt.lighter(Theme.surface, 1.25) : Theme.surface
-                                border.width: Theme.comic ? 2 : 1
-                                border.color: Theme.comic ? Theme.ink : Theme.border
-                                opacity: row.seen ? 0.55 : 1
-
-                                // Franja del color de la categoría
-                                Rectangle {
-                                    anchors.left: parent.left
-                                    anchors.top: parent.top
-                                    anchors.bottom: parent.bottom
-                                    anchors.margins: Theme.comic ? 2 : 1
-                                    width: 4
-                                    radius: 2
-                                    color: row.cc
-                                }
-
-                                Column {
-                                    id: body
-
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.top: parent.top
-                                    anchors.leftMargin: 16
-                                    anchors.rightMargin: 10
-                                    anchors.topMargin: 9
-                                    spacing: 6
-
-                                    Row {
-                                        width: parent.width
-                                        spacing: 8
-
-                                        // Sticker de la categoría
-                                        Sticker {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            visible: (row.modelData.category ?? "") !== ""
-                                            text: row.modelData.category ?? ""
-                                            tint: row.cc
-                                        }
-
-                                        Text {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            width: parent.width - (parent.children[0].visible ? parent.children[0].width + 8 : 0)
-                                            text: row.modelData.source + " · " + win.ago(row.modelData.time)
-                                            elide: Text.ElideRight
-                                            color: Theme.textDim
-                                            font.pixelSize: 11
-                                        }
-                                    }
-
-                                    Text {
-                                        id: titleText
-
-                                        width: parent.width
-                                        text: row.modelData.title
-                                        wrapMode: Text.Wrap
-                                        maximumLineCount: row.lead ? 4 : 3
-                                        elide: Text.ElideRight
-                                        color: row.seen ? Theme.textDim : Theme.text
-                                        font.pixelSize: row.lead ? 15 : 13
-                                        font.weight: row.lead ? Font.DemiBold : Font.Medium
-                                    }
-                                }
-                            }
-
-                            HoverHandler {
-                                id: rowHover
-
-                                cursorShape: Qt.PointingHandCursor
-                            }
-                            TapHandler {
-                                onTapped: {
-                                    News.markSeen(row.modelData.link);
-                                    Quickshell.execDetached(["xdg-open", row.modelData.link]);
-                                    Ui.sideOpen = false;
-                                }
-                            }
-                        }
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-
-                        Text {
-                            Layout.fillWidth: true
-                            text: News.updated > 0 ? "Actualizado hace " + win.ago(News.updated) + (News.error !== "" ? " · " + News.error : "") : ""
-                            elide: Text.ElideRight
-                            color: Theme.textDim
-                            font.pixelSize: 11
-                        }
-
-                        Rectangle {
-                            Layout.preferredWidth: 26
-                            Layout.preferredHeight: 26
-                            radius: 8
-                            color: refreshHover.hovered ? Theme.hover : "transparent"
-
-                            MIcon {
-                                id: refreshIcon
-
-                                anchors.centerIn: parent
-                                name: "refresh"
-                                font.pixelSize: 17
-                                color: Theme.textDim
-
-                                RotationAnimator on rotation {
-                                    running: News.loading
-                                    from: 0
-                                    to: 360
-                                    duration: 900
-                                    loops: Animation.Infinite
-                                }
-                            }
-
-                            HoverHandler {
-                                id: refreshHover
-
-                                cursorShape: Qt.PointingHandCursor
-                            }
-                            TapHandler {
-                                onTapped: News.load(true)
-                            }
-                        }
-                    }
                 }
 
                 // ---------------- Sistema ----------------
@@ -995,6 +772,10 @@ PanelWindow {
 
                         width: parent.width
                         spacing: 6
+
+                        SecurityView {
+                            Layout.fillWidth: true
+                        }
 
                         Text {
                             visible: stats.d.cpu === undefined

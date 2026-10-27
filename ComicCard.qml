@@ -34,7 +34,9 @@ Item {
         border.width: Theme.comic ? 2 : 1
         border.color: Theme.comic ? Theme.ink : Theme.border
 
+        // Franja del color de la tarjeta (solo en cómic; sobrio, el color va en el título)
         Rectangle {
+            visible: Theme.comic
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -50,7 +52,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.leftMargin: 16
+            anchors.leftMargin: Theme.comic ? 16 : 14
             anchors.rightMargin: 10
             anchors.topMargin: 9
             spacing: 8

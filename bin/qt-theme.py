@@ -8,6 +8,11 @@ el del tema elegido; los tonos derivados (más claro, más oscuro) se calculan. 
   ~/.local/share/color-schemes/Ombu.colors  el esquema de colores de KDE
   ~/.config/kitty/themes/ombu.conf        los colores de la terminal (se recarga sola con SIGUSR1)
   ~/.config/starship.toml                 el prompt de la terminal (extras/starship/starship.toml, con el tema)
+  ~/.config/vesktop/settings/quickCss.css  Discord (Vesktop), desde extras/vesktop/ombu.theme.css: Vesktop
+                                          recarga el QuickCSS solo, así que cambia en vivo. Solo se escribe
+                                          si está vacío o ya es el de ombu (no pisa un CSS propio)
+  <perfil de Zen>/chrome/userChrome.css   Zen, desde extras/zen/userChrome.css, más user.js (habilita el CSS
+                                          y pone el acento). Zen lo lee al arrancar. No pisa archivos propios
   ~/.local/share/ombu/icons/bar-logo.svg  el logo de la barra (araña o reactor, en los colores del tema;
                                           sin --logo se borra y la barra usa el de CachyOS)
 y rehace las carpetas del tema de íconos Ombu en el color de Papirus que corresponda.
@@ -168,6 +173,61 @@ def starship_text(text, c, on_accent, logo):
     return re.sub(r"@([A-Z]+)@", lambda m: values.get(m.group(1), m.group(0)), text)
 
 
+def vesktop_css(text, c, on_accent, accent2):
+    """Discord: los @NOMBRE@ de la plantilla por los colores del tema"""
+    values = {"BG": c["bg"], "SURFACE": c["surface"], "TRACK": c["track"], "TEXT": c["text"], "DIM": c["dim"],
+              "ACCENT": c["accent"], "ACCENT2": accent2 or c["accent"], "DANGER": c["danger"], "WARN": c["warn"],
+              "ON_ACCENT": on_accent}
+    return re.sub(r"@([A-Z_0-9]+)@", lambda m: values.get(m.group(1), m.group(0)), text)
+
+
+def zen_profiles(root):
+    """Carpetas de los perfiles de Zen que se usan (los «Default» de profiles.ini)"""
+    base = os.path.join(root, ".config/zen")
+    out = []
+    try:
+        with open(os.path.join(base, "profiles.ini"), encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("Default=") and line.strip() != "Default=1":
+                    p = os.path.join(base, line.split("=", 1)[1].strip())
+                    if os.path.isdir(p) and p not in out:
+                        out.append(p)
+    except OSError:
+        pass
+    return out
+
+
+ZEN_MARK = "ombu: Zen con los colores del tema"
+ZEN_USERJS = """// ombu: lo escribe bin/qt-theme.py (habilita chrome/userChrome.css y pone el acento del tema)
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+user_pref("zen.theme.accent-color", "%s");
+"""
+
+
+def write_zen(root, css, accent):
+    for prof in zen_profiles(root):
+        chrome = os.path.join(prof, "chrome", "userChrome.css")
+        try:
+            with open(chrome, encoding="utf-8") as f:
+                current = f.read()
+        except OSError:
+            current = ""
+        if current.strip() == "" or ZEN_MARK in current:
+            write(chrome, css, backup=False)
+        # user.js: el bloque de ombu va al final y se reemplaza solo él; lo demás (ajustes propios) queda
+        userjs = os.path.join(prof, "user.js")
+        try:
+            with open(userjs, encoding="utf-8") as f:
+                old = f.read()
+        except OSError:
+            old = ""
+        start = "// ombu: lo escribe"
+        keep = old.split(start)[0].rstrip("\n")
+        new = (keep + "\n\n" if keep else "") + ZEN_USERJS % accent
+        if new != old:
+            write(userjs, new, backup=bool(old) and start not in old)
+
+
 def gtk_css(colors, on_accent):
     return (
         f"@define-color accent_color {colors['accent']};\n"
@@ -239,6 +299,24 @@ def main():
     # Prompt (starship): lee el archivo en cada línea nueva, así que cambia sin reiniciar nada
     with open(os.path.join(EXTRAS, "starship", "starship.toml"), encoding="utf-8") as f:
         write(os.path.join(root, ".config/starship.toml"), starship_text(f.read(), colors, on_accent, a.logo), backup=not a.out)
+    # Discord (Vesktop): en el QuickCSS, que se recarga en vivo. Un QuickCSS escrito a mano no se toca
+    vesk = os.path.join(root, ".config/vesktop/settings")
+    if os.path.isdir(vesk) or a.out:
+        with open(os.path.join(EXTRAS, "vesktop", "ombu.theme.css"), encoding="utf-8") as f:
+            css = vesktop_css(f.read(), colors, on_accent, a.accent2)
+        qpath = os.path.join(vesk, "quickCss.css")
+        try:
+            with open(qpath, encoding="utf-8") as f:
+                current = f.read()
+        except OSError:
+            current = ""
+        if current.strip() == "" or "@name Ombu" in current:
+            write(qpath, css, backup=False)
+
+    # Zen: lo lee al arrancar
+    with open(os.path.join(EXTRAS, "zen", "userChrome.css"), encoding="utf-8") as f:
+        write_zen(root, vesktop_css(f.read(), colors, on_accent, a.accent2), colors["accent"])
+
     # Logo de la barra: se escribe si el tema tiene uno y se borra si no (la barra vuelve al de CachyOS)
     logo_path = os.path.join(root, ".local/share/ombu/icons/bar-logo.svg")
     svg = logo_svg(a.logo, colors["accent"], a.accent2 or colors["accent"], colors["text"]) if a.logo else ""

@@ -7,8 +7,10 @@ import QtQuick
 Rectangle {
     required property Item target
     property int offset: 5
+    // true = es de un «momento» (bloqueo, despedida...): se ve con cualquier tema de cómic
+    property bool art: false
 
-    visible: Theme.shadow.a > 0 && target.visible
+    visible: (art ? Theme.comicArt : Theme.comic) && target.visible
     x: target.x + offset
     y: target.y + offset
     width: target.width

@@ -6,17 +6,16 @@ import Quickshell.Io
 import Quickshell.Wayland
 
 // Launcher estilo Spotlight: una barra de búsqueda. Vacía muestra tus apps de siempre (favoritas
-// y las más usadas); al escribir aparecen los resultados. Aparece en el monitor con foco.
+// y las más usadas); al escribir aparecen apps y acciones de ombu (Actions.qml: «apagar», «tema»,
+// «captura»...) mezcladas por relevancia. Aparece en el monitor con foco.
 //   Enter abre o enfoca · Shift+Enter ventana nueva · flechas mueven · Ctrl+P fija o suelta · Esc cierra
 PanelWindow {
     id: win
 
     required property var modelData
 
-    readonly property int columns: 6
-    readonly property int cell: 92
-    readonly property int rowHeight: 50
-    readonly property int maxRows: 6
+    readonly property int columns: 8
+    readonly property int cell: 84
 
     readonly property string query: input.text.trim().toLowerCase()
     readonly property bool searching: query !== ""
@@ -39,7 +38,28 @@ PanelWindow {
             return 35;
         if ((entry.comment ?? "").toLowerCase().includes(q))
             return 20;
+        // Abreviatura: las letras en orden aunque falten otras («zn» → Zen, «ltc» → LibreOffice Calc)
+        if (q.length >= 2 && subsequence(q, name))
+            return 15;
         return 0;
+    }
+
+    function subsequence(q: string, text: string): bool {
+        let i = 0;
+        for (const c of text)
+            if (c === q[i] && ++i === q.length)
+                return true;
+        return false;
+    }
+
+    // Acción que pidió confirmación (apagar, reiniciar): se ejecuta con un segundo Enter
+    property string armed: ""
+
+    Timer {
+        id: disarm
+
+        interval: 3000
+        onTriggered: win.armed = ""
     }
 
     // Apps que coinciden: primero las de siempre; las del sistema ocultas solo si escribís 3 letras o más
@@ -62,7 +82,7 @@ PanelWindow {
                 rank: s + Math.min(Launch.usage[e.id] ?? 0, 20) * 0.5 + (Launch.isFavorite(e.id) ? 5 : 0) - (hidden ? 1000 : 0)
             });
         }
-        return out.sort((a, b) => b.rank - a.rank || a.entry.name.localeCompare(b.entry.name)).map(x => x.entry);
+        return out.sort((a, b) => b.rank - a.rank || a.entry.name.localeCompare(b.entry.name));
     }
 
     // ---- Modos: =cuenta o 10 km a mi · /archivo · ?búsqueda web ----
@@ -83,7 +103,8 @@ PanelWindow {
     }
 
     function fmt(v: real, digits: int): string {
-        return String(Number(v.toPrecision(digits ?? 12)));
+        // Con el parámetro tipado `int`, omitirlo llega como 0 (no como undefined): `??` no alcanzaba
+        return String(Number(v.toPrecision(digits > 0 ? digits : 12)));
     }
 
     // Unidades: factor a la unidad base de cada tipo (la temperatura se resuelve aparte)
@@ -184,6 +205,7 @@ PanelWindow {
                 const slash = clean.lastIndexOf("/");
                 out.push({
                     kind: "file",
+                    group: "Archivos",
                     path: clean,
                     isDir: isDir,
                     name: clean.slice(slash + 1),
@@ -198,6 +220,7 @@ PanelWindow {
             if (term !== "")
                 out.push({
                     kind: "web",
+                    group: "Web",
                     name: "Buscar «" + term + "» en la web",
                     sub: "Enter abre el navegador",
                     icon: "travel_explore",
@@ -212,6 +235,7 @@ PanelWindow {
             if (v !== null)
                 out.push({
                     kind: "calc",
+                    group: "Cálculo",
                     name: "= " + fmt(v),
                     sub: "Enter copia el resultado",
                     icon: "calculate",
@@ -222,22 +246,55 @@ PanelWindow {
         if (c)
             out.push({
                 kind: "convert",
+                group: "Cálculo",
                 name: c.text,
                 sub: "Enter copia el resultado",
                 icon: "straighten",
                 value: c.value
             });
-        for (const e of appEntries)
-            out.push({
-                kind: "app",
-                entry: e,
-                id: e.id,
-                name: e.name
-            });
+        // Apps y acciones juntas, por relevancia (a igual puntaje, la app primero)
+        const mixed = appEntries.map(x => ({
+                    rank: x.rank,
+                    row: {
+                        kind: "app",
+                        entry: x.entry,
+                        id: x.entry.id,
+                        name: x.entry.name,
+                        sub: x.entry.genericName || x.entry.comment || ""
+                    }
+                }));
+        if (r.length >= 2)
+            for (const n of Actions.search(r).slice(0, 6))
+                mixed.push({
+                    // A igual coincidencia gana la app: una acción tiene que coincidir mejor para pasarla
+                    rank: Actions.score(n, r.toLowerCase()) - 10.5,
+                    row: {
+                        kind: "action",
+                        action: n,
+                        name: n.name,
+                        icon: n.swatch ? "palette" : n.icon,
+                        sub: [n.crumb, n.hint].filter(x => x).join(" · ")
+                    }
+                });
+        // El mejor de todos arriba («Mejor resultado») y después cada tipo en su grupo, por relevancia
+        mixed.sort((a, b) => b.rank - a.rank);
+        if (mixed.length > 0)
+            out.push(Object.assign({}, mixed[0].row, {
+                group: "Mejor resultado"
+            }));
+        for (const m of mixed.slice(1).filter(m => m.row.kind === "app"))
+            out.push(Object.assign({}, m.row, {
+                group: "Aplicaciones"
+            }));
+        for (const m of mixed.slice(1).filter(m => m.row.kind === "action"))
+            out.push(Object.assign({}, m.row, {
+                group: "Acciones"
+            }));
         // Sin nada que mostrar: ofrecer buscarlo en la web
         if (out.length === 0)
             out.push({
                 kind: "web",
+                group: "Web",
                 name: "Buscar «" + r + "» en la web",
                 sub: "Enter abre el navegador",
                 icon: "travel_explore",
@@ -323,6 +380,22 @@ PanelWindow {
             Launch.open(row.entry, forceNew);
             return;
         }
+        if (row.kind === "action") {
+            const a = row.action;
+            if (a.confirm && armed !== a.name) {
+                armed = a.name;
+                disarm.restart();
+                return;
+            }
+            armed = "";
+            if (a.keepOpen) {
+                a.run();
+                return;
+            }
+            Ui.launcherOpen = false;
+            Actions.runLater(a.run);
+            return;
+        }
         Ui.launcherOpen = false;
         if (row.kind === "calc" || row.kind === "convert") {
             Quickshell.execDetached(["sh", "-c", "printf %s \"$1\" | wl-copy; notify-send -a Launcher -h string:x-ombu-kind:note \"Copiado: $1\"", "copiar", row.value]);
@@ -336,6 +409,7 @@ PanelWindow {
     }
 
     onQueryChanged: {
+        armed = "";
         list.currentIndex = 0;
         grid.currentIndex = 0;
     }
@@ -417,15 +491,15 @@ PanelWindow {
         id: card
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: parent.height * 0.22
-        width: win.columns * win.cell + 28
-        height: column.implicitHeight + 24
+        y: parent.height * 0.2
+        width: 760
+        height: column.implicitHeight + 16
         radius: Theme.cardRadius
         color: Theme.bg
-        border.width: 1
-        border.color: Theme.border
+        border.width: Theme.comic ? 2 : 1
+        border.color: Theme.comic ? Theme.ink : Theme.outline
         opacity: win.p
-        scale: 0.92 + 0.08 * win.p
+        scale: 0.96 + 0.04 * win.p
         transformOrigin: Item.Top
 
         // Evita que un clic dentro de la tarjeta cierre el launcher
@@ -436,17 +510,17 @@ PanelWindow {
         ColumnLayout {
             id: column
 
-            x: 14
-            y: 12
-            width: parent.width - 28
-            spacing: 4
+            x: 8
+            y: 8
+            width: parent.width - 16
+            spacing: 0
 
             // Barra de búsqueda
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 48
-                Layout.leftMargin: 8
-                Layout.rightMargin: 8
+                Layout.preferredHeight: 56
+                Layout.leftMargin: 14
+                Layout.rightMargin: 12
                 spacing: 12
 
                 MIcon {
@@ -462,10 +536,10 @@ PanelWindow {
                     color: Theme.text
                     selectionColor: Theme.accent
                     selectedTextColor: Theme.accentText
-                    font.pixelSize: 19
+                    font.pixelSize: 22
+                    font.weight: Font.Light
                     clip: true
                     focus: true
-
 
                     // Esc cierra primero la vista previa y después el launcher
                     Keys.onEscapePressed: {
@@ -521,21 +595,42 @@ PanelWindow {
                     Text {
                         visible: input.text.length === 0
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "Buscar apps · = cuentas · / archivos · ? web…"
+                        text: "Buscar en ombu"
                         color: Theme.textDim
-                        font.pixelSize: 19
+                        font.pixelSize: 22
+                        font.weight: Font.Light
                     }
+                }
+
+                // Qué se puede escribir
+                Text {
+                    visible: !win.searching
+                    text: "= cuentas   / archivos   ? web"
+                    color: Theme.textDim
+                    font.pixelSize: 11
+                    font.family: "monospace"
                 }
             }
 
             Rectangle {
-                visible: !win.searching ? win.tiles.length > 0 : win.results.length > 0
+                visible: !win.searching ? win.tiles.length > 0 : true
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
                 color: Theme.border
             }
 
-            // Vista inicial: tus apps de siempre
+            // ---------------- Vacío: tus apps de siempre ----------------
+            Text {
+                visible: !win.searching && win.tiles.length > 0
+                Layout.leftMargin: 14
+                Layout.topMargin: 10
+                text: "FAVORITAS Y MÁS USADAS"
+                color: Theme.textDim
+                font.pixelSize: 10
+                font.weight: Font.Bold
+                font.letterSpacing: 1
+            }
+
             GridView {
                 id: grid
 
@@ -543,6 +638,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.ceil(win.tiles.length / win.columns) * win.cell
                 Layout.topMargin: 4
+                Layout.bottomMargin: 4
                 cellWidth: width / win.columns
                 cellHeight: win.cell
                 model: win.tiles
@@ -564,24 +660,20 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent
                         anchors.margins: 3
-                        radius: 16
+                        radius: Theme.controlRadius
                         color: tile.current ? Theme.surface : (tileHover.hovered ? Theme.hover : "transparent")
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 90
-                            }
-                        }
+                        border.width: Theme.comic && tile.current ? 1.5 : 0
+                        border.color: Theme.ink
                     }
 
                     Column {
                         anchors.centerIn: parent
-                        spacing: 7
+                        spacing: 6
 
                         Item {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            width: 46
-                            height: 46
+                            width: 40
+                            height: 40
 
                             Image {
                                 id: tileImage
@@ -589,7 +681,7 @@ PanelWindow {
                                 anchors.fill: parent
                                 visible: tile.icon !== "" && status !== Image.Error
                                 source: tile.icon
-                                sourceSize: Qt.size(92, 92)
+                                sourceSize: Qt.size(80, 80)
                                 fillMode: Image.PreserveAspectFit
                                 smooth: true
                             }
@@ -599,34 +691,24 @@ PanelWindow {
                                 visible: !tileImage.visible
                                 name: "apps"
                                 color: Theme.textDim
-                                font.pixelSize: 34
+                                font.pixelSize: 30
                             }
                         }
 
                         Text {
-                            width: grid.cellWidth - 14
+                            width: grid.cellWidth - 12
                             horizontalAlignment: Text.AlignHCenter
                             text: tile.modelData.name
                             elide: Text.ElideRight
                             color: Theme.text
-                            font.pixelSize: 12
-                            font.weight: Font.Medium
+                            font.pixelSize: 11
                         }
-                    }
-
-                    // Marca de favorita
-                    MIcon {
-                        visible: Launch.isFavorite(tile.modelData.id) && (tile.current || tileHover.hovered)
-                        anchors.top: parent.top
-                        anchors.right: parent.right
-                        anchors.margins: 8
-                        name: "push_pin"
-                        color: Theme.accent
-                        font.pixelSize: 13
                     }
 
                     HoverHandler {
                         id: tileHover
+
+                        cursorShape: Qt.PointingHandCursor
                     }
                     TapHandler {
                         onTapped: win.activate({
@@ -639,147 +721,309 @@ PanelWindow {
                 }
             }
 
-            Text {
-                visible: !win.searching && win.tiles.length === 0
-                Layout.fillWidth: true
-                Layout.topMargin: 6
-                Layout.bottomMargin: 10
-                horizontalAlignment: Text.AlignHCenter
-                text: "Escribí para buscar una aplicación"
-                color: Theme.textDim
-                font.pixelSize: 14
-            }
-
-            // Al escribir: resultados
+            // ---------------- Al escribir: resultados y detalle ----------------
             Text {
                 visible: win.searching && win.results.length === 0
                 Layout.fillWidth: true
-                Layout.topMargin: 8
-                Layout.bottomMargin: 14
+                Layout.topMargin: 18
+                Layout.bottomMargin: 18
                 horizontalAlignment: Text.AlignHCenter
                 text: "Sin resultados para “" + input.text + "”"
                 color: Theme.textDim
                 font.pixelSize: 14
             }
 
-            ListView {
-                id: list
-
+            RowLayout {
                 visible: win.searching && win.results.length > 0
                 Layout.fillWidth: true
-                Layout.preferredHeight: Math.min(count, win.maxRows) * win.rowHeight
-                model: win.results
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                highlightMoveDuration: 0
+                Layout.preferredHeight: Math.max(240, Math.min(list.contentHeight + 12, 420))
+                spacing: 0
 
-                onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
+                ListView {
+                    id: list
 
-                delegate: Rectangle {
-                    id: item
+                    Layout.preferredWidth: 420
+                    Layout.fillHeight: true
+                    Layout.topMargin: 6
+                    model: win.results
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    highlightMoveDuration: 0
+                    onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
-                    required property var modelData
-                    required property int index
-                    readonly property bool current: ListView.isCurrentItem
-                    readonly property string icon: modelData.kind === "app" ? win.iconFor(modelData.entry) : ""
+                    section.property: "group"
+                    section.criteria: ViewSection.FullString
+                    section.delegate: Text {
+                        required property string section
 
-                    width: ListView.view.width
-                    height: win.rowHeight
-                    radius: 14
-                    color: current ? Theme.surface : (itemHover.hovered ? Theme.hover : "transparent")
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 90
-                        }
+                        width: ListView.view.width
+                        leftPadding: 14
+                        topPadding: 8
+                        bottomPadding: 4
+                        text: section.toUpperCase()
+                        color: Theme.textDim
+                        font.pixelSize: 10
+                        font.weight: Font.Bold
+                        font.letterSpacing: 1
                     }
 
-                    RowLayout {
+                    delegate: Rectangle {
+                        id: item
+
+                        required property var modelData
+                        required property int index
+                        readonly property bool current: ListView.isCurrentItem
+                        readonly property string icon: modelData.kind === "app" ? win.iconFor(modelData.entry) : ""
+                        readonly property bool armed: modelData.kind === "action" && win.armed === modelData.name
+
+                        x: 6
+                        width: ListView.view.width - 12
+                        height: 40
+                        radius: Theme.controlRadius - 2
+                        color: item.current ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, Theme.comic ? 0.9 : 0.22) : (itemHover.hovered ? Theme.hover : "transparent")
+                        border.width: Theme.comic && item.current ? 1.5 : 0
+                        border.color: Theme.ink
+
+                        // En el tema de cómic la fila elegida es acento lleno: el texto va en su color de contraste
+                        readonly property color fg: item.current && Theme.comic ? Theme.accentText : Theme.text
+                        readonly property color fgDim: item.current && Theme.comic ? Qt.rgba(Theme.accentText.r, Theme.accentText.g, Theme.accentText.b, 0.75) : Theme.textDim
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 10
+                            anchors.rightMargin: 10
+                            spacing: 10
+
+                            Item {
+                                Layout.preferredWidth: 24
+                                Layout.preferredHeight: 24
+
+                                Image {
+                                    id: rowImage
+
+                                    anchors.fill: parent
+                                    visible: item.icon !== "" && status !== Image.Error
+                                    source: item.icon
+                                    sourceSize: Qt.size(48, 48)
+                                    fillMode: Image.PreserveAspectFit
+                                    smooth: true
+                                }
+
+                                MIcon {
+                                    anchors.centerIn: parent
+                                    visible: !rowImage.visible
+                                    name: item.modelData.icon ?? "apps"
+                                    color: item.armed ? Theme.danger : (item.current && Theme.comic ? Theme.accentText : Theme.accent)
+                                    font.pixelSize: 19
+                                }
+                            }
+
+                            Text {
+                                text: item.armed ? item.modelData.name + ": Enter otra vez" : item.modelData.name
+                                elide: Text.ElideRight
+                                Layout.maximumWidth: 260
+                                color: item.armed ? Theme.danger : item.fg
+                                font.pixelSize: item.modelData.kind === "calc" || item.modelData.kind === "convert" ? 16 : 14
+                                font.weight: item.armed ? Font.DemiBold : Font.Normal
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: item.modelData.kind === "app" ? (item.modelData.sub ?? "") : ""
+                                elide: Text.ElideRight
+                                color: item.fgDim
+                                font.pixelSize: 11
+                            }
+
+                            MIcon {
+                                visible: item.modelData.kind === "app" && Launch.isFavorite(item.modelData.id)
+                                name: "push_pin"
+                                color: item.current && Theme.comic ? Theme.accentText : Theme.accent
+                                font.pixelSize: 13
+                            }
+                        }
+
+                        HoverHandler {
+                            id: itemHover
+
+                            cursorShape: Qt.PointingHandCursor
+                        }
+                        TapHandler {
+                            onTapped: {
+                                list.currentIndex = item.index;
+                                win.activate(item.modelData, false);
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 1
+                    color: Theme.border
+                }
+
+                // Detalle de lo elegido
+                Item {
+                    id: detail
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    readonly property var row: win.current
+
+                    ColumnLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 14
-                        spacing: 14
+                        anchors.margins: 18
+                        spacing: 6
 
                         Item {
-                            Layout.preferredWidth: 32
-                            Layout.preferredHeight: 32
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.topMargin: 10
+                            Layout.preferredWidth: 64
+                            Layout.preferredHeight: 64
 
                             Image {
-                                id: rowImage
+                                id: bigImage
 
                                 anchors.fill: parent
-                                visible: item.icon !== "" && status !== Image.Error
-                                source: item.icon
-                                sourceSize: Qt.size(64, 64)
+                                readonly property string src: detail.row?.kind === "app" ? win.iconFor(detail.row.entry) : ""
+                                visible: src !== "" && status !== Image.Error
+                                source: src
+                                sourceSize: Qt.size(128, 128)
                                 fillMode: Image.PreserveAspectFit
                                 smooth: true
                             }
 
-                            MIcon {
-                                anchors.centerIn: parent
-                                visible: !rowImage.visible
-                                name: item.modelData.icon ?? "apps"
-                                color: item.modelData.kind === "app" ? Theme.textDim : Theme.accent
-                                font.pixelSize: 24
+                            Rectangle {
+                                visible: !bigImage.visible
+                                anchors.fill: parent
+                                radius: Theme.cardRadius
+                                color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.16)
+
+                                MIcon {
+                                    anchors.centerIn: parent
+                                    name: detail.row?.icon ?? "apps"
+                                    color: Theme.accent
+                                    font.pixelSize: 34
+                                }
                             }
                         }
 
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.topMargin: 6
+                            horizontalAlignment: Text.AlignHCenter
+                            text: detail.row?.name ?? ""
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 2
+                            elide: Text.ElideRight
+                            color: Theme.text
+                            font.pixelSize: detail.row?.kind === "calc" || detail.row?.kind === "convert" ? 22 : 17
+                            font.weight: Font.DemiBold
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            text: {
+                                const r = detail.row;
+                                if (!r)
+                                    return "";
+                                if (r.kind === "app")
+                                    return r.entry.comment || r.entry.genericName || "Aplicación";
+                                return r.sub ?? "";
+                            }
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 3
+                            elide: Text.ElideRight
+                            color: Theme.textDim
+                            font.pixelSize: 12
+                        }
+
+                        // Datos de la app: favorita y cuántas veces la abriste
+                        Text {
+                            visible: detail.row?.kind === "app"
+                            Layout.fillWidth: true
+                            Layout.topMargin: 4
+                            horizontalAlignment: Text.AlignHCenter
+                            text: {
+                                const r = detail.row;
+                                if (r?.kind !== "app")
+                                    return "";
+                                const n = Launch.usage[r.id] ?? 0;
+                                return (Launch.isFavorite(r.id) ? "Favorita · " : "") + (n > 0 ? "abierta " + n + (n === 1 ? " vez" : " veces") : "sin abrir desde ombu");
+                            }
+                            color: Theme.textDim
+                            font.pixelSize: 11
+                        }
+
+                        Item {
+                            Layout.fillHeight: true
+                        }
+
+                        // Qué hace Enter
                         Column {
                             Layout.fillWidth: true
-                            spacing: 1
+                            spacing: 4
 
-                            Text {
-                                width: parent.width
-                                text: item.modelData.name
-                                elide: Text.ElideRight
-                                color: Theme.text
-                                font.pixelSize: item.modelData.kind === "calc" || item.modelData.kind === "convert" ? 20 : 15
-                                font.weight: Font.Medium
+                            Repeater {
+                                model: {
+                                    const r = detail.row;
+                                    if (!r)
+                                        return [];
+                                    switch (r.kind) {
+                                    case "app":
+                                        return [["↩", "Abrir o ir a la ventana"], ["⇧↩", "Ventana nueva"], ["Ctrl P", Launch.isFavorite(r.id) ? "Quitar de favoritas" : "Fijar en favoritas"]];
+                                    case "file":
+                                        return [["↩", "Abrir"], ["⇧↩", "Abrir la carpeta"], ["Ctrl Y", "Vista previa"]];
+                                    case "action":
+                                        return [["↩", r.action.confirm ? "Ejecutar (pide confirmar)" : "Ejecutar"]];
+                                    case "calc":
+                                    case "convert":
+                                        return [["↩", "Copiar el resultado"]];
+                                    default:
+                                        return [["↩", "Abrir en el navegador"]];
+                                    }
+                                }
+
+                                RowLayout {
+                                    required property var modelData
+
+                                    width: parent.width
+                                    spacing: 8
+
+                                    Rectangle {
+                                        Layout.preferredWidth: Math.max(26, keyText.implicitWidth + 10)
+                                        Layout.preferredHeight: 20
+                                        radius: 5
+                                        color: Theme.surface
+                                        border.width: 1
+                                        border.color: Theme.border
+
+                                        Text {
+                                            id: keyText
+
+                                            anchors.centerIn: parent
+                                            text: parent.parent.modelData[0]
+                                            color: Theme.text
+                                            font.pixelSize: 10
+                                            font.family: "monospace"
+                                        }
+                                    }
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: parent.modelData[1]
+                                        elide: Text.ElideRight
+                                        color: Theme.textDim
+                                        font.pixelSize: 11
+                                    }
+                                }
                             }
-
-                            Text {
-                                width: parent.width
-                                visible: (item.modelData.sub ?? "") !== ""
-                                text: item.modelData.sub ?? ""
-                                elide: Text.ElideMiddle
-                                color: Theme.textDim
-                                font.pixelSize: 11
-                            }
                         }
-
-                        MIcon {
-                            visible: item.modelData.kind === "app" && Launch.isFavorite(item.modelData.id)
-                            name: "push_pin"
-                            color: Theme.accent
-                            font.pixelSize: 15
-                        }
-
-                        MIcon {
-                            visible: item.current
-                            name: "keyboard_return"
-                            color: Theme.textDim
-                            font.pixelSize: 18
-                        }
-                    }
-
-                    HoverHandler {
-                        id: itemHover
-                    }
-                    TapHandler {
-                        onTapped: win.activate(item.modelData, false)
                     }
                 }
-            }
-
-            // Ayuda de teclas
-            Text {
-                Layout.fillWidth: true
-                Layout.leftMargin: 10
-                Layout.topMargin: 2
-                Layout.bottomMargin: 4
-                text: win.current?.kind === "file" ? "Enter abre  ·  Shift+Enter abre la carpeta  ·  Ctrl+Y vista previa" : "Enter abre o enfoca  ·  Shift+Enter ventana nueva  ·  Ctrl+P fija o suelta"
-                color: Theme.textDim
-                font.pixelSize: 11
             }
         }
     }

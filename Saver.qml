@@ -42,14 +42,14 @@ Singleton {
     property int rows: 0
 
     // Con los temas de cómic llueven trazos de telaraña en lugar de hexadecimal
-    readonly property string glyphs: Theme.comic ? "╱╲╳┼╌╎+x*/\\|-:·╱╲╳" : "0123456789ABCDEF<>{}[]()/\\|=+-*#$%&@;:^~?!"
+    readonly property string glyphs: Theme.comicArt ? "╱╲╳┼╌╎+x*/\\|-:·╱╲╳" : "0123456789ABCDEF<>{}[]()/\\|=+-*#$%&@;:^~?!"
 
     // Modo bienvenida (ver Welcome): el mismo efecto, pero el logo se descifra enseguida,
     // se queda y no se disuelve
     property bool welcome: false
     // Fila de la grilla donde queda la frase debajo del logo
     property int tagRow: 0
-    readonly property string tagline: welcome ? (Theme.comic ? "B I E N V E N I D O ,   V E C I N O" : "B I E N V E N I D O") : "S E S I Ó N   B L O Q U E A D A"
+    readonly property string tagline: welcome ? (Theme.comicArt ? "B I E N V E N I D O ,   V E C I N O" : "B I E N V E N I D O") : "S E S I Ó N   B L O Q U E A D A"
 
     // Ciclo, en segundos: lluvia sola -> el logo se descifra -> brilla -> se disuelve
     readonly property real decryptStart: welcome ? 0.5 : 2.5
@@ -80,7 +80,32 @@ Singleton {
     readonly property real welcomeLength: 5
     property double _last: 0
 
-    // La pantalla de bloqueo informa de cuántas columnas y filas de texto le caben
+    // Cada vista (una por monitor) informa cuántas columnas y filas le caben, y la lluvia se calcula con el
+    // máximo de todas: cada monitor muestra la parte central que le entra (SaverView centra la grilla y
+    // recorta). Con un monitor horizontal y un TV vertical, una grilla fijada por uno solo dejaba al otro
+    // a medio llenar o con el logo fuera de pantalla.
+    property var _sizes: ({})
+
+    function report(key: string, c: int, r: int): void {
+        _sizes[key] = [c, r];
+        refit();
+    }
+
+    function forget(key: string): void {
+        delete _sizes[key];
+        refit();
+    }
+
+    function refit(): void {
+        let c = 0, r = 0;
+        for (const k in _sizes) {
+            c = Math.max(c, _sizes[k][0]);
+            r = Math.max(r, _sizes[k][1]);
+        }
+        if (c > 0)
+            configure(c, r);
+    }
+
     function configure(c: int, r: int): void {
         if (c < 24 || r < 12 || (c === cols && r === rows))
             return;
@@ -134,7 +159,7 @@ Singleton {
         const totalRows = 5 * sy;
         const left = Math.floor((C - totalCols) / 2);
         // Con la araña arriba, todo sube para que el conjunto siga centrado
-        const spiderRows = Theme.comic ? spider.length * sy + 2 : 0;
+        const spiderRows = Theme.comicArt ? spider.length * sy + 2 : 0;
         const top = Math.max(1, Math.floor(R / 2) - 7 - Math.floor(spiderRows / 2)) + spiderRows;
 
         const lr = [], lc = [], lch = [];

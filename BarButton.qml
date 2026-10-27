@@ -22,7 +22,9 @@ Rectangle {
     default property alias extra: content.data
     property alias labelItem: labelText
     property alias iconItem: iconBox
-    property alias hovered: area.containsMouse
+    // Mouse encima. Marca propia y no containsMouse: al cerrarse un menú Wayland a veces no avisa que el
+    // mouse se fue y el botón quedaba gris; esta se apaga a mano (forgetHover) y vuelve al mover el mouse
+    property bool hovered: false
 
     signal clicked(var mouse)
     signal scrolled(var wheel)
@@ -30,7 +32,7 @@ Rectangle {
     implicitWidth: content.implicitWidth + 20
     implicitHeight: 24
     radius: Theme.comic ? 6 : height / 2
-    color: area.containsMouse || active ? Theme.hover : "transparent"
+    color: hovered || active ? Theme.hover : "transparent"
 
     Behavior on color {
         ColorAnimation {
@@ -88,5 +90,24 @@ Rectangle {
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
         onClicked: mouse => root.clicked(mouse)
         onWheel: wheel => root.scrolled(wheel)
+        onEntered: root.hovered = true
+        onExited: root.hovered = false
+        onPositionChanged: root.hovered = true
+    }
+
+    // Al abrirse o cerrarse un menú se olvida el «mouse encima» (ver `hovered`)
+    Connections {
+        target: Ui
+
+        function onPopupChanged(): void {
+            root.forgetHover();
+        }
+        function onSysMenuOpenChanged(): void {
+            root.forgetHover();
+        }
+    }
+
+    function forgetHover(): void {
+        hovered = false;
     }
 }
