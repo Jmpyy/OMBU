@@ -11,6 +11,8 @@ Item {
     property real value: 0
     property bool muted: false
     property bool iconClickable: false
+    // Texto del valor a la derecha; vacío = el porcentaje
+    property string valueText: ""
 
     readonly property real fill: Math.max(0, Math.min(1, value))
 
@@ -91,7 +93,7 @@ Item {
                 x: slider.width - width - 12
                 anchors.verticalCenter: parent.verticalCenter
                 visible: slider.label !== ""
-                text: slider.muted ? "Silencio" : Math.round(slider.fill * 100) + " %"
+                text: slider.muted ? "Silencio" : (slider.valueText !== "" ? slider.valueText : Math.round(slider.fill * 100) + " %")
                 color: parent.tone
                 font.family: Theme.comic ? Theme.displayFont : ""
                 font.pixelSize: Theme.comic ? 15 : 12

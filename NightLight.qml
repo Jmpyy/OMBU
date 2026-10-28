@@ -32,10 +32,21 @@ Singleton {
     readonly property string hint: {
         const hhmm = m => Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0");
         if (active)
-            return manual !== null && !night ? "Activada" : "Hasta las " + hhmm(endMinute);
+            return manual !== null && !night ? "Activada" : "Hasta " + hhmm(endMinute);
         if (manual === false && night)
             return "Apagada por hoy";
-        return auto ? "Desde las " + hhmm(startMinute) : "Apagada";
+        return auto ? "Desde " + hhmm(startMinute) : "Apagada";
+    }
+
+    readonly property string scheduleText: {
+        const hhmm = m => Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0");
+        return "De " + hhmm(startMinute) + " a " + hhmm(endMinute);
+    }
+
+    function setAuto(on: bool): void {
+        auto = on;
+        manual = null;
+        save();
     }
 
     function toggle(): void {

@@ -682,10 +682,6 @@ PanelWindow {
         open: controlButton.isOpen
 
         onOpenFocus: win.togglePopup("focus")
-        onOpenWalls: {
-            Ui.popup = "";
-            Ui.wallMenuOpen = true;
-        }
         onDismissed: {
             win.dismissedControl = Date.now();
             if (controlButton.isOpen)
