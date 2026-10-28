@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "Logic.js" as Logic
 
 // Luz nocturna: entibia la pantalla de noche con hyprsunset, que cambia la matriz de color de Hyprland
 // (por eso las capturas no lo muestran). Va sola de startMinute a endMinute; el interruptor manual vale
@@ -25,7 +26,7 @@ Singleton {
     readonly property bool night: {
         const d = Chrono.date;
         const m = d.getHours() * 60 + d.getMinutes();
-        return startMinute > endMinute ? (m >= startMinute || m < endMinute) : (m >= startMinute && m < endMinute);
+        return Logic.inRange(m, startMinute, endMinute);
     }
     readonly property bool active: manual !== null ? manual : (auto && night)
     // «Hasta las 7:00», «Desde las 20:00»... para el centro de control

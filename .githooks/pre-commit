@@ -43,10 +43,13 @@ for f in "${staged[@]}"; do
     esac
 done
 
-# 4. Tests (todos juntos tardan menos de un segundo)
+# 4. Tests (todos juntos tardan un par de segundos): los de Python y los de QML (lógica y controles)
 for t in tests/*_test.py; do
     python3 -I "$t" >/dev/null 2>&1 || bad "$t falla (correlo para ver por qué)"
 done
+if [ -x tests/qml_test.sh ]; then
+    tests/qml_test.sh >/dev/null 2>&1 || bad "tests/qml_test.sh falla (correlo para ver por qué)"
+fi
 
 if [ "$fail" -ne 0 ]; then
     echo "pre-commit: commit frenado."

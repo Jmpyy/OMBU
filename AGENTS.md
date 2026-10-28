@@ -203,6 +203,12 @@ Solo lo vigente y sus trampas. El porqué de cada cambio y lo que hubo antes est
 - La persona **prefiere memoria antes que 100–150 ms en la primera aparición**. Los menús que casi nunca se abren van en `LazyLoader` con `active: <bandera> || shown` (la ventana actualiza `shown` en `onVisibleChanged`) y la entrada espera a `FirstFrame`. Una ventana perezosa no puede tener un `Process` o un `Timer` que tenga que sobrevivirla. Desde el 28/10 también el launcher y el portapapeles (~15 MB menos recién arrancado: 255–262 contra 275 MB); ya no queda ningún menú que se cree al arrancar.
 - Los procesos externos corren solo mientras algo los muestra (sysstat, seguridad). Nada a 60 fps en el salvapantallas.
 
+### Tests
+
+- Python: `tests/*_test.py` (confirmador de comandos, anotador, Google Calendar con servidor falso, Limine).
+- QML: `tests/qml_test.sh` corre con `qmltestrunner` (sin pantalla) `tests/qml/tst_logic.qml` (la lógica pura de [`Logic.js`](Logic.js): horario que cruza la medianoche, calculadora y lo que tiene que rechazar, conversiones, puntaje de búsqueda) y `tst_controls.qml` (los controles reales con teclado simulado y un `Theme` de mentira en `tests/qml/stub`). **La lógica nueva que no dependa de ventanas va a `Logic.js` y lleva su test**, sobre todo los bordes. Si un control de los tests empieza a usar otra propiedad de `Theme`, sumala al stub.
+- El hook corre todos antes de cada commit.
+
 ### Trampas de QML y Quickshell que ya costaron tiempo
 
 - **Editá los `.qml` en el mismo archivo** (`open(p, "r+")` + `truncate()`): el `Edit` de los agentes y `sed -i` lo reemplazan, y Quickshell puede dejar de vigilarlo. Después, `bin/check.sh`.
