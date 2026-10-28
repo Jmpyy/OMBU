@@ -9,7 +9,7 @@ import Quickshell.Hyprland
 DropPopup {
     id: root
 
-    readonly property int rowHeight: 48
+    readonly property int rowHeight: 40
     readonly property int maxRows: 7
     readonly property var windows: {
         const list = Array.from(Apps.minimized);
@@ -67,45 +67,27 @@ DropPopup {
         onTriggered: root.armedPid = -1
     }
 
-    bodyWidth: 380
-    bodyHeight: column.implicitHeight + 24
+    bodyWidth: 340
+    bodyHeight: column.implicitHeight + 16
 
     ColumnLayout {
         id: column
 
-        x: 14
-        y: 2
-        width: root.bodyWidth - 28
-        spacing: 10
+        x: 8
+        y: 4
+        width: root.bodyWidth - 16
+        spacing: 2
 
-        RowLayout {
+        MenuSection {
             visible: root.windows.length > 0
-            Layout.fillWidth: true
-
-            Text {
-                text: "MINIMIZADAS"
-                color: Theme.comic ? Theme.accent : Theme.textDim
-                font.pixelSize: Theme.comic ? 13 : 11
-                font.weight: Font.DemiBold
-                font.letterSpacing: 0.8
-                font.family: Theme.comic ? Theme.displayFont : ""
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Text {
-                text: root.windows.length
-                color: Theme.textDim
-                font.pixelSize: Theme.fontCaption
-                font.weight: Font.DemiBold
-            }
+            text: "Minimizadas"
+            detail: String(root.windows.length)
         }
 
         Text {
             visible: Apps.tucked === 0
             Layout.fillWidth: true
+            Layout.margins: 8
             text: "No hay apps minimizadas ni en segundo plano."
             color: Theme.textDim
             font.pixelSize: Theme.fontSmall
@@ -140,20 +122,18 @@ DropPopup {
 
                         width: windowList.width
                         height: root.rowHeight
-                        radius: Theme.comic ? 6 : 12
-                        color: rowHover.hovered ? (Theme.comic ? Qt.rgba(1, 1, 1, 0.08) : Theme.hover) : "transparent"
-                        border.width: Theme.comic && rowHover.hovered ? 1.5 : 0
-                        border.color: Theme.comic ? Theme.ink : "transparent"
+                        radius: Theme.controlRadius - 3
+                        color: rowHover.hovered ? Theme.surface : "transparent"
 
                         RowLayout {
                             anchors.fill: parent
                             anchors.leftMargin: 8
                             anchors.rightMargin: 8
-                            spacing: 12
+                            spacing: 10
 
                             Item {
-                                Layout.preferredWidth: 30
-                                Layout.preferredHeight: 30
+                                Layout.preferredWidth: 24
+                                Layout.preferredHeight: 24
 
                                 Image {
                                     id: rowIcon
@@ -190,7 +170,7 @@ DropPopup {
                                     Layout.fillWidth: true
                                     text: (row.entry ? row.entry.name : row.appId) + "  ·  " + root.placeLabel(row.modelData)
                                     elide: Text.ElideRight
-                                    color: row.minimized ? Theme.accent : Theme.textDim
+                                    color: Theme.textDim
                                     font.pixelSize: Theme.fontCaption
                                 }
                             }
@@ -201,7 +181,7 @@ DropPopup {
                                 Layout.preferredHeight: 28
                                 radius: 14
                                 visible: rowHover.hovered && row.regular
-                                color: minHover.hovered ? Theme.hover : Theme.surface
+                                color: minHover.hovered ? Theme.hover : "transparent"
 
                                 MIcon {
                                     anchors.centerIn: parent
@@ -225,13 +205,13 @@ DropPopup {
                                 Layout.preferredHeight: 28
                                 radius: 14
                                 visible: rowHover.hovered
-                                color: closeHover.hovered ? Theme.danger : Theme.surface
+                                color: closeHover.hovered ? Theme.hover : "transparent"
 
                                 MIcon {
                                     anchors.centerIn: parent
                                     name: "close"
                                     font.pixelSize: Theme.iconSm
-                                    color: closeHover.hovered ? Theme.accentText : Theme.textDim
+                                    color: closeHover.hovered ? Theme.danger : Theme.textDim
                                 }
 
                                 HoverHandler {
@@ -264,38 +244,16 @@ DropPopup {
         ColumnLayout {
             visible: Apps.trayItems.length + Apps.backgroundOnly.length > 0
             Layout.fillWidth: true
-            spacing: 4
+            spacing: 2
 
             // La línea separa de las minimizadas; sin minimizadas no hace falta
-            Rectangle {
+            MenuSeparator {
                 visible: root.windows.length > 0
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                Layout.bottomMargin: 6
-                color: Theme.border
             }
 
-            RowLayout {
-                Layout.fillWidth: true
-
-                Text {
-                    text: "EN SEGUNDO PLANO"
-                    color: Theme.textDim
-                    font.pixelSize: Theme.fontCaption
-                    font.weight: Font.DemiBold
-                    font.letterSpacing: 0.8
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                Text {
-                    text: Apps.trayItems.length + Apps.backgroundOnly.length
-                    color: Theme.textDim
-                    font.pixelSize: Theme.fontCaption
-                    font.weight: Font.DemiBold
-                }
+            MenuSection {
+                text: "En segundo plano"
+                detail: String(Apps.trayItems.length + Apps.backgroundOnly.length)
             }
 
             // Apps de la bandeja: clic la abre, ⋯ muestra su menú de opciones (el del clic derecho de siempre),
@@ -310,18 +268,18 @@ DropPopup {
 
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.rowHeight
-                    radius: 12
-                    color: trayHover.hovered ? Theme.hover : "transparent"
+                    radius: Theme.controlRadius - 3
+                    color: trayHover.hovered ? Theme.surface : "transparent"
 
                     RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
-                        spacing: 12
+                        spacing: 10
 
                         Item {
-                            Layout.preferredWidth: 30
-                            Layout.preferredHeight: 30
+                            Layout.preferredWidth: 24
+                            Layout.preferredHeight: 24
 
                             Image {
                                 anchors.fill: parent
@@ -361,13 +319,13 @@ DropPopup {
                             Layout.preferredWidth: 28
                             Layout.preferredHeight: 28
                             radius: 14
-                            color: trayMoreHover.hovered ? Theme.accent : Theme.surface
+                            color: trayMoreHover.hovered ? Theme.hover : "transparent"
 
                             MIcon {
                                 anchors.centerIn: parent
                                 name: "more_horiz"
                                 font.pixelSize: Theme.iconMd
-                                color: trayMoreHover.hovered ? Theme.accentText : Theme.textDim
+                                color: trayMoreHover.hovered ? Theme.text : Theme.textDim
                             }
 
                             HoverHandler {
@@ -430,18 +388,18 @@ DropPopup {
 
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.rowHeight
-                    radius: 12
-                    color: bgHover.hovered ? Theme.hover : "transparent"
+                    radius: Theme.controlRadius - 3
+                    color: bgHover.hovered ? Theme.surface : "transparent"
 
                     RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
-                        spacing: 12
+                        spacing: 10
 
                         Item {
-                            Layout.preferredWidth: 30
-                            Layout.preferredHeight: 30
+                            Layout.preferredWidth: 24
+                            Layout.preferredHeight: 24
 
                             Image {
                                 id: bgIcon
@@ -488,13 +446,13 @@ DropPopup {
                             Layout.preferredHeight: 28
                             radius: 14
                             visible: bgHover.hovered || bgRow.armed
-                            color: bgRow.armed || bgCloseHover.hovered ? Theme.danger : Theme.surface
+                            color: bgRow.armed ? Qt.rgba(Theme.danger.r, Theme.danger.g, Theme.danger.b, 0.2) : (bgCloseHover.hovered ? Theme.hover : "transparent")
 
                             MIcon {
                                 anchors.centerIn: parent
                                 name: "close"
                                 font.pixelSize: Theme.iconSm
-                                color: bgRow.armed || bgCloseHover.hovered ? Theme.accentText : Theme.textDim
+                                color: bgRow.armed || bgCloseHover.hovered ? Theme.danger : Theme.textDim
                             }
 
                             HoverHandler {

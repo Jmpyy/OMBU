@@ -38,46 +38,29 @@ DropPopup {
     onOpenChanged: if (!open)
         expanded = ({})
 
-    bodyWidth: 420
-    bodyHeight: column.implicitHeight + 24
+    bodyWidth: 400
+    bodyHeight: column.implicitHeight + 20
 
     ColumnLayout {
         id: column
 
-        x: 14
-        y: 2
-        width: root.bodyWidth - 28
-        spacing: 10
+        x: 10
+        y: 4
+        width: root.bodyWidth - 20
+        spacing: 8
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 6
+        // Encabezado, a la manera de macOS: título chico en minúsculas y botones de texto neutros
+        MenuSection {
+            Layout.leftMargin: 4
+            Layout.rightMargin: 0
+            text: Notifs.count > 0 ? "Notificaciones · " + Notifs.count : "Notificaciones"
 
-            Text {
-                text: "NOTIFICACIONES"
-                color: Theme.textDim
-                font.pixelSize: Theme.fontCaption
-                font.weight: Font.DemiBold
-                font.letterSpacing: 0.8
-            }
-
-            Text {
-                text: Notifs.count
-                color: Theme.textDim
-                font.pixelSize: Theme.fontCaption
-                font.weight: Font.DemiBold
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            // No molestar
+            // No molestar: el ícono en color cuando está activo
             Rectangle {
-                Layout.preferredHeight: 28
-                Layout.preferredWidth: dndRow.implicitWidth + 20
-                radius: 14
-                color: Notifs.dnd ? Theme.accent : (dndHover.hovered ? Theme.hover : Theme.surface)
+                Layout.preferredHeight: 26
+                Layout.preferredWidth: dndRow.implicitWidth + 16
+                radius: Theme.controlRadius - 3
+                color: dndHover.hovered ? Theme.hover : "transparent"
 
                 Row {
                     id: dndRow
@@ -87,9 +70,9 @@ DropPopup {
 
                     MIcon {
                         anchors.verticalCenter: parent.verticalCenter
-                        name: Notifs.dnd ? "notifications_off" : "notifications_active"
+                        name: Notifs.dnd ? "notifications_off" : "notifications"
                         font.pixelSize: Theme.iconSm
-                        color: Notifs.dnd ? Theme.accentText : Theme.textDim
+                        color: Notifs.dnd ? Theme.accent : Theme.textDim
                     }
 
                     Text {
@@ -97,7 +80,7 @@ DropPopup {
                         text: "No molestar"
                         font.pixelSize: Theme.fontSmall
                         font.weight: Font.Medium
-                        color: Notifs.dnd ? Theme.accentText : Theme.text
+                        color: Notifs.dnd ? Theme.accent : Theme.text
                     }
                 }
 
@@ -111,20 +94,20 @@ DropPopup {
 
             // Limpiar todo
             Rectangle {
-                Layout.preferredHeight: 28
-                Layout.preferredWidth: clearText.implicitWidth + 20
-                radius: 14
+                Layout.preferredHeight: 26
+                Layout.preferredWidth: clearText.implicitWidth + 16
+                radius: Theme.controlRadius - 3
                 visible: Notifs.count > 0
-                color: clearHover.hovered ? Theme.danger : Theme.surface
+                color: clearHover.hovered ? Theme.hover : "transparent"
 
                 Text {
                     id: clearText
 
                     anchors.centerIn: parent
-                    text: "Limpiar"
+                    text: "Borrar todo"
                     font.pixelSize: Theme.fontSmall
                     font.weight: Font.Medium
-                    color: clearHover.hovered ? Theme.accentText : Theme.text
+                    color: clearHover.hovered ? Theme.danger : Theme.text
                 }
 
                 HoverHandler {
@@ -180,18 +163,18 @@ DropPopup {
                             spacing: 6
 
                             Text {
-                                text: group.modelData.app.toUpperCase()
+                                Layout.leftMargin: 4
+                                text: group.modelData.app
                                 color: Theme.textDim
-                                font.pixelSize: Theme.fontTiny
-                                font.weight: Font.Bold
-                                font.letterSpacing: 0.8
+                                font.pixelSize: Theme.fontSmall
+                                font.weight: Font.DemiBold
                             }
 
                             Text {
                                 visible: group.more > 0
                                 text: group.modelData.items.length
                                 color: Theme.textDim
-                                font.pixelSize: Theme.fontTiny
+                                font.pixelSize: Theme.fontSmall
                             }
 
                             Item {
@@ -278,12 +261,16 @@ DropPopup {
                         // «N más»: despliega el grupo
                         Text {
                             visible: group.more > 0 && !group.open
+                            leftPadding: 4
                             text: group.more === 1 ? "1 más de " + group.modelData.app : group.more + " más de " + group.modelData.app
-                            color: Theme.accent
+                            color: Theme.textDim
                             font.pixelSize: Theme.fontCaption
                             font.weight: Font.DemiBold
+                            font.underline: moreHover.hovered
 
                             HoverHandler {
+                                id: moreHover
+
                                 cursorShape: Qt.PointingHandCursor
                             }
                             TapHandler {
