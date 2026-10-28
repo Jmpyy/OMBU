@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Revisa lo que está por commitearse (el repo es público: cada push lo publica). Frena el commit si:
+#   1. entra un archivo con datos personales o credenciales, o uno de más de 5 MB
+#   2. una línea agregada parece un secreto (clave privada, token de GitHub, Anthropic, Google, AWS...)
+#   3. un .qml, .sh o .py nuevo o cambiado no compila (un .qml roto deja a ombu con la versión vieja)
+#   4. falla algún test de tests/
+# Se activa una vez por clon: git config core.hooksPath .githooks
+# Saltearlo (git commit --no-verify) solo con el visto bueno de la persona.
+set -u
+cd "$(git rev-parse --show-toplevel)" || exit 1
+fail=0
+bad() { printf '  ✗ %s\n' "$1"; fail=1; }
+
+# Archivos agregados o cambiados (sin los borrados), separados por NUL por si tienen espacios
+mapfile -d '' staged < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+echo "pre-commit: ${#staged[@]} archivo(s)"
+
+# 1. Archivos que nunca van al repo
+for f in "${staged[@]}"; do
+    case "$(basename "$f")" in
+    google-*.json | *token*.json | suscripciones.json | chat.json | estacion.json | *.ics | claude.svg | intro.mp4 | .env | *.pem | *.key)
+        bad "$f: datos personales o credenciales, no van al repo" ;;
+    esac
+    size=$(git cat-file -s ":$f" 2>/dev/null || echo 0)
+    [ "$size" -gt 5242880 ] && bad "$f: pesa $((size / 1048576)) MB (más de 5)"
+done
+
+# 2. Secretos en las líneas agregadas
+secrets='-----BEGIN [A-Z ]*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40,}|sk-ant-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|GOCSPX-[A-Za-z0-9_-]{20,}|ya29\.[A-Za-z0-9_-]{20,}|1//0[A-Za-z0-9_-]{30,}|calendar\.google\.com/calendar/ical/[^ ]*/private-|"client_secret" *: *"[^"]{8,}"'
+hits=$(git diff --cached -U0 --diff-filter=ACMR | grep -E '^\+[^+]' | grep -nE -- "$secrets" | cut -c1-120)
+[ -n "$hits" ] && bad "parece haber un secreto en lo agregado:"$'\n'"$(sed 's/^/      /' <<<"$hits")"
+
+# 3. Sintaxis, sobre la versión que se commitea (la del índice, no la del disco)
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+for f in "${staged[@]}"; do
+    out="$tmp/$(basename "$f")"
+    case "$f" in
+    *.qml) git show ":$f" >"$out" && { /usr/lib/qt6/bin/qmlformat "$out" >/dev/null 2>&1 || bad "$f: error de sintaxis QML"; } ;;
+    *.sh) git show ":$f" >"$out" && { bash -n "$out" 2>/dev/null || bad "$f: error de sintaxis de bash"; } ;;
+    *.py) git show ":$f" >"$out" && { python3 -I -c 'import sys; compile(open(sys.argv[1]).read(), sys.argv[1], "exec")' "$out" 2>/dev/null || bad "$f: error de sintaxis de Python"; } ;;
+    esac
+done
+
+# 4. Tests (todos juntos tardan menos de un segundo)
+for t in tests/*_test.py; do
+    python3 -I "$t" >/dev/null 2>&1 || bad "$t falla (correlo para ver por qué)"
+done
+
+if [ "$fail" -ne 0 ]; then
+    echo "pre-commit: commit frenado."
+    exit 1
+fi
+echo "pre-commit: ✓ todo bien"

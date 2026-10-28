@@ -15,7 +15,7 @@ Guía para agentes de IA (Claude Code, Antigravity...) que trabajan en este repo
 
 Cada `git push` publica el contenido. Antes de commitear:
 
-- Revisá que no entren contraseñas, tokens ni claves (`git diff --cached`).
+- Revisá que no entren contraseñas, tokens ni claves (`git diff --cached`). El hook [`.githooks/pre-commit`](.githooks/pre-commit) lo revisa solo (archivos personales, secretos, sintaxis de QML/bash/Python y los tests) y frena el commit si algo falla. Se activa una vez por clon con `git config core.hooksPath .githooks`; **no lo saltees** (`--no-verify`) sin el visto bueno de la persona.
 - **No subas capturas de pantalla completa**: muestran las ventanas abiertas. Recortá cada menú por dentro de su borde (ver "Capturas").
 - Commits en español, en pasado o descriptivos, y con la línea `Co-Authored-By` que corresponda a tu herramienta.
 
