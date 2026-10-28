@@ -135,12 +135,26 @@ Singleton {
         onIsIdleChanged: root.setScreens(!isIdle)
     }
 
+    // Con un bloqueo real (no la vista previa) también se cierran las bóvedas de KeePassXC: las
+    // contraseñas no quedan abiertas detrás de la pantalla bloqueada. Si KeePassXC no está abierto no
+    // pasa nada (no tiene activación por D-Bus y además va --auto-start=no).
+    function lockVaults(): void {
+        if (Ui.locked && !Ui.lockPreview)
+            Quickshell.execDetached(["busctl", "--user", "--auto-start=no", "call", "org.keepassxc.KeePassXC.MainWindow", "/keepassxc", "org.keepassxc.KeePassXC.MainWindow", "lockAllDatabases"]);
+    }
+
     Connections {
         target: Ui
 
         function onLockedChanged(): void {
             if (!Ui.locked)
                 root.lockedByIdle = false;
+            root.lockVaults();
+        }
+
+        // Una vista previa que pasa a bloqueo real (lockNow) no cambia `locked`, pero sí esto
+        function onLockPreviewChanged(): void {
+            root.lockVaults();
         }
     }
 }
