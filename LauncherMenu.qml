@@ -624,11 +624,10 @@ PanelWindow {
                 visible: !win.searching && win.tiles.length > 0
                 Layout.leftMargin: 14
                 Layout.topMargin: 10
-                text: "FAVORITAS Y MÁS USADAS"
+                text: "Favoritas y más usadas"
                 color: Theme.textDim
-                font.pixelSize: Theme.fontTiny
-                font.weight: Font.Bold
-                font.letterSpacing: 1
+                font.pixelSize: Theme.fontSmall
+                font.weight: Font.DemiBold
             }
 
             GridView {
@@ -760,11 +759,11 @@ PanelWindow {
                         leftPadding: 14
                         topPadding: 8
                         bottomPadding: 4
-                        text: section.toUpperCase()
+                        // Como MenuSection: chico, gris y en minúsculas
+                        text: section
                         color: Theme.textDim
-                        font.pixelSize: Theme.fontTiny
-                        font.weight: Font.Bold
-                        font.letterSpacing: 1
+                        font.pixelSize: Theme.fontSmall
+                        font.weight: Font.DemiBold
                     }
 
                     delegate: Rectangle {
