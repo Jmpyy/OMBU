@@ -2,7 +2,8 @@ import QtQuick
 
 // Slider grueso con el ícono adentro, como el centro de control de macOS. Con `label` muestra también
 // el nombre a la izquierda y el valor en % a la derecha. Clic en el ícono dispara iconClicked (ej.
-// silenciar) si iconClickable. Con los temas de cómic lleva sombra dura, como las viñetas.
+// silenciar) si iconClickable. Relleno neutro (claro), como macOS: el acento queda para lo activo.
+// Con los temas de cómic lleva sombra dura, como las viñetas.
 Item {
     id: slider
 
@@ -48,21 +49,21 @@ Item {
             width: Math.max(parent.height, parent.width * slider.fill)
             height: parent.height
             radius: parent.radius
-            color: slider.muted ? Theme.textDim : Theme.accent
+            color: slider.muted ? Theme.textDim : Theme.text
             border.width: Theme.comic ? 2 : 0
             border.color: Theme.comic ? Theme.ink : "transparent"
         }
     }
 
-    // Ícono, nombre y valor. Se dibujan dos veces: claros sobre la parte vacía y en el color de texto
-    // sobre acento encima del relleno (la segunda copia se recorta justo en su borde), así se leen en
+    // Ícono, nombre y valor. Se dibujan dos veces: claros sobre la parte vacía y en el color del fondo
+    // encima del relleno (la segunda copia se recorta justo en su borde), así se leen en
     // cualquier tema.
     Repeater {
         model: 2
 
         Item {
             required property int index
-            readonly property color tone: index === 0 || slider.muted ? Theme.text : Theme.accentText
+            readonly property color tone: index === 0 || slider.muted ? Theme.text : Theme.bg
 
             width: index === 0 ? slider.width : filled.width
             height: slider.height

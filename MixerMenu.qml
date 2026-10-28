@@ -3,7 +3,8 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Pipewire
 
-// Mezcladora: dispositivo de salida, dispositivo de entrada y un volumen por app.
+// Mezcladora, a la manera del menú de sonido de macOS: salida y entrada (volumen y lista de
+// dispositivos) y un volumen por app, separados por líneas finas.
 DropPopup {
     id: root
 
@@ -51,20 +52,20 @@ DropPopup {
 
     readonly property var apps: groupApps(playing.concat(recording))
 
-    bodyWidth: 370
-    bodyHeight: column.implicitHeight + 26
+    bodyWidth: 340
+    bodyHeight: column.implicitHeight + 16
 
     ColumnLayout {
         id: column
 
-        x: 16
-        y: 2
-        width: root.bodyWidth - 32
-        spacing: 16
+        x: 8
+        y: 4
+        width: root.bodyWidth - 16
+        spacing: 2
 
         DeviceSection {
             Layout.fillWidth: true
-            title: "SALIDA"
+            title: "Salida"
             iconOn: "volume_up"
             iconOff: "volume_off"
             node: Pipewire.defaultAudioSink
@@ -72,9 +73,11 @@ DropPopup {
             onSelected: d => Pipewire.preferredDefaultAudioSink = d
         }
 
+        MenuSeparator {}
+
         DeviceSection {
             Layout.fillWidth: true
-            title: "ENTRADA"
+            title: "Entrada"
             iconOn: "mic"
             iconOff: "mic_off"
             node: Pipewire.defaultAudioSource
@@ -82,21 +85,21 @@ DropPopup {
             onSelected: d => Pipewire.preferredDefaultAudioSource = d
         }
 
+        MenuSeparator {}
+
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 6
 
-            Text {
-                text: "APLICACIONES"
-                color: Theme.textDim
-                font.pixelSize: Theme.fontCaption
-                font.weight: Font.DemiBold
-                font.letterSpacing: 0.8
+            MenuSection {
+                text: "Aplicaciones"
             }
 
             Text {
                 visible: root.apps.length === 0
                 Layout.fillWidth: true
+                Layout.leftMargin: 8
+                Layout.bottomMargin: 4
                 text: "Ninguna app está usando audio ahora."
                 color: Theme.textDim
                 font.pixelSize: Theme.fontSmall
@@ -120,11 +123,13 @@ DropPopup {
                     readonly property bool muted: nodes.every(n => n.audio?.muted ?? false)
 
                     Layout.fillWidth: true
+                    Layout.leftMargin: 8
+                    Layout.rightMargin: 4
                     spacing: 10
 
                     Item {
-                        Layout.preferredWidth: 30
-                        Layout.preferredHeight: 30
+                        Layout.preferredWidth: 24
+                        Layout.preferredHeight: 24
 
                         Image {
                             anchors.fill: parent
@@ -164,11 +169,11 @@ DropPopup {
                                 text: root.appName(app.node) + (app.isMic ? " (micrófono)" : "")
                                 elide: Text.ElideRight
                                 color: Theme.text
-                                font.pixelSize: Theme.fontSmall
+                                font.pixelSize: Theme.fontBody
                             }
 
                             Text {
-                                text: Math.round(app.volume * 100) + "%"
+                                text: Math.round(app.volume * 100) + " %"
                                 color: app.muted ? Theme.textDim : Theme.text
                                 font.pixelSize: Theme.fontCaption
                             }

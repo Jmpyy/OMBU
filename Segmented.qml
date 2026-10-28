@@ -23,7 +23,7 @@ Rectangle {
         width: root.segment
         height: root.height - 6
         radius: Theme.controlRadius - 2
-        color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22)
+        color: Qt.rgba(1, 1, 1, 0.12)
 
         Behavior on x {
             NumberAnimation {
@@ -52,7 +52,7 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     text: seg.modelData.name
-                    color: root.index === seg.index ? Theme.accent : (area.containsMouse ? Theme.text : Theme.textDim)
+                    color: root.index === seg.index || area.containsMouse ? Theme.text : Theme.textDim
                     font.pixelSize: Theme.fontSmall
                     font.weight: Font.DemiBold
                 }

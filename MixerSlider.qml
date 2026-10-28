@@ -1,6 +1,7 @@
 import QtQuick
 
-// Slider de volumen (0 a 1). Emite moved() mientras se arrastra o con la rueda.
+// Slider de volumen (0 a 1), fino y con perilla como el del menú de sonido de macOS; relleno neutro.
+// Emite moved() mientras se arrastra o con la rueda.
 Item {
     id: root
 
@@ -21,15 +22,15 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        height: 6
-        radius: 3
+        height: 4
+        radius: 2
         color: Theme.track
 
         Rectangle {
             width: track.width * root.clamp(root.value)
             height: parent.height
             radius: parent.radius
-            color: root.muted ? Theme.textDim : Theme.accent
+            color: root.muted ? Theme.textDim : Theme.text
         }
     }
 
