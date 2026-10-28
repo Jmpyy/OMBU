@@ -49,7 +49,7 @@ case "${1:-}" in
     setsid -f quickshell -c "$cfg" -n -d >/dev/null 2>&1
     sleep 4
     # El nuevo tiene que responder (si no, sus avisos de abajo serían del registro del viejo)
-    if ! timeout 5 qs -c "$cfg" ipc call chat status >/dev/null 2>&1; then
+    if ! timeout 5 qs -c "$cfg" ipc call idle status >/dev/null 2>&1; then
         echo "✗ El ombu nuevo no responde por IPC: revisá qs list --all"
         exit 2
     fi

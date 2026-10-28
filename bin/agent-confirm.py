@@ -420,8 +420,8 @@ def main():
         active = json.loads(run(["hyprctl", "activewindow", "-j"]) or "{}").get("class", "")
     except Exception:
         pass
-    # Si ya estás en la terminal: confirmás ahí, como siempre (salvo que corra desde el chat del panel)
-    if active == "kitty" and os.environ.get("OMBU_CHAT") != "1":
+    # Si ya estás en la terminal: confirmás ahí, como siempre
+    if active == "kitty":
         defer()
 
     lines = cmd.count("\n") + 1
@@ -446,12 +446,6 @@ def main():
         decide(False, "Denegado por el usuario desde la tarjeta de ombu.")
     if choice == "focus":
         focus_terminal()
-        if os.environ.get("OMBU_CHAT") == "1":
-            decide(False, "Continuando en la consola.")
-    if os.environ.get("OMBU_CHAT") == "1":
-        # En el chat del panel lateral no hay terminal interactiva esperando respuesta.
-        # Si no se tocó «Permitir», se niega para no dejar colgado el proceso ni auto-aprobar.
-        decide(False, "Cancelado por el usuario o tiempo agotado.")
     defer()
 
 

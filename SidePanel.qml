@@ -5,8 +5,7 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 
 // Panel lateral del monitor principal: se abre pegando el mouse al borde izquierdo (SideEdge) o con
-// Super+A. Tres pestañas: Resumen (hoy, pagos, música), Chat (Claude Code o Antigravity, ChatView) y
-// Sistema. Todo lo que mide o baja lo hace solo mientras está abierto; cerrado no consume nada.
+// Super+A. Dos pestañas: Resumen (hoy, pagos, música) y Sistema. Todo lo que mide o baja lo hace solo mientras está abierto; cerrado no consume nada.
 PanelWindow {
     id: win
 
@@ -59,8 +58,6 @@ PanelWindow {
     }
 
     onTabChanged: {
-        if (Ui.sideOpen && tab === "chat")
-            chat.focusInput();
         if (Ui.sideOpen && tab === "sistema")
             Seguridad.load(false);
     }
@@ -85,12 +82,10 @@ PanelWindow {
                 return;
             win.activeOnScreen = true;
             win.entered = false;
-            if (Ui.sideTab !== "") {
+            // Una pestaña que ya no existe (un atajo viejo pide «chat») abre el panel donde estaba
+            if (Ui.sideTab === "resumen" || Ui.sideTab === "sistema")
                 win.tab = Ui.sideTab;
-                Ui.sideTab = "";
-            }
-            if (win.tab === "chat")
-                chat.focusInput();
+            Ui.sideTab = "";
             if (win.tab === "sistema")
                 Seguridad.load(false);
             Focus.recordHistory();
@@ -131,15 +126,15 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "ombu-side"
-    // En el chat toma el teclado (se escribe apenas abre, como el launcher; Esc cierra); en el resto, solo al hacer clic
-    WlrLayershell.keyboardFocus: Ui.sideOpen ? (tab === "chat" ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand) : WlrKeyboardFocus.None
+    // Toma el teclado solo al hacer clic
+    WlrLayershell.keyboardFocus: Ui.sideOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     // Salir con el mouse cierra el panel casi enseguida (la pausa evita que un roce al borde lo cierre)
     Timer {
         id: leave
 
         interval: 150
-        onTriggered: if (win.entered && !hover.hovered && !(win.tab === "chat" && chat.holding))
+        onTriggered: if (win.entered && !hover.hovered)
             Ui.sideOpen = false
     }
 
@@ -190,10 +185,6 @@ PanelWindow {
                         {
                             id: "resumen",
                             name: "Resumen"
-                        },
-                        {
-                            id: "chat",
-                            name: "Chat"
                         },
                         {
                             id: "sistema",
@@ -745,15 +736,6 @@ PanelWindow {
                             Layout.fillWidth: true
                         }
                     }
-                }
-
-                // ---------------- Chat ----------------
-                ChatView {
-                    id: chat
-
-                    visible: win.tab === "chat"
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
                 }
 
                 // ---------------- Sistema ----------------

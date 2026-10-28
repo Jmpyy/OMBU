@@ -107,8 +107,6 @@ hl.bind(mainMod .. " + CONTROL + SHIFT + Space", hl.dsp.exec_cmd(ipc .. "menu op
 hl.bind(mainMod .. " + CONTROL + Space",         hl.dsp.exec_cmd(ipc .. "wallpaper menu"))
 -- Panel lateral (también se abre pegando el mouse al borde izquierdo del monitor principal)
 hl.bind(mainMod .. " + A",                       hl.dsp.exec_cmd(ipc .. "side toggle"))
--- Directo al chat con la IA (Claude Code o Antigravity), con el cursor en el campo
-hl.bind(mainMod .. " + SHIFT + A",               hl.dsp.exec_cmd(ipc .. "side open chat"))
 -- Anotador rápido: parciales, entregas y notas como en el papel
 hl.bind(mainMod .. " + ALT + N",                 hl.dsp.exec_cmd(ipc .. "note toggle"))
 

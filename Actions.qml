@@ -88,13 +88,6 @@ Singleton {
                     }
                 },
                 {
-                    name: "Chat con la IA",
-                    icon: "forum",
-                    hint: "Super+Shift+A",
-                    keywords: "claude antigravity agente pregunta",
-                    run: () => root.side("chat")
-                },
-                {
                     name: "Modo foco",
                     icon: "timer",
                     keywords: "pomodoro estudiar concentración",

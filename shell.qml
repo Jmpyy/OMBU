@@ -289,48 +289,6 @@ ShellRoot {
         target: "note"
     }
 
-    // qs -c ombu ipc call chat send "texto"|status|reset|stop|model <id>|attach clip|shot|file  -> chat del panel lateral (para probar)
-    IpcHandler {
-        function send(text: string): string {
-            Ui.sideTab = "chat";
-            Ui.sideOpen = true;
-            return Chat.send(text) ? "ok" : "ocupado o vacío";
-        }
-
-        function status(): string {
-            return JSON.stringify({
-                agent: Chat.agent,
-                model: Chat.model[Chat.agent],
-                cwd: Chat.cwd,
-                session: Chat.conv.session,
-                busy: Chat.busy,
-                messages: Chat.messages.length,
-                lastTokens: Chat.lastTokens,
-                limits: Chat.limits
-            });
-        }
-
-        function reset(): void {
-            Chat.reset();
-        }
-
-        function model(id: string): string {
-            Chat.setModel(id);
-            return Chat.model[Chat.agent];
-        }
-
-        // clip | shot | file
-        function attach(kind: string): void {
-            Chat.attach(kind);
-        }
-
-        function stop(): void {
-            Chat.stop();
-        }
-
-        target: "chat"
-    }
-
     // qs -c ombu ipc call media toggle|next|previous|status  -> el reproductor de música
     IpcHandler {
         // Las teclas multimedia (binds.lua) llaman a estos: controlan el mismo reproductor que la tarjeta
