@@ -162,6 +162,14 @@ Singleton {
                     run: () => Keyboard.toggle()
                 },
                 {
+                    name: NightLight.active ? "Desactivar la luz nocturna" : "Activar la luz nocturna",
+                    icon: NightLight.active ? "light_mode" : "nightlight",
+                    hint: NightLight.hint,
+                    keywords: "pantalla cálida noche ojos azul hyprsunset",
+                    keepOpen: true,
+                    run: () => NightLight.toggle()
+                },
+                {
                     name: Notifs.dnd ? "Desactivar No molestar" : "Activar No molestar",
                     icon: Notifs.dnd ? "notifications_active" : "notifications_off",
                     hint: Notifs.dnd ? "Activado" : "",

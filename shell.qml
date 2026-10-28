@@ -446,6 +446,44 @@ ShellRoot {
         target: "brightness"
     }
 
+    // qs -c ombu ipc call night toggle|on|off|auto|temp <K>|status  -> luz nocturna (hyprsunset)
+    IpcHandler {
+        function toggle(): void {
+            NightLight.toggle();
+        }
+
+        function on(): void {
+            NightLight.set(true);
+        }
+
+        function off(): void {
+            NightLight.set(false);
+        }
+
+        // Vuelve al horario automático (deja de valer lo elegido a mano)
+        function auto(): void {
+            NightLight.followSchedule();
+        }
+
+        function temp(k: int): string {
+            NightLight.setTemperature(k);
+            return String(NightLight.temperature);
+        }
+
+        function status(): string {
+            return JSON.stringify({
+                active: NightLight.active,
+                night: NightLight.night,
+                manual: NightLight.manual,
+                temperature: NightLight.temperature,
+                shown: NightLight.shown,
+                hint: NightLight.hint
+            });
+        }
+
+        target: "night"
+    }
+
     IpcHandler {
         function toggle(): void {
             Ui.barShown = !Ui.barShown;

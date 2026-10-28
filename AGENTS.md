@@ -184,6 +184,11 @@ Solo lo vigente y sus trampas. El porqué de cada cambio y lo que hubo antes est
 - Discord y Sung abren en el TV. El TV recorta los bordes (overscan): se arregla en el menú del TV, no con márgenes.
 - Pendiente del visto bueno: `logind.conf.d` para el botón de encendido (la placa expone un «Sleep Button» que suspende, y el suspend cuelga la NVIDIA).
 
+### Luz nocturna
+
+- `NightLight.qml` usa `hyprsunset` (lo lanza aparte si no corre: sobrevive a las recargas): de 20:00 a 7:00 a 4000 K, con una transición de ~0,8 s en pasos de 250 K. El interruptor manual (tile del centro de control, acción del launcher) vale hasta el próximo cambio de tramo. Estado en `nocturna.json`. `ipc call night toggle|on|off|auto|temp <K>|status`.
+- Cambia la matriz de color (CTM) de Hyprland, que se aplica después de componer: **`grim` no lo captura**. Para comprobarlo, `night status` (`shown`) o mirar la pantalla.
+
 ### Brillo y C
 
 - `Brightness.qml` (ddcutil, DDC/CI) manda un cambio a la vez. El primer bus de `ddcutil detect` puede ser el TV («Invalid display»): el bueno es el de la línea `Display N`. `ipc call brightness up|down`.

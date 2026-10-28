@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Pipewire
 
-// Centro de control, versión mínima: brillo y volumen (con nombre y valor) y tres interruptores (modo
-// foco, No molestar, teclado). Los pagos y la música están en el panel lateral, y el fondo se elige con
+// Centro de control, versión mínima: brillo y volumen (con nombre y valor) y cuatro interruptores en
+// una grilla de 2x2 (modo foco, No molestar, luz nocturna, teclado). Los pagos y la música están en el panel lateral, y el fondo se elige con
 // Super+Ctrl+Espacio o desde el menú del sistema. Con los temas de cómic todo es
 // viñeta: borde de tinta y sombra dura.
 DropPopup {
@@ -152,7 +152,7 @@ DropPopup {
         GridLayout {
             Layout.fillWidth: true
             Layout.topMargin: 2
-            columns: 3
+            columns: 2
             columnSpacing: 9
             rowSpacing: 9
 
@@ -174,6 +174,16 @@ DropPopup {
                 subtitle: Notifs.dnd ? "Activado" : "Apagado"
                 on: Notifs.dnd
                 onClicked: Notifs.dnd = !Notifs.dnd
+            }
+
+            Tile {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 1
+                icon: "nightlight"
+                title: "Luz nocturna"
+                subtitle: NightLight.hint
+                on: NightLight.active
+                onClicked: NightLight.toggle()
             }
 
             Tile {
