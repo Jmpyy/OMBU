@@ -121,7 +121,21 @@ ShellRoot {
     Variants {
         model: Screens.list
 
-        LauncherMenu {}
+        LazyLoader {
+            id: launcherLoader
+
+            required property var modelData
+            // La ventana se ve (la actualiza ella misma): así sigue viva durante la animación de cierre
+            property bool shown: false
+
+            active: Ui.launcherOpen || shown
+
+            LauncherMenu {
+                modelData: launcherLoader.modelData
+                onVisibleChanged: launcherLoader.shown = visible
+                Component.onCompleted: launcherLoader.shown = visible
+            }
+        }
     }
 
     Variants {
@@ -147,7 +161,21 @@ ShellRoot {
     Variants {
         model: Screens.list
 
-        ClipMenu {}
+        LazyLoader {
+            id: clipLoader
+
+            required property var modelData
+            // La ventana se ve (la actualiza ella misma): así sigue viva durante la animación de cierre
+            property bool shown: false
+
+            active: Ui.clipOpen || shown
+
+            ClipMenu {
+                modelData: clipLoader.modelData
+                onVisibleChanged: clipLoader.shown = visible
+                Component.onCompleted: clipLoader.shown = visible
+            }
+        }
     }
 
     Variants {

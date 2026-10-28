@@ -200,7 +200,7 @@ Solo lo vigente y sus trampas. El porqué de cada cambio y lo que hubo antes est
 ### Rendimiento y memoria
 
 - Medí con PSS (`/proc/<pid>/smaps_rollup`) **recién reiniciado** (`bin/check.sh -r` y esperar ~15 s): cada recarga deja memoria sin liberar.
-- La persona **prefiere memoria antes que 100–150 ms en la primera aparición**. Los menús que casi nunca se abren van en `LazyLoader` con `active: <bandera> || shown` (la ventana actualiza `shown` en `onVisibleChanged`) y la entrada espera a `FirstFrame`. Una ventana perezosa no puede tener un `Process` o un `Timer` que tenga que sobrevivirla.
+- La persona **prefiere memoria antes que 100–150 ms en la primera aparición**. Los menús que casi nunca se abren van en `LazyLoader` con `active: <bandera> || shown` (la ventana actualiza `shown` en `onVisibleChanged`) y la entrada espera a `FirstFrame`. Una ventana perezosa no puede tener un `Process` o un `Timer` que tenga que sobrevivirla. Desde el 28/10 también el launcher y el portapapeles (~15 MB menos recién arrancado: 255–262 contra 275 MB); ya no queda ningún menú que se cree al arrancar.
 - Los procesos externos corren solo mientras algo los muestra (sysstat, seguridad). Nada a 60 fps en el salvapantallas.
 
 ### Trampas de QML y Quickshell que ya costaron tiempo

@@ -415,7 +415,8 @@ PanelWindow {
     }
     onTilesChanged: grid.currentIndex = Math.min(grid.currentIndex, Math.max(0, tiles.length - 1))
 
-    property real p: Ui.launcherOpen ? 1 : 0
+    // Arranca en 0: la animación de entrada empieza con el primer cuadro (ver FirstFrame más abajo)
+    property real p: 0
 
     Behavior on p {
         NumberAnimation {
@@ -428,6 +429,8 @@ PanelWindow {
     property bool activeOnScreen: false
 
     Connections {
+        id: opening
+
         target: Ui
 
         function onLauncherOpenChanged() {
@@ -457,6 +460,15 @@ PanelWindow {
 
     onPChanged: if (p <= 0.001)
         activeOnScreen = false
+
+    // Se crea recién al abrirse (LazyLoader en shell.qml): el aviso de apertura ya pasó, así que se
+    // corre acá; la animación de entrada espera al primer cuadro de la ventana para no verse como un salto
+    Component.onCompleted: if (Ui.launcherOpen)
+        opening.onLauncherOpenChanged()
+
+    FirstFrame {
+        onReady: win.p = Qt.binding(() => Ui.launcherOpen ? 1 : 0)
+    }
 
     screen: modelData
     visible: (p > 0.001 && activeOnScreen) || (Ui.launcherOpen && Hyprland.focusedMonitor?.name === modelData.name)

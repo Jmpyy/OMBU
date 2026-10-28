@@ -91,7 +91,8 @@ PanelWindow {
 
     onItemsChanged: Qt.callLater(selectFirst)
 
-    property real p: Ui.clipOpen ? 1 : 0
+    // Arranca en 0: la animación de entrada empieza con el primer cuadro (ver FirstFrame más abajo)
+    property real p: 0
 
     Behavior on p {
         NumberAnimation {
@@ -104,6 +105,8 @@ PanelWindow {
     property bool activeOnScreen: false
 
     Connections {
+        id: opening
+
         target: Ui
 
         function onClipOpenChanged() {
@@ -121,6 +124,15 @@ PanelWindow {
 
     onPChanged: if (p <= 0.001)
         activeOnScreen = false
+
+    // Se crea recién al abrirse (LazyLoader en shell.qml): el aviso de apertura ya pasó, así que se
+    // corre acá; la animación de entrada espera al primer cuadro de la ventana para no verse como un salto
+    Component.onCompleted: if (Ui.clipOpen)
+        opening.onClipOpenChanged()
+
+    FirstFrame {
+        onReady: win.p = Qt.binding(() => Ui.clipOpen ? 1 : 0)
+    }
 
     Timer {
         id: disarm
