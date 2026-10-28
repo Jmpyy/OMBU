@@ -33,6 +33,18 @@ PopupWindow {
     // clics) para que, al hacer clic, ya esté dibujado y la animación arranque al instante.
     property bool warm: false
 
+    // Teclado, como en macOS: al abrir no se ve foco; ↓ o Tab entra al primer control y recorre los
+    // demás (los que tienen activeFocusOnTab), Enter o Espacio los activa y Esc cierra. Un menú con su
+    // propia navegación (el de la araña) lo apaga.
+    property bool keyboardNav: true
+
+    function moveFocus(forward: bool): void {
+        const from = root.activeFocusItem ?? keySink;
+        const next = from.nextItemInFocusChain(forward);
+        if (next && next !== from)
+            next.forceActiveFocus(Qt.TabFocusReason);
+    }
+
     // 0 = recogido en el botón, 1 = desplegado
     property real p: (open && ready) ? 1 : 0
 
@@ -69,6 +81,8 @@ PopupWindow {
     onOpenChanged: {
         if (open) {
             place();
+            if (keyboardNav)
+                Qt.callLater(() => keySink.forceActiveFocus());
             // Recién cuenta como «entró» cuando el mouse llega al cuerpo del menú: al abrirse, el menú
             // toma el mouse y la barra recibe un «salió» aunque no se haya movido, y con entered en
             // true desde el arranque el menú se cerraba solo a los 100 ms
@@ -199,6 +213,25 @@ PopupWindow {
     // barra) y el contenido aparece un poco después. Al cerrar hace el camino inverso.
     Item {
         anchors.fill: parent
+
+        // Las teclas que no usa el control enfocado suben hasta acá
+        Keys.enabled: root.keyboardNav
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Escape)
+                root.dismissed();
+            else if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab)
+                root.moveFocus(true);
+            else if (event.key === Qt.Key_Up || event.key === Qt.Key_Backtab)
+                root.moveFocus(false);
+            else
+                return;
+            event.accepted = true;
+        }
+
+        // Tiene el foco al abrir: así no se ve ningún control enfocado hasta usar el teclado
+        Item {
+            id: keySink
+        }
 
         HoverHandler {
             id: popupHover

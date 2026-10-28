@@ -187,6 +187,8 @@ DropPopup {
     }
 
     alignLeft: true
+    // Tiene su propia navegación con flechas (ver `keys`)
+    keyboardNav: false
     bodyWidth: 300
     bodyHeight: col.implicitHeight + 16
 

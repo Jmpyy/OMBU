@@ -13,6 +13,13 @@ Rectangle {
     radius: 10
     color: on ? Theme.accent : Theme.track
 
+    activeFocusOnTab: true
+    Keys.onReturnPressed: sw.toggled()
+    Keys.onEnterPressed: sw.toggled()
+    Keys.onSpacePressed: sw.toggled()
+
+    KeyFocus {}
+
     Behavior on color {
         ColorAnimation {
             duration: Theme.animFast

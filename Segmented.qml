@@ -17,6 +17,14 @@ Rectangle {
     radius: Theme.controlRadius
     color: Theme.surface
 
+    activeFocusOnTab: true
+    Keys.onLeftPressed: if (index > 0)
+        root.picked(model[index - 1].id)
+    Keys.onRightPressed: if (index < model.length - 1)
+        root.picked(model[index + 1].id)
+
+    KeyFocus {}
+
     Rectangle {
         x: 3 + root.index * root.segment
         y: 3

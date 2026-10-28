@@ -40,6 +40,17 @@ DropPopup {
         implicitHeight: 54
         radius: Theme.controlRadius + 4
         color: Theme.surface
+
+        activeFocusOnTab: true
+        Keys.onReturnPressed: pill.clicked()
+        Keys.onEnterPressed: pill.clicked()
+        Keys.onSpacePressed: pill.clicked()
+        Keys.onRightPressed: if (pill.detailId !== "")
+            root.detail = pill.detailId
+        Keys.onLeftPressed: if (pill.expanded)
+            root.detail = ""
+
+        KeyFocus {}
         border.width: Theme.comic ? 2 : 0
         border.color: Theme.comic ? (pill.on ? Theme.accent : Theme.ink) : "transparent"
 

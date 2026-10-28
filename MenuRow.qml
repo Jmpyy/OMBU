@@ -27,7 +27,12 @@ Rectangle {
     Layout.fillWidth: true
     implicitHeight: 32
     radius: Theme.controlRadius - 3
-    color: hover.hovered || current ? Theme.surface : "transparent"
+    color: hover.hovered || current || activeFocus ? Theme.surface : "transparent"
+
+    activeFocusOnTab: true
+    Keys.onReturnPressed: row.clicked()
+    Keys.onEnterPressed: row.clicked()
+    Keys.onSpacePressed: row.clicked()
 
     HoverHandler {
         id: hover

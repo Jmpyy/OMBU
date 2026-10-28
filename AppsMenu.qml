@@ -123,7 +123,11 @@ DropPopup {
                         width: windowList.width
                         height: root.rowHeight
                         radius: Theme.controlRadius - 3
-                        color: rowHover.hovered ? Theme.surface : "transparent"
+                        color: rowHover.hovered || activeFocus ? Theme.surface : "transparent"
+
+                        activeFocusOnTab: true
+                        Keys.onReturnPressed: root.focusWindow(row.modelData)
+                        Keys.onEnterPressed: root.focusWindow(row.modelData)
 
                         RowLayout {
                             anchors.fill: parent
@@ -269,7 +273,16 @@ DropPopup {
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.rowHeight
                     radius: Theme.controlRadius - 3
-                    color: trayHover.hovered ? Theme.surface : "transparent"
+                    color: trayHover.hovered || activeFocus ? Theme.surface : "transparent"
+
+                    activeFocusOnTab: true
+                    Keys.onReturnPressed: {
+                        trayRow.modelData.activate();
+                        root.dismissed();
+                    }
+                    // → abre su menú de opciones, como el botón ⋯
+                    Keys.onRightPressed: if (trayRow.modelData.hasMenu)
+                        Ui.popup = "tray-" + trayRow.modelData.id + "@" + root.barWindow.screen.name
 
                     RowLayout {
                         anchors.fill: parent
@@ -389,7 +402,13 @@ DropPopup {
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.rowHeight
                     radius: Theme.controlRadius - 3
-                    color: bgHover.hovered ? Theme.surface : "transparent"
+                    color: bgHover.hovered || activeFocus ? Theme.surface : "transparent"
+
+                    activeFocusOnTab: true
+                    Keys.onReturnPressed: {
+                        Apps.open(bgRow.modelData);
+                        root.dismissed();
+                    }
 
                     RowLayout {
                         anchors.fill: parent

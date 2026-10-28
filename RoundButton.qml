@@ -15,6 +15,16 @@ Rectangle {
 
     implicitWidth: size
     implicitHeight: size
+
+    activeFocusOnTab: true
+    Keys.onReturnPressed: if (root.enabled)
+        root.clicked()
+    Keys.onEnterPressed: if (root.enabled)
+        root.clicked()
+    Keys.onSpacePressed: if (root.enabled)
+        root.clicked()
+
+    KeyFocus {}
     radius: size * 0.28
     opacity: enabled ? 1 : 0.4
     color: primary ? (area.containsMouse ? Qt.lighter(Theme.accent, 1.12) : Theme.accent) : (area.containsMouse && enabled ? Theme.hover : Theme.surface)

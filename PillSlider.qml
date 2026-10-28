@@ -22,6 +22,12 @@ Item {
 
     implicitHeight: label !== "" ? 36 : 30
 
+    activeFocusOnTab: true
+    Keys.onLeftPressed: slider.moved(Math.max(0, slider.fill - 0.05))
+    Keys.onRightPressed: slider.moved(Math.min(1, slider.fill + 0.05))
+    Keys.onReturnPressed: if (slider.iconClickable)
+        slider.iconClicked()
+
     // Sombra dura (temas de cómic)
     Rectangle {
         visible: Theme.comic
@@ -42,13 +48,30 @@ Item {
         border.width: Theme.comic ? 2 : 0
         border.color: Theme.comic ? Theme.ink : "transparent"
         clip: true
+    }
+
+    // Anillo de foco (afuera de la pista, que recorta lo que tiene adentro)
+    Rectangle {
+        anchors.fill: track
+        anchors.margins: -2
+        radius: track.radius + 2
+        color: "transparent"
+        border.width: 1.5
+        border.color: Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.55)
+        visible: slider.activeFocus
+    }
+
+    // El relleno, recortado al tamaño de la pista
+    Item {
+        anchors.fill: track
+        clip: true
 
         Rectangle {
             id: filled
 
             width: Math.max(parent.height, parent.width * slider.fill)
             height: parent.height
-            radius: parent.radius
+            radius: track.radius
             color: slider.muted ? Theme.textDim : Theme.text
             border.width: Theme.comic ? 2 : 0
             border.color: Theme.comic ? Theme.ink : "transparent"

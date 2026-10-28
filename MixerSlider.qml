@@ -16,6 +16,14 @@ Item {
 
     implicitHeight: 22
 
+    activeFocusOnTab: true
+    Keys.onLeftPressed: root.moved(root.clamp(root.value - 0.05))
+    Keys.onRightPressed: root.moved(root.clamp(root.value + 0.05))
+
+    KeyFocus {
+        radius: 6
+    }
+
     Rectangle {
         id: track
 
