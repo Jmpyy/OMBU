@@ -40,6 +40,24 @@
   --focus-outline-color: color-mix(in srgb, @TEXT@, transparent 45%) !important;
 }
 
+/* ---------------- Fondo de la ventana ----------------
+   Zen lo pinta con dos capas (::before y ::after de .zen-browser-generic-background) y el degradé del
+   «tema de espacio» se fija en un elemento interno, así que las variables de :root no alcanzan: se
+   pintan las capas directo, opacas y sin el granulado. El tema de espacio de Zen deja de verse. */
+.zen-browser-generic-background::before,
+.zen-browser-generic-background::after {
+  background: @BG@ !important;
+  opacity: 1 !important;
+}
+
+.zen-browser-generic-background .zen-browser-grain {
+  display: none !important;
+}
+
+#main-window {
+  --zen-themed-toolbar-bg-transparent: @BG@ !important;
+}
+
 /* ---------------- Menús (clic derecho, menús de las pestañas...) ---------------- */
 
 menupopup {
