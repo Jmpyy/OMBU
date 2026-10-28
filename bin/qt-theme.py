@@ -14,6 +14,7 @@ el del tema elegido; los tonos derivados (más claro, más oscuro) se calculan. 
   <perfil de Zen>/chrome/userChrome.css   Zen, desde extras/zen/userChrome.css (la interfaz) y userContent.css
                                           (sus páginas propias), más user.js (habilita el CSS
                                           y pone el acento). Zen lo lee al arrancar. No pisa archivos propios
+  ~/.config/mpv/script-opts/uosc.conf   los colores de la interfaz de mpv (uosc), desde extras/mpv/uosc.conf
   ~/.local/share/ombu/icons/bar-logo.svg  el logo de la barra (araña o reactor, en los colores del tema;
                                           sin --logo se borra y la barra usa el de CachyOS)
 y rehace las carpetas del tema de íconos Ombu en el color de Papirus que corresponda.
@@ -74,6 +75,9 @@ def table(c):
 # Derivados que las plantillas traen escritos a mano (no salen exactos de la fórmula de arriba)
 EXACT = {"#3a3950": ("track", 0.07), "#323146": ("track", 0.04), "#c4b5fd": ("accent", 0.35),
          "#18171f": ("bg", 0.02), "#0f0e14": ("bg", -0.25), "#7f1d1d": ("danger", -0.5)}
+# Mezclas entre dos colores del tema: la selección de Dolphin y las demás apps Qt es el acento al 35 %
+# sobre el fondo (como Finder), no el acento lleno
+BLEND = {"#473d68": ("bg", "accent", 0.35)}
 
 
 ON = "@@ON_ACCENT@@"
@@ -93,6 +97,8 @@ def recolor(text, c):
     direct = {DEFAULT[k]: hexc(base[k]) for k in DEFAULT}
     for h, (k, t) in EXACT.items():
         direct[h] = hexc(mix(base[k], WHITE if t > 0 else BLACK, abs(t)))
+    for h, (a, b, t) in BLEND.items():
+        direct[h] = hexc(mix(base[a], base[b], t))
 
     def hex_sub(m):
         return direct.get(m.group(0).lower(), m.group(0))
@@ -318,6 +324,13 @@ def main():
         if current.strip() == "" or "@name Ombu" in current:
             write(qpath, css, backup=False)
 
+    # mpv (uosc): los colores de su interfaz, sin el # que uosc no acepta. mpv lo lee al abrir
+    mpv = os.path.join(root, ".config/mpv")
+    if os.path.isdir(mpv) or a.out:
+        with open(os.path.join(EXTRAS, "mpv", "uosc.conf"), encoding="utf-8") as f:
+            uosc = re.sub(r"#([0-9a-fA-F]{6})\b", r"\1", vesktop_css(f.read(), colors, on_accent, a.accent2))
+        write(os.path.join(mpv, "script-opts", "uosc.conf"), uosc, backup=False)
+
     # Zen: lo lee al arrancar
     with open(os.path.join(EXTRAS, "zen", "userChrome.css"), encoding="utf-8") as f:
         chrome_css = vesktop_css(f.read(), colors, on_accent, a.accent2)
@@ -335,7 +348,7 @@ def main():
     if not a.out:
         # kitty vuelve a leer su configuración al recibir SIGUSR1: las terminales abiertas cambian de color
         subprocess.run(["pkill", "-USR1", "-x", "kitty"], check=False)
-        subprocess.run([sys.executable, os.path.join(EXTRAS, "icons", "make-ombu-icons.py"), a.folder],
+        subprocess.run([sys.executable, os.path.join(EXTRAS, "icons", "make-ombu-icons.py"), a.folder, "--accent", colors["accent"]],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
     print("tema aplicado a las apps Qt y GTK" + (" (prueba en %s)" % root if a.out else ""))
 
