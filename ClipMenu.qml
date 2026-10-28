@@ -245,9 +245,9 @@ PanelWindow {
 
                 // Pausa: deja de guardar lo que se copia
                 Rectangle {
-                    Layout.preferredHeight: 34
-                    Layout.preferredWidth: pauseRow.implicitWidth + 20
-                    radius: 17
+                    Layout.preferredHeight: 30
+                    Layout.preferredWidth: pauseRow.implicitWidth + 16
+                    radius: Theme.controlRadius - 3
                     color: Clip.paused ? Qt.rgba(Theme.warn.r, Theme.warn.g, Theme.warn.b, 0.18) : (pauseHover.hovered ? Theme.hover : "transparent")
 
                     Row {
@@ -285,10 +285,10 @@ PanelWindow {
 
                 // Vaciar todo (pide un segundo toque)
                 Rectangle {
-                    Layout.preferredHeight: 34
-                    Layout.preferredWidth: clearRow.implicitWidth + 20
-                    radius: 17
-                    color: win.clearArmed ? Theme.danger : (clearHover.hovered ? Theme.hover : "transparent")
+                    Layout.preferredHeight: 30
+                    Layout.preferredWidth: clearRow.implicitWidth + 16
+                    radius: Theme.controlRadius - 3
+                    color: win.clearArmed ? Qt.rgba(Theme.danger.r, Theme.danger.g, Theme.danger.b, 0.2) : (clearHover.hovered ? Theme.hover : "transparent")
 
                     Row {
                         id: clearRow
@@ -299,7 +299,7 @@ PanelWindow {
                         MIcon {
                             anchors.verticalCenter: parent.verticalCenter
                             name: "delete_sweep"
-                            color: win.clearArmed ? Theme.accentText : Theme.textDim
+                            color: win.clearArmed ? Theme.danger : Theme.textDim
                             font.pixelSize: Theme.iconMd
                         }
 
@@ -307,7 +307,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: win.clearArmed
                             text: "Tocá de nuevo"
-                            color: Theme.accentText
+                            color: Theme.danger
                             font.pixelSize: Theme.fontSmall
                             font.weight: Font.DemiBold
                         }
@@ -379,14 +379,14 @@ PanelWindow {
                     Text {
                         visible: item.isHeader && item.modelData.title !== ""
                         anchors.left: parent.left
-                        anchors.leftMargin: 12
+                        anchors.leftMargin: 8
                         anchors.bottom: parent.bottom
                         anchors.bottomMargin: 4
-                        text: item.isHeader ? item.modelData.title.toUpperCase() : ""
+                        // Como MenuSection: chico, gris y en minúsculas
+                        text: item.isHeader ? item.modelData.title : ""
                         color: Theme.textDim
-                        font.pixelSize: Theme.fontCaption
+                        font.pixelSize: Theme.fontSmall
                         font.weight: Font.DemiBold
-                        font.letterSpacing: 0.8
                     }
 
                     Rectangle {
@@ -394,7 +394,7 @@ PanelWindow {
                         anchors.fill: parent
                         anchors.topMargin: 1
                         anchors.bottomMargin: 1
-                        radius: 14
+                        radius: Theme.controlRadius
                         color: item.current ? Theme.surface : (itemHover.hovered ? Theme.hover : "transparent")
 
                         RowLayout {
@@ -463,9 +463,9 @@ PanelWindow {
 
                                 Rectangle {
                                     visible: !item.isImage
-                                    width: 30
-                                    height: 30
-                                    radius: 15
+                                    width: 28
+                                    height: 28
+                                    radius: Theme.controlRadius - 3
                                     color: pinHover.hovered ? Theme.hover : "transparent"
 
                                     MIcon {
@@ -488,15 +488,15 @@ PanelWindow {
                                 }
 
                                 Rectangle {
-                                    width: 30
-                                    height: 30
-                                    radius: 15
-                                    color: delHover.hovered ? Theme.danger : "transparent"
+                                    width: 28
+                                    height: 28
+                                    radius: Theme.controlRadius - 3
+                                    color: delHover.hovered ? Theme.hover : "transparent"
 
                                     MIcon {
                                         anchors.centerIn: parent
                                         name: "close"
-                                        color: delHover.hovered ? Theme.accentText : Theme.textDim
+                                        color: delHover.hovered ? Theme.danger : Theme.textDim
                                         font.pixelSize: Theme.iconSm
                                     }
 

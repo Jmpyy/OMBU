@@ -219,19 +219,19 @@ PanelWindow {
                     readonly property bool isHeader: modelData.kind === "header"
 
                     width: ListView.view.width
-                    height: isHeader ? 34 : 38
+                    height: isHeader ? 30 : 32
 
                     Text {
                         visible: row.isHeader
                         anchors.left: parent.left
-                        anchors.leftMargin: 12
+                        anchors.leftMargin: 8
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 5
-                        text: row.isHeader ? row.modelData.title.toUpperCase() : ""
-                        color: Theme.accent
-                        font.pixelSize: Theme.fontCaption
+                        anchors.bottomMargin: 4
+                        // Como MenuSection: chico, gris y en minúsculas
+                        text: row.isHeader ? row.modelData.title : ""
+                        color: Theme.textDim
+                        font.pixelSize: Theme.fontSmall
                         font.weight: Font.DemiBold
-                        font.letterSpacing: 0.8
                     }
 
                     Rectangle {
@@ -239,7 +239,7 @@ PanelWindow {
                         anchors.fill: parent
                         anchors.topMargin: 1
                         anchors.bottomMargin: 1
-                        radius: 10
+                        radius: Theme.controlRadius - 3
                         color: rowHover.hovered ? Theme.surface : "transparent"
 
                         HoverHandler {
@@ -248,8 +248,8 @@ PanelWindow {
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
                             spacing: 12
 
                             Text {
@@ -288,8 +288,8 @@ PanelWindow {
                                             required property string modelData
 
                                             width: Math.max(26, chipText.implicitWidth + 14)
-                                            height: 24
-                                            radius: 7
+                                            height: 22
+                                            radius: 6
                                             color: Theme.surface
                                             border.width: 1
                                             border.color: Theme.border
