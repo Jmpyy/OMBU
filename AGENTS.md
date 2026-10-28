@@ -217,5 +217,4 @@ Solo lo vigente y sus trampas. El porqué de cada cambio y lo que hubo antes est
 - Algunos `component` internos nuevos dan «X is not a type»: usá un archivo propio.
 - Nombres prohibidos: una propiedad `on` + mayúscula (`onAccent`) se toma como manejador; un `Row` no puede declarar `top` (FINAL); una función `fill` del singleton no se puede llamar desde un `component` interno.
 - Un parámetro tipado `int` que no se pasa vale `0`, no `undefined`. Una lista de QML no pasa `Array.isArray`: contá con `l.length`. Los manejadores con parámetros se escriben `onPositionChanged: pos => { … }`.
-- `qs kill` a veces deja el proceso trabado y sin atender D-Bus (no salen notificaciones); `check.sh -r` ya lo resuelve. ¿Está vivo? `timeout 5 qs -c ombu ipc call idle status`.
-- Quickshell 0.3.2 a veces se cae **al cerrarse** (`SIGSEGV` en `~QQmlEngine`): es un bug de Quickshell y se relanza solo.
+- Quickshell 0.3.2 se cae **al cerrarse ordenadamente** (`SIGSEGV` en `~QQmlEngine`): cada caída abre un cartel de error y deja una carpeta en `~/.cache/quickshell/crashes`, y a veces queda trabado sin atender D-Bus. Por eso `check.sh -r` termina ombu con **SIGKILL** (sin destructores, sin crash): **no uses `qs kill` para reiniciar**. ¿Está vivo? `timeout 5 qs -c ombu ipc call idle status`.
