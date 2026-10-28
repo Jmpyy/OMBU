@@ -517,11 +517,6 @@ ShellRoot {
             Ui.popup = Ui.popup === key ? "" : key;
         }
 
-        function walls(): void {
-            Ui.popup = "";
-            Ui.wallMenuOpen = !Ui.wallMenuOpen;
-        }
-
         function focus(): void {
             const key = "focus@" + (Hyprland.focusedMonitor?.name ?? "");
             Ui.popup = Ui.popup === key ? "" : key;

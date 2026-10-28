@@ -50,22 +50,6 @@ Singleton {
         return currency === "USD" ? "US$ " + n : "$" + n;
     }
 
-    // Suma por moneda de los pagos de quien corresponda ("" = todos): "US$ 25 + $900"
-    function total(payer: string): string {
-        const sums = {};
-        for (const s of list) {
-            if (payer !== "" && s.payer !== payer)
-                continue;
-            sums[s.currency] = (sums[s.currency] ?? 0) + s.amount;
-        }
-        const parts = [];
-        for (const c of ["USD", "ARS"]) {
-            if (sums[c] !== undefined)
-                parts.push(money(sums[c], c));
-        }
-        return parts.length > 0 ? parts.join(" + ") : "";
-    }
-
     function whenText(days: int): string {
         if (days <= 0)
             return "Hoy";

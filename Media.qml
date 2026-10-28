@@ -25,18 +25,6 @@ Singleton {
 
     readonly property var player: all.includes(selected) ? selected : (all.find(p => p.isPlaying) ?? all[0] ?? null)
     readonly property bool playing: player?.isPlaying ?? false
-
-    // Apps de música: `music` solo elige entre estas, no un video de
-    // YouTube o un reel de Instagram del navegador. Es el final del nombre de bus MPRIS
-    // (org.mpris.MediaPlayer2.sung); para sumar otra, agregala acá (ej. "spotify").
-    readonly property var musicApps: ["sung"]
-    readonly property var music: all.find(p => isMusic(p)) ?? null
-    readonly property bool musicPlaying: music?.isPlaying ?? false
-
-    function isMusic(p: var): bool {
-        const name = (p?.dbusName ?? "").toLowerCase();
-        return musicApps.some(a => name === "org.mpris.mediaplayer2." + a || name.startsWith("org.mpris.mediaplayer2." + a + "."));
-    }
     readonly property int count: all.length
     readonly property int index: Math.max(0, all.indexOf(player))
 

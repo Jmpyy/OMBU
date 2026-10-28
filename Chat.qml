@@ -186,15 +186,6 @@ Singleton {
         save();
     }
 
-    function cycleModel(): void {
-        const list = models[agent] ?? [];
-        const i = list.findIndex(m => m.id === model[agent]);
-        const m = Object.assign({}, model);
-        m[agent] = list[(i + 1) % list.length].id;
-        model = m;
-        save();
-    }
-
     // Guarda la conversación actual del agente en el historial (si tiene algo)
     function archive(a: string): void {
         const c = convs[a];

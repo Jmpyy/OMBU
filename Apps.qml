@@ -122,8 +122,19 @@ Singleton {
         }
     }
 
+    // Abrir o cerrar una ventana cambia quién queda en segundo plano: se mira enseguida, y el sondeo
+    // queda de respaldo (una app que arranca sin ventana, o un proceso que termina un rato después)
+    Connections {
+        target: Hyprland
+
+        function onRawEvent(event): void {
+            if (event.name === "openwindow" || event.name === "closewindow")
+                root.refreshSoon();
+        }
+    }
+
     Timer {
-        interval: Ui.popup.startsWith("apps@") ? 1500 : 8000
+        interval: Ui.popup.startsWith("apps@") ? 1500 : 30000
         running: true
         repeat: true
         triggeredOnStart: true

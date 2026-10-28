@@ -11,8 +11,6 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property string home: Quickshell.env("HOME") ?? ""
-
     // Lo que entendió el anotador del texto actual (null = nada escrito)
     property var parsed: null
     property string parsedFor: ""

@@ -75,8 +75,6 @@ Singleton {
         return Media.artUrl(p.trackArtUrl ?? "", true);
     }
 
-    // Escritorios que se están viendo ahora (uno por monitor)
-    readonly property var visibleWorkspaces: Hyprland.monitors.values.map(m => m.activeWorkspace?.id).filter(id => id !== undefined)
     readonly property int focusedWorkspace: Hyprland.focusedWorkspace?.id ?? -1
 
     function ruleFor(n: var): var {

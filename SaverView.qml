@@ -19,10 +19,6 @@ Item {
     readonly property real lh: fm.lineSpacing
     readonly property int cols: Math.floor(width / cw)
     readonly property int rows: Math.floor(height / lh)
-    // Dónde queda la grilla de texto: la compartida (Saver.cols x Saver.rows, la más grande de todos los
-    // monitores) centrada en este; en un monitor más chico queda por fuera y se recorta (clip)
-    readonly property real gridX: Math.round((width - Saver.cols * cw) / 2)
-    readonly property real gridY: Math.round((height - Saver.rows * lh) / 2)
 
     // Rampa de la lluvia: con Ombú, los violetas de siempre; con los demás temas, derivada de su acento
     readonly property bool ombuLook: Theme.accent.toString().toLowerCase() === "#a78bfa"

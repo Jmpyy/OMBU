@@ -36,9 +36,6 @@ PopupWindow {
     // 0 = recogido en el botón, 1 = desplegado
     property real p: (open && ready) ? 1 : 0
 
-    // Punto de la barra del que crece el menú (el centro del botón, sobre el borde de arriba)
-    readonly property real originX: centered ? implicitWidth / 2 : (alignLeft ? Theme.fillet + anchorItem.width / 2 : implicitWidth - Theme.fillet - anchorItem.width / 2)
-
     Behavior on p {
         NumberAnimation {
             duration: root.open ? 200 : 150

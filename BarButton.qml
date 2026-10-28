@@ -21,7 +21,6 @@ Rectangle {
     // Lo que se declare adentro del botón va al final de la fila (ej. un "+1")
     default property alias extra: content.data
     property alias labelItem: labelText
-    property alias iconItem: iconBox
     // Mouse encima. Marca propia y no containsMouse: al cerrarse un menú Wayland a veces no avisa que el
     // mouse se fue y el botón quedaba gris; esta se apaga a mano (forgetHover) y vuelve al mover el mouse
     property bool hovered: false

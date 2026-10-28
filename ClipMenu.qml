@@ -415,7 +415,8 @@ PanelWindow {
                                     anchors.fill: parent
                                     radius: 10
                                     visible: false
-                                    layer.enabled: true
+                                    // Solo las filas con imagen llevan máscara: las de texto no gastan texturas
+                                    layer.enabled: item.isImage
                                 }
 
                                 Image {
@@ -426,7 +427,7 @@ PanelWindow {
                                     cache: false
                                     asynchronous: true
                                     smooth: true
-                                    layer.enabled: true
+                                    layer.enabled: item.isImage
                                     layer.effect: MultiEffect {
                                         maskEnabled: true
                                         maskSource: thumbMask
