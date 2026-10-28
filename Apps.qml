@@ -56,9 +56,18 @@ Singleton {
     readonly property var backgroundOnly: (background ?? []).filter(a => !inTray(a))
     // Lo que está «guardado»: minimizado, en la bandeja o corriendo sin ventana. Es lo que muestran el
     // botón de la barra y su menú (AppsMenu); las ventanas en uso no.
-    // Al arrancar (y al desmontarse en una recarga) las listas pueden no existir: cada una cuenta 0 y el
-    // resultado siempre es un número (con un bloque {...} la recarga dejaba «Unable to assign [undefined]»)
-    readonly property int tucked: (minimized?.length ?? 0) + (trayItems?.length ?? 0) + (backgroundOnly?.length ?? 0)
+    // Se cuenta a mano cuando cambia alguna lista, no con un binding: al desmontarse la instancia vieja en
+    // una recarga, el binding se evaluaba a medias y dejaba «Unable to assign [undefined] to int»
+    property int tucked: 0
+
+    function recount(): void {
+        tucked = (minimized?.length ?? 0) + (trayItems?.length ?? 0) + (backgroundOnly?.length ?? 0);
+    }
+
+    onMinimizedChanged: recount()
+    onTrayItemsChanged: recount()
+    onBackgroundOnlyChanged: recount()
+    Component.onCompleted: recount()
 
     function refresh(): void {
         Hyprland.refreshToplevels();
