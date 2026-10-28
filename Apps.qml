@@ -56,14 +56,9 @@ Singleton {
     readonly property var backgroundOnly: (background ?? []).filter(a => !inTray(a))
     // Lo que está «guardado»: minimizado, en la bandeja o corriendo sin ventana. Es lo que muestran el
     // botón de la barra y su menú (AppsMenu); las ventanas en uso no.
-    // Al arrancar, las listas se calculan en cualquier orden y alguna puede no existir todavía: se cuenta
-    // lo que tenga largo (una lista de QML no pasa Array.isArray).
-    readonly property int tucked: {
-        let n = 0;
-        for (const l of [minimized, trayItems, backgroundOnly])
-            n += l && l.length > 0 ? l.length : 0;
-        return n;
-    }
+    // Al arrancar (y al desmontarse en una recarga) las listas pueden no existir: cada una cuenta 0 y el
+    // resultado siempre es un número (con un bloque {...} la recarga dejaba «Unable to assign [undefined]»)
+    readonly property int tucked: (minimized?.length ?? 0) + (trayItems?.length ?? 0) + (backgroundOnly?.length ?? 0)
 
     function refresh(): void {
         Hyprland.refreshToplevels();
