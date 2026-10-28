@@ -278,11 +278,10 @@ DropPopup {
                 Text {
                     Layout.fillWidth: true
                     visible: Agenda.apiConnected && Agenda.calendars.length > 1
-                    text: "CALENDARIOS"
+                    text: "Calendarios"
                     color: Theme.textDim
-                    font.pixelSize: Theme.fontTiny
+                    font.pixelSize: Theme.fontSmall
                     font.weight: Font.DemiBold
-                    font.letterSpacing: 0.8
                 }
 
                 Text {
@@ -1061,11 +1060,10 @@ DropPopup {
             readonly property var upcomingList: Agenda.upcoming(4)
 
             Text {
-                text: "PRÓXIMOS"
+                text: "Próximos"
                 color: Theme.textDim
-                font.pixelSize: Theme.fontCaption
+                font.pixelSize: Theme.fontSmall
                 font.weight: Font.DemiBold
-                font.letterSpacing: 0.8
             }
 
             Repeater {
