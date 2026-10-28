@@ -229,3 +229,5 @@ extras/            tema para apps Qt y tema de iconos
 ## Agradecimientos
 
 Inspirado en [Caelestia Shell](https://github.com/caelestia-dots/shell) y [Omarchy](https://omarchy.org), y construido sobre [Quickshell](https://quickshell.org) y [Hyprland](https://hypr.land).
+
+Hecho en CachyOS con la ayuda de [Claude Code](https://claude.com/claude-code).
