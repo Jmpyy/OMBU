@@ -58,7 +58,8 @@ ColumnLayout {
             width: parent.width * Math.max(0, Math.min(1, root.fraction))
             height: parent.height
             radius: 3
-            color: root.fraction > 0.9 ? Theme.danger : (root.fraction > 0.75 ? Theme.warn : root.tint)
+            // Neutra como los sliders; el color aparece solo cuando avisa algo (uso alto)
+            color: root.fraction > 0.9 ? Theme.danger : (root.fraction > 0.75 ? Theme.warn : (Theme.comic ? root.tint : Theme.text))
 
             Behavior on width {
                 NumberAnimation {

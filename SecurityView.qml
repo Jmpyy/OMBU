@@ -193,11 +193,10 @@ ColumnLayout {
         Text {
             visible: (Seguridad.updates.news ?? []).length > 0
             Layout.topMargin: 4
-            text: "NOTICIAS DE ARCH"
+            text: "Noticias de Arch"
             color: Theme.textDim
-            font.pixelSize: Theme.fontTiny
-            font.weight: Font.Bold
-            font.letterSpacing: 1
+            font.pixelSize: Theme.fontCaption
+            font.weight: Font.DemiBold
         }
 
         Repeater {

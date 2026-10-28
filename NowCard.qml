@@ -92,7 +92,7 @@ ComicCard {
         MIcon {
             name: Focus.phase === "estudio" ? "target" : "coffee"
             font.pixelSize: Theme.iconSm
-            color: Focus.phase === "estudio" ? "#6f9bf0" : Theme.textDim
+            color: Focus.phase === "estudio" ? Theme.text : Theme.textDim
         }
 
         Text {

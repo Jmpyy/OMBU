@@ -1,9 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Tarjeta del panel lateral: una viñeta con borde de tinta y sombra dura en los temas de cómic, una
-// tarjeta simple en los demás. Lleva una franja del color `tint` y, si hay `title`, un sticker arriba.
-// Lo que se ponga adentro se apila en una columna.
+// Tarjeta del panel lateral, como los widgets del Centro de notificaciones de macOS: título chico, gris
+// y en minúsculas (como MenuSection) y el contenido apilado en una columna. Con los temas de cómic es una
+// viñeta con borde de tinta, sombra dura, franja del color `tint` y el título en un sticker.
 Item {
     id: root
 
@@ -29,7 +29,7 @@ Item {
 
         width: parent.width - 4
         height: col.implicitHeight + 20
-        radius: Theme.comic ? 6 : 10
+        radius: Theme.comic ? 6 : Theme.controlRadius + 4
         color: Theme.surface
         border.width: Theme.comic ? 2 : 1
         border.color: Theme.comic ? Theme.ink : Theme.border
@@ -58,9 +58,17 @@ Item {
             spacing: 8
 
             Sticker {
-                visible: root.title !== ""
+                visible: Theme.comic && root.title !== ""
                 text: root.title
                 tint: root.tint
+            }
+
+            Text {
+                visible: !Theme.comic && root.title !== ""
+                text: root.title
+                color: Theme.textDim
+                font.pixelSize: Theme.fontSmall
+                font.weight: Font.DemiBold
             }
 
             ColumnLayout {

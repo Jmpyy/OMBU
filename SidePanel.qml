@@ -221,7 +221,7 @@ PanelWindow {
 
                                 Text {
                                     text: Estacion.greeting(Chrono.date) + ", " + Estacion.displayName
-                                    color: Theme.accent
+                                    color: Theme.comic ? Theme.accent : Theme.textDim
                                     font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
                                     font.pixelSize: Theme.comic ? 17 : 13
                                     font.letterSpacing: Theme.comic ? 1.5 : 0
@@ -370,11 +370,10 @@ PanelWindow {
                             tint: Themes.active.border2 ?? Theme.accent
 
                             Text {
-                                text: "HOY"
+                                text: "Hoy"
                                 color: Theme.textDim
-                                font.pixelSize: Theme.fontTiny
-                                font.weight: Font.Bold
-                                font.letterSpacing: 1
+                                font.pixelSize: Theme.fontCaption
+                                font.weight: Font.DemiBold
                             }
 
                             Text {
@@ -395,11 +394,10 @@ PanelWindow {
                             Text {
                                 visible: summary.later.length > 0
                                 Layout.topMargin: 4
-                                text: "PRÓXIMOS DÍAS"
+                                text: "Próximos días"
                                 color: Theme.textDim
-                                font.pixelSize: Theme.fontTiny
-                                font.weight: Font.Bold
-                                font.letterSpacing: 1
+                                font.pixelSize: Theme.fontCaption
+                                font.weight: Font.DemiBold
                             }
 
                             Repeater {
@@ -514,7 +512,7 @@ PanelWindow {
                                                 width: parent.width
                                                 height: Math.max(3, parent.height * modelData.mins / week.peak)
                                                 radius: Theme.comic ? 2 : 3
-                                                color: modelData.today ? Theme.accent : (modelData.mins >= Estacion.goal ? "#6f9bf0" : Theme.track)
+                                                color: modelData.today ? Theme.accent : (modelData.mins >= Estacion.goal ? Qt.rgba(1, 1, 1, 0.45) : Theme.track)
                                                 border.width: Theme.comic ? 1.5 : 0
                                                 border.color: Theme.ink
                                             }
