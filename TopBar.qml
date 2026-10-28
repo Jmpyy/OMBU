@@ -265,8 +265,8 @@ PanelWindow {
 
                 Behavior on implicitWidth {
                     NumberAnimation {
-                        duration: 160
-                        easing.type: Easing.OutCubic
+                        duration: Theme.animFast
+                        easing.type: Theme.ease
                     }
                 }
 
@@ -382,7 +382,7 @@ PanelWindow {
 
                     Behavior on color {
                         ColorAnimation {
-                            duration: 120
+                            duration: Theme.animQuick
                         }
                     }
 

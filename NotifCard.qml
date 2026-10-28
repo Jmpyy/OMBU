@@ -142,7 +142,7 @@ Rectangle {
 
     Behavior on border.color {
         ColorAnimation {
-            duration: 160
+            duration: Theme.animFast
         }
     }
 
@@ -207,7 +207,7 @@ Rectangle {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 160
+                duration: Theme.animFast
             }
         }
     }
@@ -622,7 +622,7 @@ Rectangle {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 140
+                duration: Theme.animFast
             }
         }
 

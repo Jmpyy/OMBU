@@ -53,14 +53,14 @@ Row {
 
             Behavior on width {
                 NumberAnimation {
-                    duration: 200
-                    easing.type: Easing.OutCubic
+                    duration: Theme.animNormal
+                    easing.type: Theme.ease
                 }
             }
 
             Behavior on color {
                 ColorAnimation {
-                    duration: 120
+                    duration: Theme.animQuick
                 }
             }
 
@@ -78,7 +78,7 @@ Row {
 
                 Behavior on rotation {
                     NumberAnimation {
-                        duration: 150
+                        duration: Theme.animFast
                     }
                 }
             }

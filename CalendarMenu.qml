@@ -108,14 +108,14 @@ DropPopup {
                 target: root
                 property: "shiftX"
                 to: -root.direction * 22
-                duration: 90
+                duration: Theme.animQuick
                 easing.type: Easing.InQuad
             }
             NumberAnimation {
                 target: root
                 property: "fade"
                 to: 0
-                duration: 90
+                duration: Theme.animQuick
             }
         }
         ScriptAction {
@@ -376,8 +376,8 @@ DropPopup {
 
                                     Behavior on x {
                                         NumberAnimation {
-                                            duration: 120
-                                            easing.type: Easing.OutCubic
+                                            duration: Theme.animFast
+                                            easing.type: Theme.ease
                                         }
                                     }
                                 }

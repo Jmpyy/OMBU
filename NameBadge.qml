@@ -47,7 +47,7 @@ Item {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: 180
+                        duration: Theme.animFast
                     }
                 }
 

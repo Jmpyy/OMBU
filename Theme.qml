@@ -65,7 +65,13 @@ Singleton {
     readonly property int fontSize: 13
     readonly property string iconFont: "Material Symbols Rounded"
 
-    // Animación
+    // Animación: una escala por rol, para que todo se mueva con el mismo ritmo. Las coreografías (las
+    // sacudidas, los pulsos en bucle, la despedida) llevan sus propios tiempos y no usan la escala.
+    readonly property int animQuick: 100    // respuesta al hover y al clic (colores de botones)
+    readonly property int animFast: 150     // cambios de estado chicos: bordes, opacidad, indicadores
+    readonly property int animNormal: 200   // movimiento y tamaño: píldoras, toasts, menús
+    readonly property int animSlow: 320     // progreso y fundidos grandes: anillo de foco, barras, fondo
+    readonly property int ease: Easing.OutCubic  // curva estándar: arranca rápido y frena suave
     readonly property int revealDuration: 420
-    readonly property int popupDuration: 190
+    readonly property int popupDuration: animNormal
 }

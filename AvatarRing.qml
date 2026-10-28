@@ -20,8 +20,8 @@ Item {
         enabled: root.animate
 
         NumberAnimation {
-            duration: 220
-            easing.type: Easing.OutCubic
+            duration: Theme.animNormal
+            easing.type: Theme.ease
         }
     }
 
@@ -68,7 +68,7 @@ Item {
 
             Behavior on strokeColor {
                 ColorAnimation {
-                    duration: 200
+                    duration: Theme.animFast
                 }
             }
 
@@ -92,7 +92,7 @@ Item {
 
         Behavior on color {
             ColorAnimation {
-                duration: 200
+                duration: Theme.animFast
             }
         }
 

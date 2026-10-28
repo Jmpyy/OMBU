@@ -62,8 +62,8 @@ ColumnLayout {
 
             Behavior on width {
                 NumberAnimation {
-                    duration: 400
-                    easing.type: Easing.OutCubic
+                    duration: Theme.animSlow
+                    easing.type: Theme.ease
                 }
             }
         }

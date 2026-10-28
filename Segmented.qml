@@ -27,8 +27,8 @@ Rectangle {
 
         Behavior on x {
             NumberAnimation {
-                duration: 150
-                easing.type: Easing.OutCubic
+                duration: Theme.animFast
+                easing.type: Theme.ease
             }
         }
     }

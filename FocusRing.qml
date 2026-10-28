@@ -16,7 +16,7 @@ Item {
 
     Behavior on progress {
         NumberAnimation {
-            duration: 300
+            duration: Theme.animSlow
         }
     }
 

@@ -38,8 +38,8 @@ PopupWindow {
 
     Behavior on p {
         NumberAnimation {
-            duration: root.open ? 200 : 150
-            easing.type: Easing.OutCubic
+            duration: root.open ? Theme.animNormal : Theme.animFast
+            easing.type: Theme.ease
         }
     }
 

@@ -54,7 +54,7 @@ Row {
 
             Behavior on color {
                 ColorAnimation {
-                    duration: 140
+                    duration: Theme.animQuick
                 }
             }
 
@@ -78,7 +78,7 @@ Row {
 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: 140
+                        duration: Theme.animFast
                     }
                 }
             }

@@ -44,7 +44,7 @@ Item {
 
         Behavior on scale {
             NumberAnimation {
-                duration: 120
+                duration: Theme.animFast
             }
         }
     }

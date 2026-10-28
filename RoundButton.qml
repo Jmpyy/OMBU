@@ -21,7 +21,7 @@ Rectangle {
 
     Behavior on color {
         ColorAnimation {
-            duration: 90
+            duration: Theme.animQuick
         }
     }
 

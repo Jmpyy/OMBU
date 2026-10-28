@@ -33,7 +33,7 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 300
+                duration: Theme.animSlow
             }
         }
     }

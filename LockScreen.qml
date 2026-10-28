@@ -148,8 +148,8 @@ Item {
 
             Behavior on Layout.preferredWidth {
                 NumberAnimation {
-                    duration: 240
-                    easing.type: Easing.OutCubic
+                    duration: Theme.animNormal
+                    easing.type: Theme.ease
                 }
             }
 
@@ -173,7 +173,7 @@ Item {
 
                 Behavior on border.color {
                     ColorAnimation {
-                        duration: 150
+                        duration: Theme.animFast
                     }
                 }
 
@@ -253,7 +253,7 @@ Item {
 
                         Behavior on opacity {
                             NumberAnimation {
-                                duration: 150
+                                duration: Theme.animFast
                             }
                         }
 
@@ -285,7 +285,7 @@ Item {
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: 150
+                                duration: Theme.animQuick
                             }
                         }
 

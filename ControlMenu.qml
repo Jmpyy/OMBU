@@ -36,7 +36,7 @@ DropPopup {
 
         Behavior on color {
             ColorAnimation {
-                duration: 90
+                duration: Theme.animQuick
             }
         }
 
@@ -68,7 +68,7 @@ DropPopup {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: 120
+                        duration: Theme.animQuick
                     }
                 }
 

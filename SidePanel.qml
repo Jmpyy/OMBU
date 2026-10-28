@@ -70,8 +70,8 @@ PanelWindow {
     // Entra con calma y se va rápido
     Behavior on p {
         NumberAnimation {
-            duration: Ui.sideOpen ? Theme.popupDuration + 20 : 120
-            easing.type: Easing.OutCubic
+            duration: Ui.sideOpen ? Theme.popupDuration + 20 : Theme.animQuick
+            easing.type: Theme.ease
         }
     }
 

@@ -134,8 +134,8 @@ PanelWindow {
 
                         Behavior on width {
                             NumberAnimation {
-                                duration: 100
-                                easing.type: Easing.OutCubic
+                                duration: Theme.animQuick
+                                easing.type: Theme.ease
                             }
                         }
                     }

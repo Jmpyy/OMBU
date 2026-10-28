@@ -19,8 +19,8 @@ PanelWindow {
 
     Behavior on p {
         NumberAnimation {
-            duration: 220
-            easing.type: Easing.OutCubic
+            duration: Theme.animNormal
+            easing.type: Theme.ease
         }
     }
 

@@ -28,7 +28,7 @@ DropPopup {
 
         Behavior on color {
             ColorAnimation {
-                duration: 90
+                duration: Theme.animQuick
             }
         }
 
@@ -179,7 +179,7 @@ DropPopup {
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: 90
+                                duration: Theme.animQuick
                             }
                         }
 
@@ -242,7 +242,7 @@ DropPopup {
 
                         Behavior on color {
                             ColorAnimation {
-                                duration: 120
+                                duration: Theme.animQuick
                             }
                         }
 
@@ -256,8 +256,8 @@ DropPopup {
 
                             Behavior on x {
                                 NumberAnimation {
-                                    duration: 120
-                                    easing.type: Easing.OutCubic
+                                    duration: Theme.animFast
+                                    easing.type: Theme.ease
                                 }
                             }
                         }
