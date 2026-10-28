@@ -2,7 +2,7 @@
 
 Un escritorio propio para **Hyprland**, hecho con [Quickshell](https://quickshell.org) (QML): barra superior, menús, notificaciones, launcher, bloqueo de pantalla, pantalla de inicio de sesión y una bienvenida. Todo en un solo repositorio, con un mismo diseño.
 
-La idea: la integración con el borde del monitor que da Caelestia Shell (las barras y los menús *nacen* de la pantalla), el estilo de macOS, los atajos de Omarchy y la barra de tareas de Windows para saber siempre qué tenés abierto. Menús **sólidos** (sin transparencias) y minimalismo.
+La idea: la integración con el borde del monitor que da Caelestia Shell (las barras y los menús *nacen* de la pantalla), el estilo de macOS, los atajos de Omarchy y la barra de tareas de Windows para saber siempre qué tenés abierto. Menús **sólidos** (sin transparencias) y minimalismo: todos los menús se arman con las mismas piezas (filas, títulos chicos y líneas finas en vez de cajas), con controles neutros y el color del tema solo para lo que está activo.
 
 > *English, in one line:* a self-contained Hyprland desktop shell written in Quickshell/QML (bar, menus, notifications, launcher, lock screen, greetd greeter). The UI is in Spanish; see [Personalizar](#personalizar) to change it.
 
@@ -27,10 +27,9 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 | **Escritorios** | Los escritorios de cada monitor (cada barra muestra los suyos), con el ícono de la app de cada uno; el activo se ensancha con su número. El escritorio `gaming` de Hyprland aparece cuando tiene ventanas. |
 | **Reloj y calendario** | Fecha y hora; al pasar el mouse la fecha se completa. Clic abre el calendario. |
 | **Volumen y mezcladora** | Dispositivo de salida y de entrada, y un volumen por cada app. Rueda cambia el volumen, clic del medio silencia. |
-| **Notificaciones** | Servidor propio (reemplaza a swaync, mako o dunst): tarjetas animadas, historial, *No molestar*, acciones. |
-| **Dispositivos** | Discos y unidades conectadas con el espacio libre; monta y expulsa pendrives. |
-| **Bandeja del sistema** | Los íconos de las apps (Discord, Steam...) con un menú propio al hacer clic derecho. |
-| **Apps abiertas** | Ventanas, las minimizadas y las que siguen corriendo sin ventana. |
+| **Notificaciones** | Servidor propio (reemplaza a swaync, mako o dunst): tarjetas animadas, historial agrupado por app, *No molestar* y acciones. |
+| **Centro de control** | Brillo del monitor y volumen, y cuatro interruptores: modo foco, No molestar, **luz nocturna** (con su calidez y horario, que se despliegan ahí mismo) y teclado. |
+| **Segundo plano** | Las ventanas minimizadas y las apps que siguen corriendo sin ventana o en la bandeja (Discord, Steam, Sung...), cada una con su menú de opciones. Reemplaza a la bandeja del sistema en la barra. |
 
 **Y además:**
 
@@ -43,33 +42,36 @@ La idea: la integración con el borde del monitor que da Caelestia Shell (las ba
 - **Bienvenida** al iniciar sesión: lluvia de código, el logo que se descifra y la barra que baja desde el borde.
 - **Capturas** con editor para anotar y recortar, miniatura en el aviso (clic para editarla, botón para borrarla) y OCR para copiar texto de la pantalla.
 - Avisos cuando Claude Code o Antigravity terminan una tarea larga (y no los muestra si ya tenés la terminal a la vista).
-- **Centro de control** en la barra (ícono de ajustes): slider de **brillo** del monitor (por DDC/CI con `ddcutil`, sirve para monitores externos de escritorio), slider de volumen, layout de teclado, modo foco, No molestar y dispositivos. Así la barra queda con lo esencial. Si hay unidades conectadas, el botón muestra cuántas.
+- **Centro de control** en la barra (ícono de ajustes): **brillo** del monitor por DDC/CI con `ddcutil` (sirve para monitores externos de escritorio), volumen, modo foco, No molestar, luz nocturna y distribución del teclado. Así la barra queda con lo esencial.
+- **Luz nocturna** con `hyprsunset`: entibia la pantalla de 20:00 a 7:00, con una transición suave. Lo que elijas a mano vale hasta el próximo cambio de horario (como en macOS) y la calidez se ajusta desde el centro de control.
 - **Proyectos de C para estudiar:** `bin/cproj.sh nombre` crea en `~/Universidad` un proyecto con CMake (avisos estrictos), `compile_commands.json` para clangd y un Makefile con `make run`, `make leaks` (valgrind), `make asan` y `make debug` (gdb).
 - **Calendario con agenda:** además del mes, muestra el número de semana, los **feriados de Argentina** (se bajan una vez de Nager.Date y quedan en caché), tus **eventos** (tocás un día, escribís, hora opcional y Enter; los propios suenan como notificación a la hora), los **días que estudiaste** con el modo foco y lo que viene. Se puede conectar **Google Calendar** por la API oficial (lee y escribe: lo que anotes aparece en el celular) o, solo para ver, con la «dirección secreta en formato iCal»; ver [`docs/google-calendar.md`](docs/google-calendar.md). Las credenciales y el token quedan en `~/.local/share/ombu` (solo legibles por vos, fuera del repo). Si tenés varios calendarios (por ejemplo uno compartido con la familia), en el mismo panel elegís cuáles se muestran.
-- **Pagos y suscripciones** (tile «Pagos» del centro de control): una lista con cuánto es cada una, qué día vence, quién paga y el total por mes. Cada una crea en tu calendario un evento que se repite todos los meses, con aviso el día antes y el mismo día a las 9 (si Google está conectado, también llega al celular). Se cargan con `quickshell -c ombu ipc call subs add Netflix 11850 ARS 6 mama "Mercado Pago"` (moneda `ARS` o `USD`; día del 1 al 31, o `-1` para el último del mes; paga `yo` o `mama`) y se sacan con `subs remove`. Lo que paga otra persona (`mama`) se crea en el calendario compartido de la familia, si lo hay, para que ella también lo vea. Los datos quedan en `~/.local/share/ombu/suscripciones.json`, fuera del repo.
-- **Menú del sistema** (`Super+Alt+Espacio`, como el de Omarchy): una tarjeta al centro con las secciones Apps, Estilo, Ajustes, Capturas, Herramientas y Sistema. Se navega con las flechas, `Enter` entra o ejecuta, `Esc` o `Retroceso` vuelven, y escribiendo busca en todo el menú. Apagar, reiniciar y cerrar sesión piden un segundo `Enter`.
-- **Temas** (`Super+Ctrl+Shift+Espacio`, o Estilo › Tema): diez paletas oscuras: **Spider-Man** (negro cálido, crema, rojo y verde azulado, sacada de un fondo de cómic) e **Iron Man** (gris acero, rojo y dorado) con borde de ventana en degradé y sombras duras de viñeta, y Ombú, Tokyo Night, Catppuccin, Rosé Pine, Gruvbox, Nord, Everforest y Carbón. Al moverte por la lista cada tema se **previsualiza** en vivo, `Esc` lo deja como estaba y `Enter` lo confirma; también cambia el color del borde de la ventana activa. Se recuerda entre sesiones. También con `quickshell -c ombu ipc call menu theme tokyo`. **El explorador de archivos (Dolphin) y la terminal (kitty) también cambian de color**, y las carpetas toman el color de cada tema (la siguiente ventana que abras).
+- **Pagos y suscripciones** (en el Resumen del panel lateral): una lista con cuánto es cada una, qué día vence, quién paga y el total por mes. Cada una crea en tu calendario un evento que se repite todos los meses, con aviso el día antes y el mismo día a las 9 (si Google está conectado, también llega al celular). Se cargan con `quickshell -c ombu ipc call subs add Netflix 11850 ARS 6 mama "Mercado Pago"` (moneda `ARS` o `USD`; día del 1 al 31, o `-1` para el último del mes; paga `yo` o `mama`) y se sacan con `subs remove`. Lo que paga otra persona (`mama`) se crea en el calendario compartido de la familia, si lo hay, para que ella también lo vea. Los datos quedan en `~/.local/share/ombu/suscripciones.json`, fuera del repo.
+- **Menú de la araña** (el logo de la barra, o `Super+Alt+Espacio`): cuelga de la barra como el menú de Apple, con la sesión y el sistema: Apariencia (los temas, con vista previa), fondo de pantalla, atajos, actualizar el sistema (con cuántas actualizaciones hay), seguridad y procesos, reposo, bloquear, cerrar sesión, reiniciar y apagar. Se navega con las flechas y `Enter`; lo que corta la sesión pide un segundo clic. Todo lo demás se encuentra escribiendo en el launcher.
+- **Temas** (`Super+Ctrl+Shift+Espacio`, o Apariencia en el menú de la araña): diez paletas oscuras: **Spider-Man** (negro cálido, crema, rojo y verde azulado, sacada de un fondo de cómic) e **Iron Man** (gris acero, rojo y dorado) con borde de ventana en degradé y sombras duras de viñeta, y Ombú, Tokyo Night, Catppuccin, Rosé Pine, Gruvbox, Nord, Everforest y Carbón. Al moverte por la lista cada tema se **previsualiza** en vivo, `Esc` lo deja como estaba y `Enter` lo confirma; también cambia el color del borde de la ventana activa. Se recuerda entre sesiones. También con `quickshell -c ombu ipc call menu theme tokyo`. **El explorador de archivos (Dolphin) y la terminal (kitty) también cambian de color**, y las carpetas toman el color de cada tema (la siguiente ventana que abras).
 - **Launcher con modos** (`Super+Espacio`): además de apps, `=2+3*4` o una cuenta con operadores **calcula**, `10 km a mi`, `30 c en f` o `5 kg to lb` **convierte unidades** (largo, masa, volumen, velocidad, datos y temperatura), `/texto` **busca archivos** en tu carpeta personal y `?texto` busca en la web. `Enter` copia el resultado o abre el archivo (`Shift+Enter` abre su carpeta), y `Ctrl+Y` muestra una **vista previa** estilo Quick Look: imágenes, PDF (primera página), código y texto, y el contenido de una carpeta.
-- **Panel lateral** (pegando el mouse al borde izquierdo del monitor principal un instante, o `Super+A`): tres pestañas. **Resumen**: la hora, tu agenda de hoy, lo que viene, los pagos próximos, lo estudiado y la música. **Noticias** de Argentina, economía, tecnología, seguridad y programación (de feeds RSS, sin farándula ni obituarios; se pueden cambiar en `~/.local/share/ombu/noticias.json`). **Sistema**: procesador, memoria, placa de video, discos, red y tiempo encendida. Todo se mide o se baja **solo mientras el panel está abierto**: cerrado no consume nada. No se abre con el mouse en el escritorio de juegos ni bajo una ventana en pantalla completa.
+- **Panel lateral** (pegando el mouse al borde izquierdo del monitor principal un instante, o `Super+A`): dos pestañas. **Resumen**: saludo, hora y clima, lo que toca ahora, parciales y entregas de la facultad, la agenda, lo estudiado en la semana, los pagos próximos, el dólar, tus proyectos y la música. **Sistema**: un vistazo de **seguridad** (puertos abiertos a la red, firewall, actualizaciones pendientes y noticias de Arch que piden intervención, servicios caídos y los procesos que más consumen) y el hardware (procesador, memoria, placa de video, discos y red). Todo se mide o se baja **solo mientras el panel está abierto**: cerrado no consume nada. No se abre con el mouse en el escritorio de juegos ni bajo una ventana en pantalla completa.
+- **Anotador de la facultad** (`Super+Alt+N`): escribís como en el papel («parcial eda jueves 18hs», «entrega so el 15/11», «nota: repasar punteros») y entiende el tipo, la materia, la fecha y la hora. Las fechas van al calendario con sus avisos (un parcial avisa 3 días, 1 día y 2 horas antes) y las notas a la carpeta de cada materia.
 - **Lista de atajos** (`Super+K`): un menú con buscador, como el de Omarchy, con los atajos agrupados por categoría. Lee las descripciones que `hypr/atajos.lua` le agrega a cada atajo de Hyprland, así que siempre muestra lo que está activo de verdad.
-- **Modo foco** (se abre desde el centro de control; mientras hay una sesión, el cronómetro aparece en la barra): temporizador de estudio y descanso (25/5), tres modos (estudio, trabajo, libre), estadística y racha del día, un entorno de estudio que se abre al empezar (NotebookLM, el editor y una terminal con la IA, según estudies programación, matemática u otra cosa), un cajón para anotar ideas sin distraerte y, en modo estudio, un bloqueo de juegos y de redes sociales (Instagram, TikTok...; YouTube no) que avisa antes de cerrarlos y se puede saltar esperando 60 segundos.
+- **Modo foco** (se abre desde el centro de control; mientras hay una sesión, el cronómetro aparece en la barra): temporizador de estudio y descanso (25/5), tres modos (estudio, trabajo, libre), estadística y racha del día, un entorno de estudio que se abre al empezar (NotebookLM y el editor para programación, o solo NotebookLM), un cajón para anotar ideas sin distraerte y, en modo estudio, un bloqueo de juegos y de redes sociales (Instagram, TikTok...; YouTube no) que avisa antes de cerrarlos y se puede saltar esperando 60 segundos. El bloque de estudio activa **No molestar** solo: pasan únicamente los avisos importantes (parciales, entregas, pagos del día y los del propio modo foco).
 - **Historial del portapapeles** con búsqueda, miniaturas de imágenes, textos fijados y pegado automático en la ventana donde estabas. No guarda lo que las apps marcan como sensible (gestores de contraseñas), se puede pausar y se vacía en cada sesión nueva.
 - Un explorador de archivos que se abre donde está tu terminal.
 
 <p align="center">
+  <img src="docs/screenshots/launcher.png" width="560" alt="Launcher estilo Spotlight con resultados agrupados y el detalle a la derecha">
+</p>
+<p align="center">
+  <img src="docs/screenshots/main-menu.png" width="250" alt="Menú de la araña: sesión y sistema">
+  <img src="docs/screenshots/control-center.png" width="320" alt="Centro de control: brillo, volumen, foco, No molestar, luz nocturna y teclado">
+</p>
+<p align="center">
+  <img src="docs/screenshots/mixer-menu.png" width="280" alt="Mezcladora: salida, entrada y volumen por app">
+  <img src="docs/screenshots/focus-menu.png" width="260" alt="Modo foco: temporizador, entorno de estudio y la semana">
+  <img src="docs/screenshots/calendar.png" width="300" alt="Calendario con agenda">
+</p>
+<p align="center">
   <img src="docs/screenshots/lock.png" width="360" alt="Pantalla de bloqueo">
-  <img src="docs/screenshots/launcher.png" width="360" alt="Launcher">
-</p>
-<p align="center">
-  <img src="docs/screenshots/calendar.png" width="230" alt="Calendario">
-  <img src="docs/screenshots/tray-menu.png" width="230" alt="Menú de un ícono de la bandeja">
-</p>
-<p align="center">
-  <img src="docs/screenshots/devices-menu.png" width="300" alt="Centro de dispositivos">
-  <img src="docs/screenshots/mixer-menu.png" width="300" alt="Mezcladora de audio">
-</p>
-<p align="center">
-  <img src="docs/screenshots/power-menu.png" width="560" alt="Menú de energía">
+  <img src="docs/screenshots/power-menu.png" width="360" alt="Menú de energía">
 </p>
 
 ## Requisitos
@@ -78,17 +80,19 @@ Hecho y probado en **CachyOS** con **Hyprland 0.56** (configuración en Lua) y *
 
 ```sh
 sudo pacman -S quickshell hyprland ttf-material-symbols-variable \
-    pipewire wireplumber playerctl brightnessctl \
+    pipewire wireplumber ddcutil hyprsunset \
     cliphist wl-clipboard grim slurp libnotify satty \
     tesseract tesseract-data-spa tesseract-data-eng \
-    udisks2 papirus-icon-theme python
+    fd poppler papirus-icon-theme python
 ```
 
 - `ttf-material-symbols-variable`: la fuente de los íconos (Material Symbols Rounded).
 - `papirus-icon-theme`: ombu usa sus íconos para Discord y Minecraft (ver `Icons.qml`).
 - `cliphist` y `wl-clipboard`: historial del portapapeles (`Super+V`). `grim` y `slurp`: capturas.
 - `satty`: el editor de capturas (anotar y recortar). `tesseract` y sus datos de idioma: copiar texto de una imagen. Sin ellos las capturas siguen funcionando, solo que sin editor ni OCR.
-- `udisks2`: montar y expulsar unidades desde el menú de dispositivos.
+- `ddcutil`: el brillo de monitores externos (DDC/CI). Si `ddcutil detect` no ve tu monitor, cargá el módulo `i2c-dev`.
+- `hyprsunset`: la luz nocturna. Sin él, todo lo demás anda igual.
+- `fd` y `poppler`: en el launcher, buscar archivos (`/texto`) y la vista previa de los PDF.
 - Opcional: `greetd` para la pantalla de inicio de sesión.
 
 > ombu **es** el servidor de notificaciones. Detené cualquier otro (`swaync`, `mako`, `dunst`, el de Caelestia...) o los dos pelearán por `org.freedesktop.Notifications`.
@@ -109,11 +113,18 @@ dofile(os.getenv("HOME") .. "/.config/quickshell/ombu/hypr/ombu.lua")
 
 Ese archivo ([`hypr/ombu.lua`](hypr/ombu.lua)) arranca el shell, agrega los atajos y las reglas que hacen falta. Léelo antes: si ya usás alguno de esos atajos, cambialo ahí. Recargá Hyprland y listo. Para probarlo sin tocar tu configuración: `quickshell -c ombu`.
 
+Si vas a hacer cambios, activá el control de cada commit: `git config core.hooksPath .githooks`. Frena el commit si entra un secreto (tokens, claves, credenciales de Google), un archivo con datos personales, un `.qml`, `.sh` o `.py` que no compila, o si falla algún test.
+
 ### Atajos
 
 | Atajo | Qué hace |
 |---|---|
 | `Super + Espacio` | Launcher de aplicaciones |
+| `Super + Alt + Espacio` | Menú de la araña (sesión y sistema) |
+| `Super + A` | Panel lateral |
+| `Super + K` | Lista de atajos |
+| `Super + Alt + N` | Anotar un parcial, una entrega o una nota |
+| `Super + Ctrl + Espacio` | Elegir el fondo de pantalla |
 | `Super + Esc` / `Super + X` | Menú de energía |
 | `Super + Ctrl + L` | Bloquear la sesión |
 | `Super + B` | Mostrar u ocultar la barra |
@@ -136,7 +147,7 @@ Ese archivo ([`hypr/ombu.lua`](hypr/ombu.lua)) arranca el shell, agrega los ataj
 
 ```sh
 qs -c ombu ipc call bar toggle        # mostrar u ocultar la barra
-qs -c ombu ipc call bar mixer         # también: calendar, apps, devices, tray
+qs -c ombu ipc call bar mixer         # también: control, calendar, apps, focus
 qs -c ombu ipc call launcher toggle   # o: search "texto", close, run ID (abre o enfoca una app)
 qs -c ombu ipc call clip toggle       # historial del portapapeles
 qs -c ombu ipc call notif dnd         # también: dismiss, dismissAll, invoke, history
@@ -150,7 +161,8 @@ qs -c ombu ipc call bar focus         # menú del modo foco
 qs -c ombu ipc call focus start       # también: pause, stop, skip, mode estudio|trabajo|libre
 qs -c ombu ipc call focus idea "texto"   # anota una idea en el cajón
 qs -c ombu ipc call focus status      # estado del temporizador y del bloqueo
-qs -c ombu ipc call focus kit matematica # tipo de estudio; open abre el entorno completo
+qs -c ombu ipc call focus kit programacion # tipo de estudio (programacion u otro); open abre el entorno completo
+qs -c ombu ipc call night toggle      # luz nocturna; también: on, off, auto, temp 3500, status
 ```
 
 ## Pantalla de inicio de sesión (greetd)
@@ -172,9 +184,9 @@ Cada vez que cambies algo del diseño que usa el greeter (colores, bloqueo), vol
 
 ## Personalizar
 
-Todo el aspecto sale de [`Theme.qml`](Theme.qml): colores, radios, tamaños de la barra, tiempos de inactividad y del salvapantallas.
+Todo el aspecto sale de [`Theme.qml`](Theme.qml): colores, radios, tamaños de la barra, las escalas de **tipografía** (`fontCaption`, `fontBody`, `fontTitle`...) y de **animación** (`animQuick`, `animFast`, `animNormal`, `animSlow`), y los tiempos de inactividad y del salvapantallas. Cambiar un token cambia todo lo que tiene ese rol.
 
-- **Fondos de pantalla** (`Super+Ctrl+Espacio`, o Estilo › Fondo de pantalla): un menú grande al centro con una vista previa y las miniaturas de las imágenes de `~/Imágenes/Fondos` (y también de `~/Imágenes`). Moverte por la cuadrícula **previsualiza el fondo en el propio escritorio**; `Enter` lo aplica, `Esc` lo deja como estaba y escribir filtra por nombre. Trae «Aleatorio» y un botón para abrir tu carpeta. No incluye fondos: poné los tuyos. El elegido también se usa en el bloqueo.
+- **Fondos de pantalla** (`Super+Ctrl+Espacio`, o desde el menú de la araña): un menú grande al centro con una vista previa y las miniaturas de las imágenes de `~/Imágenes/Fondos` (y también de `~/Imágenes`). Moverte por la cuadrícula **previsualiza el fondo en el propio escritorio**; `Enter` lo aplica, `Esc` lo deja como estaba y escribir filtra por nombre. Trae «Aleatorio» y un botón para abrir tu carpeta. No incluye fondos: poné los tuyos. El elegido también se usa en el bloqueo.
 - **Inactividad:** `idleLockSeconds` (bloqueo, 5 min) e `idleScreenOffSeconds` (monitores, 30 min).
 - **Idioma:** los textos están en español y la fecha usa `es_AR` (`Chrono.qml`).
 - **Launcher:** las favoritas de fábrica y lo que se oculta están en [`Launch.qml`](Launch.qml); lo que abrís y fijás se guarda en `~/.local/share/ombu/launcher.json`.
@@ -182,6 +194,7 @@ Todo el aspecto sale de [`Theme.qml`](Theme.qml): colores, radios, tamaños de l
 - **Escritorios:** cada barra muestra los escritorios que Hyprland asigna a su monitor (reglas `hl.workspace_rule`, ver `hypr/ombu.lua` y tu `workspaces.lua`).
 - **Modo foco:** [`Focus.qml`](Focus.qml) tiene las duraciones (25/5/15), los juegos que se bloquean (`blockedPattern`, `blockedProcesses`), los sitios (`blockedSites`: se cierra la pestaña activa del navegador; YouTube queda libre) y qué se abre en cada tipo de estudio (`kits`, con la carpeta de la facultad en `studyDir`). Lo que anotás en el cajón queda en `~/.local/share/ombu/ideas.md`.
 - **Modo estudio para la IA:** [`bin/agent-study.sh`](bin/agent-study.sh) le pasa a Claude Code y a Antigravity unas reglas mientras dura un bloque de estudio (enseñar en vez de resolver, ideas ajenas al cajón). Se conecta con un hook de cada herramienta, ver [`AGENTS.md`](AGENTS.md).
+- **Luz nocturna:** el horario (`startMinute`, `endMinute`) y la temperatura están en [`NightLight.qml`](NightLight.qml); lo que elegís se guarda en `~/.local/share/ombu/nocturna.json`.
 - **Notificaciones:** [`NotifRules.qml`](NotifRules.qml) permite pasar a español los avisos de ciertas apps y descartar los de algo que ya tenés a la vista (viene una regla para Claude Code en kitty).
 
 Quickshell recarga solo al guardar un archivo `.qml`.
@@ -202,6 +215,7 @@ Nada de esto hace falta para usar ombu; sirve para que el explorador de archivos
 
 - **Un solo usuario.** El greeter y el bloqueo están pensados para una PC personal.
 - **NVIDIA y suspender:** en la RTX 2060 de quien lo escribió el suspend real cuelga la GPU al despertar, así que ombu no tiene "Suspender": tiene **Reposo**, que bloquea y deja el salvapantallas a la vista. Si tu equipo suspende bien, podés cambiar esa acción en `PowerMenu.qml`.
+- **Quickshell 0.3.2 a veces se cae al cerrarse** (al recargar o reiniciar ombu) y muestra un cartel de error: es un bug de Quickshell, no de ombu, y la instancia nueva sigue andando. Cerrá el cartel con *Exit*.
 - **Contraseña:** el bloqueo usa PAM con la configuración de [`pam.d/unlock`](pam.d/unlock) (solo `pam_unix`, sin `faillock`), así no se bloquea la cuenta por errores de tipeo. Si preferís `faillock`, agregalo ahí.
 - **Si el bloqueo se cuelga:** la regla `allow_session_lock_restore` permite lanzar otro desde una TTY con `quickshell -c ombu -d`.
 
@@ -210,15 +224,17 @@ Nada de esto hace falta para usar ombu; sirve para que el explorador de archivos
 ```
 shell.qml          punto de entrada: ventanas por monitor y comandos IPC
 Theme.qml          colores, tamaños y tiempos
-TopBar.qml         la barra (y WorkspaceStrip, TrayStrip, BarButton...)
-*Menu.qml          los menús que cuelgan de la barra (mezcladora, calendario, dispositivos...)
+TopBar.qml         la barra (y WorkspaceStrip, BarButton, BarGroup...)
+*Menu.qml          los menús que cuelgan de la barra (centro de control, mezcladora, calendario, foco...)
+MenuRow MenuSection MenuSeparator   el kit con el que se arman los menús (estilo macOS)
+SidePanel.qml      el panel lateral (Resumen y Sistema)
 Notifs*.qml        servidor de notificaciones y sus tarjetas
 Lock*.qml  Auth    pantalla de bloqueo y autenticación
 Saver*.qml Idle    salvapantallas ASCII y detección de inactividad
 Welcome*.qml       la bienvenida
 greeter/           pantalla de inicio de sesión para greetd (+ instalador)
 hypr/ombu.lua      configuración de Hyprland: arranque, reglas y atajos
-bin/               scripts: capturas, portapapeles, explorador, montar unidades, proyectos de C
+bin/               scripts: capturas, portapapeles, explorador, agenda, seguridad, proyectos de C
 extras/            tema para apps Qt y tema de iconos
 ```
 

@@ -83,7 +83,7 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 **Pantalla y capturas**
 - Dos monitores: `HDMI-A-1` (principal, 1920x1080) y `DP-1` (un TV **vertical**: `transform = 1`, 1080x1920, en `1920x-493`; `DP-2` es el puerto fantasma del adaptador, desactivado en `monitors.lua`). Antes `grim` se colgaba en el TV por `DP-2`; con `DP-1` se pudo capturar (`timeout 4 grim -o DP-1`). Igual capturá siempre con `-o` y con límite de tiempo.
 - La persona **usa la PC mientras trabajás**. El IPC de ombu actúa sobre el **monitor con foco**: si el foco está en otro lado, el menú aparece ahí y la captura sale vacía.
-- Para el repo, capturá y **recortá** (ImageMagick: `magick in.png -crop WxH+X+Y out.png`) para que no entre nada de otras ventanas.
+- Para el repo, capturá y **recortá** para que no entre nada de otras ventanas. Para menús, [`bin/menu-shot.py`](bin/menu-shot.py) `captura.png salida.png X Y` recorta por la silueta del fondo del menú y deja transparente todo lo de atrás (semilla en el margen del menú, no sobre un slider). Capturá con el menú abierto del todo: esperá ~2 s tras abrirlo, y más después de reiniciar ombu (el primer menú tarda; si no, la captura sale vacía o a mitad de la animación).
 
 **Sistema**
 - **No hay suspend real**: el driver NVIDIA (GSP) cuelga la GPU al despertar. "Reposo" bloquea y muestra el salvapantallas.
