@@ -2,43 +2,35 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 
-// Modo foco: modo, temporizador de estudio y descanso, estadística del día y un cajón de ideas.
+// Modo foco, a la manera de macOS: modo, temporizador (el anillo y el botón principal son lo único en
+// color), entorno de estudio, el día y la semana, y un cajón de ideas; los grupos se separan con líneas
+// finas, sin cajas.
 DropPopup {
     id: root
 
-    // Botón redondeado de texto: lleno para lo principal, con borde para lo demás
+    // Botón de texto chico (pausar el bloqueo): con borde, rojo si es peligroso
     component Pill: Rectangle {
         id: pill
 
         property string text
-        property bool filled: false
-        property bool selected: false
         property bool danger: false
-        property bool enabled: true
 
         signal clicked
 
-        implicitHeight: 32
-        implicitWidth: label.implicitWidth + 28
-        radius: height / 2
-        opacity: enabled ? 1 : 0.45
-        color: filled ? (area.containsMouse ? Qt.lighter(Theme.accent, 1.12) : Theme.accent) : (selected ? Theme.surface : (area.containsMouse && enabled ? Theme.hover : "transparent"))
-        border.width: filled ? 0 : 1
-        border.color: selected ? Theme.accent : (danger ? Theme.danger : Theme.border)
-
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.animQuick
-            }
-        }
+        implicitHeight: 26
+        implicitWidth: label.implicitWidth + 20
+        radius: Theme.controlRadius - 3
+        color: area.containsMouse ? Theme.hover : "transparent"
+        border.width: 1
+        border.color: danger ? Qt.rgba(Theme.danger.r, Theme.danger.g, Theme.danger.b, 0.5) : Theme.border
 
         Text {
             id: label
 
             anchors.centerIn: parent
             text: pill.text
-            color: pill.filled ? Theme.accentText : (pill.selected ? Theme.text : (pill.danger ? Theme.danger : Theme.textDim))
-            font.pixelSize: Theme.fontBody
+            color: pill.danger ? Theme.danger : Theme.text
+            font.pixelSize: Theme.fontSmall
             font.weight: Font.DemiBold
         }
 
@@ -47,29 +39,30 @@ DropPopup {
 
             anchors.fill: parent
             hoverEnabled: true
-            cursorShape: pill.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-            onClicked: if (pill.enabled)
-                pill.clicked()
+            cursorShape: Qt.PointingHandCursor
+            onClicked: pill.clicked()
         }
     }
 
     // Mostrar la lista de ideas guardadas
     property bool showIdeas: false
 
-    bodyWidth: 340
-    bodyHeight: column.implicitHeight + 26
+    bodyWidth: 320
+    bodyHeight: column.implicitHeight + 16
 
     ColumnLayout {
         id: column
 
-        x: 16
-        y: 2
-        width: root.bodyWidth - 32
-        spacing: 14
+        x: 8
+        y: 6
+        width: root.bodyWidth - 16
+        spacing: 2
 
         // Modo
         Segmented {
             Layout.fillWidth: true
+            Layout.leftMargin: 6
+            Layout.rightMargin: 6
             current: Focus.mode
             model: [
                 {
@@ -91,6 +84,7 @@ DropPopup {
         // Temporizador
         FocusRing {
             Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 10
             title: Focus.mode === "libre" ? "Modo libre" : Focus.phaseName
             time: Focus.clock(Focus.remaining)
             active: Focus.running
@@ -101,6 +95,8 @@ DropPopup {
         // Controles
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 8
+            Layout.bottomMargin: 6
             spacing: 14
 
             RoundButton {
@@ -122,214 +118,98 @@ DropPopup {
             }
         }
 
+        // Aviso del bloqueo y salida con fricción
+        MenuRow {
+            visible: Focus.mode === "estudio" && Focus.running && Focus.phase === "estudio"
+            icon: Focus.blocking ? "block" : "lock_open"
+            text: Focus.blocking ? "Juegos y redes bloqueados" : "Bloqueo pausado"
+            color: "transparent"
+
+            Pill {
+                visible: Focus.blocking
+                text: Focus.unlockLeft > 0 ? "Esperá " + Focus.unlockLeft + " s · cancelar" : "Pausar"
+                danger: true
+                onClicked: Focus.unlockLeft > 0 ? Focus.cancelUnlock() : Focus.requestUnlock()
+            }
+        }
+
         // Entorno de estudio: qué toca hoy y las herramientas para abrir a mano
-        ColumnLayout {
+        MenuSeparator {
+            visible: Focus.mode !== "trabajo"
+        }
+
+        MenuSection {
+            visible: Focus.mode !== "trabajo"
+            text: "Entorno de estudio"
+        }
+
+        Segmented {
             visible: Focus.mode !== "trabajo"
             Layout.fillWidth: true
-            spacing: 8
+            Layout.leftMargin: 6
+            Layout.rightMargin: 6
+            Layout.bottomMargin: 4
+            current: Focus.kit
+            model: Focus.kits
+            onPicked: id => Focus.setKit(id)
+        }
 
-            Text {
-                text: "ENTORNO DE ESTUDIO"
-                color: Theme.textDim
-                font.pixelSize: Theme.fontCaption
-                font.weight: Font.DemiBold
-                font.letterSpacing: 0.8
-            }
-
-            Segmented {
-                Layout.fillWidth: true
-                current: Focus.kit
-                model: Focus.kits
-                onPicked: id => Focus.setKit(id)
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
-
-                Repeater {
-                    model: [
-                        {
-                            tool: "notebook",
-                            icon: "menu_book",
-                            name: "NotebookLM"
-                        },
-                        {
-                            tool: "ide",
-                            icon: "code",
-                            name: "Editor"
-                        },
-                        {
-                            tool: "ai",
-                            icon: "terminal",
-                            name: "Antigravity"
-                        }
-                    ]
-
-                    Rectangle {
-                        id: toolTile
-
-                        required property var modelData
-
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: 1
-                        implicitHeight: 54
-                        radius: Theme.controlRadius
-                        color: toolArea.containsMouse ? Theme.hover : Theme.surface
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.animQuick
-                            }
-                        }
-
-                        Column {
-                            anchors.centerIn: parent
-                            spacing: 5
-
-                            MIcon {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                name: toolTile.modelData.icon
-                                font.pixelSize: Theme.iconLg
-                                color: Theme.text
-                            }
-
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: toolTile.modelData.name
-                                color: Theme.textDim
-                                font.pixelSize: Theme.fontCaption
-                                font.weight: Font.DemiBold
-                            }
-                        }
-
-                        MouseArea {
-                            id: toolArea
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: Focus.openTool(toolTile.modelData.tool)
-                        }
-                    }
+        Repeater {
+            model: Focus.mode !== "trabajo" ? [
+                {
+                    tool: "notebook",
+                    icon: "menu_book",
+                    name: "Abrir NotebookLM"
+                },
+                {
+                    tool: "ide",
+                    icon: "code",
+                    name: "Abrir el editor"
+                },
+                {
+                    tool: "ai",
+                    icon: "terminal",
+                    name: "Abrir Antigravity"
                 }
-            }
+            ] : []
 
-            // Interruptor: abrir el entorno solo al empezar a estudiar
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: 40
-                radius: Theme.controlRadius
-                color: Theme.surface
+            MenuRow {
+                required property var modelData
 
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-
-                    Text {
-                        Layout.fillWidth: true
-                        text: "Abrir mi entorno al empezar"
-                        color: Theme.text
-                        font.pixelSize: Theme.fontBody
-                    }
-
-                    Rectangle {
-                        implicitWidth: 38
-                        implicitHeight: 22
-                        radius: 11
-                        color: Focus.autoOpen ? Theme.accent : Theme.track
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.animQuick
-                            }
-                        }
-
-                        Rectangle {
-                            x: Focus.autoOpen ? parent.width - width - 3 : 3
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 16
-                            height: 16
-                            radius: 8
-                            color: Focus.autoOpen ? Theme.accentText : Theme.text
-
-                            Behavior on x {
-                                NumberAnimation {
-                                    duration: Theme.animFast
-                                    easing.type: Theme.ease
-                                }
-                            }
-                        }
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: Focus.toggleAutoOpen()
-                }
+                icon: modelData.icon
+                text: modelData.name
+                onClicked: Focus.openTool(modelData.tool)
             }
         }
 
-        // Estadística del día
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 8
+        MenuRow {
+            visible: Focus.mode !== "trabajo"
+            icon: "auto_awesome"
+            text: "Abrir mi entorno al empezar"
+            onClicked: Focus.toggleAutoOpen()
 
-            Repeater {
-                model: [
-                    {
-                        value: Focus.minutesText(Focus.studyToday),
-                        caption: "hoy"
-                    },
-                    {
-                        value: String(Focus.cycles),
-                        caption: Focus.cycles === 1 ? "bloque" : "bloques"
-                    },
-                    {
-                        value: String(Focus.streak),
-                        caption: Focus.streak === 1 ? "día de racha" : "días de racha"
-                    }
-                ]
-
-                Rectangle {
-                    required property var modelData
-
-                    Layout.fillWidth: true
-                    implicitHeight: 54
-                    radius: Theme.controlRadius
-                    color: Theme.surface
-
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: 1
-
-                        Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: modelData.value
-                            color: Theme.text
-                            font.pixelSize: Theme.fontEmphasis
-                            font.weight: Font.DemiBold
-                        }
-
-                        Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: modelData.caption
-                            color: Theme.textDim
-                            font.pixelSize: Theme.fontCaption
-                        }
-                    }
-                }
+            ToggleSwitch {
+                on: Focus.autoOpen
+                onToggled: Focus.toggleAutoOpen()
             }
         }
 
-        // Minutos de los últimos 7 días (de Focus.history); hoy en violeta
+        // El día y la semana (minutos de Focus.history; hoy en color)
+        MenuSeparator {}
+
+        MenuSection {
+            text: "Hoy"
+            detail: Focus.minutesText(Focus.studyToday) + " · " + Focus.cycles + (Focus.cycles === 1 ? " bloque" : " bloques") + " · racha de " + Focus.streak + (Focus.streak === 1 ? " día" : " días")
+        }
+
         ColumnLayout {
             id: weekBox
 
             Layout.fillWidth: true
-            spacing: 6
+            Layout.leftMargin: 8
+            Layout.rightMargin: 8
+            Layout.topMargin: 2
+            spacing: 4
 
             readonly property var days: {
                 const out = [];
@@ -357,29 +237,7 @@ DropPopup {
 
             RowLayout {
                 Layout.fillWidth: true
-
-                Text {
-                    text: "ÚLTIMOS 7 DÍAS"
-                    color: Theme.textDim
-                    font.pixelSize: Theme.fontCaption
-                    font.weight: Font.DemiBold
-                    font.letterSpacing: 0.8
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                Text {
-                    text: weekBox.days.total > 0 ? Focus.minutesText(weekBox.days.total * 60) : "Sin datos"
-                    color: Theme.textDim
-                    font.pixelSize: Theme.fontCaption
-                }
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 56
+                Layout.preferredHeight: 50
                 spacing: 6
 
                 Repeater {
@@ -397,10 +255,10 @@ DropPopup {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.bottom: dayLabel.top
                             anchors.bottomMargin: 3
-                            width: Math.min(parent.width, 26)
+                            width: Math.min(parent.width, 22)
                             height: bar.modelData.minutes > 0 ? Math.max(4, (parent.height - 18) * bar.modelData.minutes / weekBox.days.max) : 3
-                            radius: 4
-                            color: bar.modelData.minutes === 0 ? Theme.track : (bar.modelData.today ? Theme.accent : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.45))
+                            radius: 3
+                            color: bar.modelData.minutes === 0 ? Theme.track : (bar.modelData.today ? Theme.accent : Qt.rgba(1, 1, 1, 0.35))
                         }
 
                         Text {
@@ -416,58 +274,32 @@ DropPopup {
                     }
                 }
             }
-        }
 
-        // Aviso del bloqueo y salida con fricción
-        Rectangle {
-            visible: Focus.mode === "estudio" && Focus.running && Focus.phase === "estudio"
-            Layout.fillWidth: true
-            implicitHeight: lockRow.implicitHeight + 20
-            radius: Theme.controlRadius
-            color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.12)
-
-            RowLayout {
-                id: lockRow
-
-                anchors.fill: parent
-                anchors.margins: 10
-                spacing: 10
-
-                MIcon {
-                    name: Focus.blocking ? "block" : "lock_open"
-                    color: Theme.accent
-                    font.pixelSize: Theme.iconMd
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    text: Focus.blocking ? "Juegos y redes bloqueados mientras estudiás" : "Bloqueo pausado"
-                    wrapMode: Text.Wrap
-                    color: Theme.text
-                    font.pixelSize: Theme.fontSmall
-                }
-
-                Pill {
-                    visible: Focus.blocking
-                    implicitHeight: 28
-                    text: Focus.unlockLeft > 0 ? "Esperá " + Focus.unlockLeft + " s · cancelar" : "Pausar bloqueo"
-                    danger: true
-                    onClicked: Focus.unlockLeft > 0 ? Focus.cancelUnlock() : Focus.requestUnlock()
-                }
+            Text {
+                Layout.alignment: Qt.AlignRight
+                text: weekBox.days.total > 0 ? "Semana: " + Focus.minutesText(weekBox.days.total * 60) : "Sin datos esta semana"
+                color: Theme.textDim
+                font.pixelSize: Theme.fontCaption
             }
         }
 
         // Cajón de ideas: anotar y seguir
+        MenuSeparator {}
+
         Rectangle {
             Layout.fillWidth: true
-            implicitHeight: 40
-            radius: Theme.controlRadius
+            Layout.leftMargin: 4
+            Layout.rightMargin: 4
+            implicitHeight: 32
+            radius: Theme.controlRadius - 3
             color: Theme.surface
+            border.width: idea.activeFocus ? 1 : 0
+            border.color: Theme.border
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 12
-                anchors.rightMargin: 12
+                anchors.leftMargin: 10
+                anchors.rightMargin: 6
                 spacing: 8
 
                 MIcon {
@@ -492,42 +324,41 @@ DropPopup {
                         savedTimer.restart();
                     }
 
-                    // Texto de ayuda; tras guardar, confirma en violeta unos segundos
+                    // Texto de ayuda; tras guardar, confirma unos segundos
                     Text {
                         visible: idea.text === ""
                         anchors.verticalCenter: parent.verticalCenter
-                        text: savedNote.opacity > 0 ? "✓ Guardada en tus ideas" : "Anotar una idea y seguir (Enter)"
+                        text: savedNote.opacity > 0 ? "✓ Guardada en tus ideas" : "Anotar una idea y seguir"
                         color: savedNote.opacity > 0 ? Theme.accent : Theme.textDim
                         font.pixelSize: Theme.fontBody
-                        font.weight: savedNote.opacity > 0 ? Font.DemiBold : Font.Normal
                     }
                 }
 
                 // Ver las ideas guardadas
                 Rectangle {
                     visible: Focus.ideas.length > 0
-                    Layout.preferredWidth: countText.implicitWidth + 16
-                    Layout.preferredHeight: 24
-                    radius: 7
-                    color: root.showIdeas ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22) : (countHover.hovered ? Theme.hover : Theme.track)
+                    Layout.preferredWidth: countText.implicitWidth + 14
+                    Layout.preferredHeight: 22
+                    radius: 6
+                    color: root.showIdeas || countArea.containsMouse ? Theme.hover : "transparent"
 
                     Text {
                         id: countText
 
                         anchors.centerIn: parent
                         text: Focus.ideas.length + (root.showIdeas ? " ▴" : " ▾")
-                        color: root.showIdeas ? Theme.accent : Theme.textDim
+                        color: Theme.textDim
                         font.pixelSize: Theme.fontCaption
                         font.weight: Font.DemiBold
                     }
 
-                    HoverHandler {
-                        id: countHover
+                    MouseArea {
+                        id: countArea
 
+                        anchors.fill: parent
+                        hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                    }
-                    TapHandler {
-                        onTapped: root.showIdeas = !root.showIdeas
+                        onClicked: root.showIdeas = !root.showIdeas
                     }
                 }
 
@@ -548,81 +379,74 @@ DropPopup {
         }
 
         // Ideas guardadas: las más nuevas arriba; la X de cada una la borra
-        Rectangle {
+        ListView {
+            id: ideaList
+
             visible: root.showIdeas && Focus.ideas.length > 0
             Layout.fillWidth: true
-            implicitHeight: Math.min(ideaList.contentHeight, 196) + 12
-            radius: Theme.controlRadius
-            color: Theme.surface
+            Layout.topMargin: 2
+            Layout.preferredHeight: Math.min(contentHeight, 196)
+            clip: true
+            spacing: 0
+            model: Focus.ideas
+            boundsBehavior: Flickable.StopAtBounds
 
-            ListView {
-                id: ideaList
+            delegate: Rectangle {
+                id: ideaRow
 
-                anchors.fill: parent
-                anchors.margins: 6
-                clip: true
-                spacing: 2
-                model: Focus.ideas
-                boundsBehavior: Flickable.StopAtBounds
+                required property var modelData
 
-                delegate: Rectangle {
-                    id: ideaRow
+                width: ListView.view.width
+                height: ideaText.implicitHeight + 14
+                radius: Theme.controlRadius - 3
+                color: rowHover.hovered ? Theme.surface : "transparent"
 
-                    required property var modelData
+                HoverHandler {
+                    id: rowHover
+                }
 
-                    width: ListView.view.width
-                    height: ideaText.implicitHeight + 14
-                    radius: 8
-                    color: rowHover.hovered ? Theme.hover : "transparent"
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 8
+                    anchors.rightMargin: 6
+                    spacing: 8
 
-                    HoverHandler {
-                        id: rowHover
-                    }
+                    Column {
+                        Layout.fillWidth: true
+                        spacing: 1
 
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 6
-                        spacing: 8
+                        Text {
+                            id: ideaText
 
-                        Column {
-                            Layout.fillWidth: true
-                            spacing: 1
-
-                            Text {
-                                id: ideaText
-
-                                width: parent.width
-                                text: ideaRow.modelData.text
-                                wrapMode: Text.Wrap
-                                maximumLineCount: 3
-                                elide: Text.ElideRight
-                                color: Theme.text
-                                font.pixelSize: Theme.fontBody
-                            }
-
-                            Text {
-                                visible: ideaRow.modelData.date !== ""
-                                text: ideaRow.modelData.date.slice(8, 10) + "/" + ideaRow.modelData.date.slice(5, 7) + " " + ideaRow.modelData.time
-                                color: Theme.textDim
-                                font.pixelSize: Theme.fontTiny
-                            }
+                            width: parent.width
+                            text: ideaRow.modelData.text
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 3
+                            elide: Text.ElideRight
+                            color: Theme.text
+                            font.pixelSize: Theme.fontBody
                         }
 
-                        MIcon {
-                            Layout.alignment: Qt.AlignTop
-                            Layout.topMargin: 2
-                            opacity: rowHover.hovered ? 1 : 0
-                            name: "close"
-                            font.pixelSize: Theme.iconSm
+                        Text {
+                            visible: ideaRow.modelData.date !== ""
+                            text: ideaRow.modelData.date.slice(8, 10) + "/" + ideaRow.modelData.date.slice(5, 7) + " " + ideaRow.modelData.time
                             color: Theme.textDim
+                            font.pixelSize: Theme.fontTiny
+                        }
+                    }
 
-                            TapHandler {
-                                onTapped: Focus.deleteIdea(ideaRow.modelData.line)
-                            }
-                            HoverHandler {
-                                cursorShape: Qt.PointingHandCursor
-                            }
+                    MIcon {
+                        Layout.alignment: Qt.AlignTop
+                        Layout.topMargin: 2
+                        opacity: rowHover.hovered ? 1 : 0
+                        name: "close"
+                        font.pixelSize: Theme.iconSm
+                        color: Theme.textDim
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Focus.deleteIdea(ideaRow.modelData.line)
                         }
                     }
                 }

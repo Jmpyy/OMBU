@@ -175,48 +175,6 @@ DropPopup {
         }
     }
 
-    // Interruptor chico de las filas del detalle
-    component Switch: Rectangle {
-        id: sw
-
-        property bool on: false
-
-        signal toggled
-
-        implicitWidth: 34
-        implicitHeight: 20
-        radius: 10
-        color: on ? Theme.accent : Theme.track
-
-        Behavior on color {
-            ColorAnimation {
-                duration: Theme.animFast
-            }
-        }
-
-        Rectangle {
-            x: sw.on ? sw.width - width - 2 : 2
-            anchors.verticalCenter: parent.verticalCenter
-            width: 16
-            height: 16
-            radius: 8
-            color: sw.on ? Theme.accentText : Theme.text
-
-            Behavior on x {
-                NumberAnimation {
-                    duration: Theme.animFast
-                    easing.type: Theme.ease
-                }
-            }
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: sw.toggled()
-        }
-    }
-
     bodyWidth: 384
     bodyHeight: column.implicitHeight + 28
 
@@ -348,7 +306,7 @@ DropPopup {
                     }
                 }
 
-                Switch {
+                ToggleSwitch {
                     on: NightLight.auto
                     onToggled: NightLight.setAuto(!NightLight.auto)
                 }
