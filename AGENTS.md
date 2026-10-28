@@ -73,7 +73,7 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 **Shell**
 - La terminal es **zsh** (o fish) con alias que rompen comandos (`g`, `gpu`) y que no separa palabras de una variable (`$Q call ...` falla). Para varios pasos, escribí un script bash.
 - No uses `pkill -f` con un patrón que también aparezca en tu propio comando: te matás a vos. Usá el PID o `pkill -x`.
-- No borres con `rm` y una variable que pueda estar vacía.
+- No borres con `rm` y una variable que pueda estar vacía. **Lo mismo con `gio trash`: con un argumento vacío manda a la papelera la carpeta actual** (pasó el 28/10 con `~/.config/hypr` entera; Hyprland generó una configuración por defecto encima). Las listas de archivos, en un script bash con `set -euo pipefail` que frene si la lista está vacía y verifique cada ruta (`mapfile` y los arrays de bash no existen en zsh). Para encadenar pasos que pueden fallar, no uses `a && b || c && d`: se evalúa `((a && b) || c) && d`.
 
 **Ventanas y apps**
 - `Hyprland.toplevels` puede traer **ventanas fantasma** (sin escritorio): el Minecraft Launcher esconde su ventana y queda ahí. Usá siempre `Apps.windows` (las filtra) para listarlas o contarlas. Para ir a una ventana (y traerla si estaba minimizada en `special:minimized`) usá `Apps.focusWindow(t)`: antes estaba copiada en el launcher, el menú de apps y los avisos.
