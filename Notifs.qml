@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Services.Notifications
 
 // Servidor de notificaciones (org.freedesktop.Notifications). Reemplaza a swaync.
@@ -29,9 +30,41 @@ Singleton {
     }
 
     onStudyBlockChanged: syncFocus()
-    onDndChanged: if (!dnd)
-        dndByFocus = false
-    Component.onCompleted: syncFocus()
+    onDndChanged: {
+        if (!dnd)
+            dndByFocus = false;
+        saveDnd();
+    }
+    onDndByFocusChanged: saveDnd()
+
+    // No molestar sobrevive a las recargas (antes volvía a apagado cada vez): ~/.local/share/ombu/avisos.json
+    property bool dndLoaded: false
+
+    function saveDnd(): void {
+        if (dndLoaded)
+            dndFile.setText(JSON.stringify({
+                dnd: dnd,
+                byFocus: dndByFocus
+            }));
+    }
+
+    FileView {
+        id: dndFile
+
+        path: (Quickshell.env("HOME") ?? "") + "/.local/share/ombu/avisos.json"
+        blockLoading: true
+        printErrors: false
+    }
+
+    Component.onCompleted: {
+        try {
+            const s = JSON.parse(dndFile.text());
+            dndByFocus = s.byFocus === true;
+            dnd = s.dnd === true;
+        } catch (e) {}
+        dndLoaded = true;
+        syncFocus();
+    }
 
     function breaksDnd(entry): bool {
         return !dnd || entry.critical || entry.urgent;
