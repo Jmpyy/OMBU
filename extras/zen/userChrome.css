@@ -1,4 +1,5 @@
-/* ombu: Zen con los colores del tema de ombu (sobrio, el acento solo en lo importante).
+/* ombu: Zen con los colores del tema de ombu y el estilo de sus menús (sobrio: el acento solo en lo
+ * importante, grises para lo demás, líneas finas en vez de cajas; como el kit de menús de ombu).
  * Plantilla: bin/qt-theme.py cambia los @NOMBRE@ por los colores del tema y la escribe en
  * <perfil de Zen>/chrome/userChrome.css (junto con user.js, que habilita leer este archivo y pone el
  * color de acento de Zen). Zen la lee al arrancar: el cambio se ve la próxima vez que lo abras. */
@@ -22,12 +23,144 @@
   --toolbar-color: @TEXT@ !important;
   --toolbar-field-color: @TEXT@ !important;
   --toolbar-field-background-color: @SURFACE@ !important;
-  --toolbar-field-focus-background-color: @TRACK@ !important;
-  --arrowpanel-background: @SURFACE@ !important;
+  --toolbar-field-focus-background-color: @BG@ !important;
+  --toolbarbutton-border-radius: 7px !important;
+
+  /* Paneles (el menú ⋯, descargas, extensiones): fondo del tema, borde fino como el de los menús
+     de ombu y filas con resaltado gris */
+  --arrowpanel-background: @BG@ !important;
   --arrowpanel-color: @TEXT@ !important;
+  --arrowpanel-border-color: color-mix(in srgb, @TEXT@, transparent 80%) !important;
+  --arrowpanel-border-radius: 12px !important;
+  --panel-separator-color: color-mix(in srgb, @TEXT@, transparent 90%) !important;
+  --panel-item-hover-bgcolor: @SURFACE@ !important;
+  --panel-item-active-bgcolor: @TRACK@ !important;
+
+  /* El anillo de foco del teclado: claro, no del color de acento */
+  --focus-outline-color: color-mix(in srgb, @TEXT@, transparent 45%) !important;
+}
+
+/* ---------------- Menús (clic derecho, menús de las pestañas...) ---------------- */
+
+menupopup {
+  --panel-background: @BG@ !important;
+  --panel-color: @TEXT@ !important;
+  --panel-border-color: color-mix(in srgb, @TEXT@, transparent 80%) !important;
+  --panel-border-radius: 12px !important;
+  --panel-padding: 5px !important;
+  font-size: 13px !important;
+}
+
+menupopup > menuitem,
+menupopup > menu {
+  appearance: none !important;
+  min-height: 28px !important;
+  padding-block: 4px !important;
+  padding-inline: 8px !important;
+  border-radius: 7px !important;
+  color: @TEXT@ !important;
+}
+
+menupopup > menuitem[_moz-menuactive]:not([disabled]),
+menupopup > menu[_moz-menuactive]:not([disabled]),
+menupopup > menu[open] {
+  background-color: @SURFACE@ !important;
+  color: @TEXT@ !important;
+}
+
+menupopup > menuitem[disabled],
+menupopup > menu[disabled] {
+  color: @DIM@ !important;
+  opacity: 0.7 !important;
+}
+
+menuseparator {
+  appearance: none !important;
+  padding-block: 4px !important;
+  margin-inline: 6px !important;
+  border-top: 0 !important;
+}
+
+menuseparator::before {
+  border-top: 1px solid color-mix(in srgb, @TEXT@, transparent 90%) !important;
+}
+
+/* Las teclas de los atajos, atenuadas como en los menús de ombu */
+menupopup .menu-accel,
+menupopup .menu-iconic-accel {
+  color: @DIM@ !important;
+}
+
+/* Filas de los paneles */
+.subviewbutton {
+  border-radius: 7px !important;
+  min-height: 28px !important;
+}
+
+tooltip {
+  appearance: none !important;
+  background-color: @BG@ !important;
+  color: @TEXT@ !important;
+  border: 1px solid color-mix(in srgb, @TEXT@, transparent 80%) !important;
+  border-radius: 7px !important;
+  padding: 4px 8px !important;
+}
+
+/* ---------------- Barra de direcciones ---------------- */
+
+#urlbar-background {
+  border-radius: 10px !important;
+  background-color: @SURFACE@ !important;
+  border: 1px solid transparent !important;
+  box-shadow: none !important;
+}
+
+/* Enfocada o con sugerencias: el fondo del tema y un borde fino, sin brillo de color */
+#urlbar[focused] > #urlbar-background,
+#urlbar[open] > #urlbar-background {
+  background-color: @BG@ !important;
+  border-color: color-mix(in srgb, @TEXT@, transparent 80%) !important;
+  outline: none !important;
+}
+
+/* Sugerencias: la elegida en gris, como en el launcher de ombu */
+.urlbarView-row-inner {
+  border-radius: 7px !important;
+}
+
+.urlbarView-row[selected] > .urlbarView-row-inner,
+.urlbarView-row[selected] > .urlbarView-row-body {
+  background-color: @SURFACE@ !important;
+  color: @TEXT@ !important;
+}
+
+/* Zen le pone a la elegida una línea del color de acento abajo: afuera */
+.urlbarView-row[selected],
+.urlbarView-row[selected] > .urlbarView-row-inner {
+  box-shadow: none !important;
+  border-bottom-color: transparent !important;
+  outline: none !important;
+}
+
+.urlbarView-row:not([selected]):hover > .urlbarView-row-inner {
+  background-color: color-mix(in srgb, @TEXT@, transparent 94%) !important;
+}
+
+.urlbarView-row[selected] :is(.urlbarView-title, .urlbarView-url, .urlbarView-action) {
+  color: @TEXT@ !important;
+}
+
+/* ---------------- Pestañas de la barra lateral ---------------- */
+
+.tabbrowser-tab .tab-background {
+  border-radius: 10px !important;
 }
 
 /* Pestaña elegida: un fondo apenas más claro, sin colores fuertes */
 .tabbrowser-tab[selected] .tab-background {
   background-color: color-mix(in srgb, @TEXT@, transparent 90%) !important;
+}
+
+.tabbrowser-tab:hover:not([selected]) .tab-background {
+  background-color: color-mix(in srgb, @TEXT@, transparent 95%) !important;
 }

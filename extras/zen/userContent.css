@@ -1,0 +1,9 @@
+/* ombu: las páginas propias de Zen con el fondo del tema (sin el destello blanco al abrir una pestaña).
+ * Plantilla: bin/qt-theme.py la escribe en <perfil de Zen>/chrome/userContent.css. */
+
+@-moz-document url("about:newtab"), url("about:home"), url("about:blank"), url("about:privatebrowsing") {
+  html, body {
+    background-color: @BG@ !important;
+    color: @TEXT@ !important;
+  }
+}

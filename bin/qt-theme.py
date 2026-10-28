@@ -11,7 +11,8 @@ el del tema elegido; los tonos derivados (más claro, más oscuro) se calculan. 
   ~/.config/vesktop/settings/quickCss.css  Discord (Vesktop), desde extras/vesktop/ombu.theme.css: Vesktop
                                           recarga el QuickCSS solo, así que cambia en vivo. Solo se escribe
                                           si está vacío o ya es el de ombu (no pisa un CSS propio)
-  <perfil de Zen>/chrome/userChrome.css   Zen, desde extras/zen/userChrome.css, más user.js (habilita el CSS
+  <perfil de Zen>/chrome/userChrome.css   Zen, desde extras/zen/userChrome.css (la interfaz) y userContent.css
+                                          (sus páginas propias), más user.js (habilita el CSS
                                           y pone el acento). Zen lo lee al arrancar. No pisa archivos propios
   ~/.local/share/ombu/icons/bar-logo.svg  el logo de la barra (araña o reactor, en los colores del tema;
                                           sin --logo se borra y la barra usa el de CachyOS)
@@ -198,22 +199,26 @@ def zen_profiles(root):
 
 
 ZEN_MARK = "ombu: Zen con los colores del tema"
+ZEN_CONTENT_MARK = "ombu: las páginas propias de Zen"
 ZEN_USERJS = """// ombu: lo escribe bin/qt-theme.py (habilita chrome/userChrome.css y pone el acento del tema)
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 user_pref("zen.theme.accent-color", "%s");
 """
 
 
-def write_zen(root, css, accent):
+def write_zen(root, css, content_css, accent):
     for prof in zen_profiles(root):
-        chrome = os.path.join(prof, "chrome", "userChrome.css")
-        try:
-            with open(chrome, encoding="utf-8") as f:
-                current = f.read()
-        except OSError:
-            current = ""
-        if current.strip() == "" or ZEN_MARK in current:
-            write(chrome, css, backup=False)
+        # La interfaz (userChrome) y las páginas propias de Zen (userContent). Un archivo escrito a mano
+        # (sin la marca de ombu) no se toca
+        for name, text, mark in (("userChrome.css", css, ZEN_MARK), ("userContent.css", content_css, ZEN_CONTENT_MARK)):
+            path = os.path.join(prof, "chrome", name)
+            try:
+                with open(path, encoding="utf-8") as f:
+                    current = f.read()
+            except OSError:
+                current = ""
+            if current.strip() == "" or mark in current:
+                write(path, text, backup=False)
         # user.js: el bloque de ombu va al final y se reemplaza solo él; lo demás (ajustes propios) queda
         userjs = os.path.join(prof, "user.js")
         try:
@@ -315,7 +320,10 @@ def main():
 
     # Zen: lo lee al arrancar
     with open(os.path.join(EXTRAS, "zen", "userChrome.css"), encoding="utf-8") as f:
-        write_zen(root, vesktop_css(f.read(), colors, on_accent, a.accent2), colors["accent"])
+        chrome_css = vesktop_css(f.read(), colors, on_accent, a.accent2)
+    with open(os.path.join(EXTRAS, "zen", "userContent.css"), encoding="utf-8") as f:
+        content_css = vesktop_css(f.read(), colors, on_accent, a.accent2)
+    write_zen(root, chrome_css, content_css, colors["accent"])
 
     # Logo de la barra: se escribe si el tema tiene uno y se borra si no (la barra vuelve al de CachyOS)
     logo_path = os.path.join(root, ".local/share/ombu/icons/bar-logo.svg")
