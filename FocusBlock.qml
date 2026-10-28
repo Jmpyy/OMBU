@@ -105,7 +105,7 @@ PanelWindow {
                 horizontalAlignment: Text.AlignHCenter
                 text: "Ahora toca estudiar"
                 color: Theme.text
-                font.pixelSize: 24
+                font.pixelSize: Theme.fontHeading
                 font.weight: Font.DemiBold
             }
 
@@ -115,7 +115,7 @@ PanelWindow {
                 text: Focus.noticePhrase
                 wrapMode: Text.Wrap
                 color: Theme.text
-                font.pixelSize: 15
+                font.pixelSize: Theme.fontEmphasis
             }
 
             Text {
@@ -124,7 +124,7 @@ PanelWindow {
                 text: Focus.noticeLeft > 0 ? Focus.noticeTitle + (Focus.noticeKind === "web" ? " se cierra en " : " se cierra en ") + Focus.noticeLeft + " s" : "Cerrando " + Focus.noticeTitle + "…"
                 wrapMode: Text.Wrap
                 color: Theme.textDim
-                font.pixelSize: 13
+                font.pixelSize: Theme.fontBody
             }
 
             RowLayout {
@@ -142,7 +142,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: "Cerrar y estudiar"
                         color: Theme.accentText
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.fontBody
                         font.weight: Font.DemiBold
                     }
 
@@ -168,7 +168,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: Focus.unlockLeft > 0 ? "Esperá " + Focus.unlockLeft + " s · cancelar" : (Focus.noticeKind === "web" ? "Necesito entrar" : "Necesito jugar")
                         color: Theme.textDim
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.fontBody
                     }
 
                     HoverHandler {

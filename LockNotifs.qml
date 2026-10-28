@@ -16,7 +16,7 @@ ColumnLayout {
     Text {
         text: "NOTIFICACIONES  " + Notifs.count
         color: Qt.rgba(1, 1, 1, 0.6)
-        font.pixelSize: 11
+        font.pixelSize: Theme.fontCaption
         font.weight: Font.DemiBold
         font.letterSpacing: 0.8
     }
@@ -98,7 +98,7 @@ ColumnLayout {
                         visible: !icon.visible
                         name: "notifications"
                         color: Theme.textDim
-                        font.pixelSize: 17
+                        font.pixelSize: Theme.iconSm
                     }
                 }
 
@@ -111,7 +111,7 @@ ColumnLayout {
                         text: card.modelData.appName
                         elide: Text.ElideRight
                         color: Theme.textDim
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontCaption
                     }
 
                     Text {
@@ -119,7 +119,7 @@ ColumnLayout {
                         text: card.modelData.summary
                         elide: Text.ElideRight
                         color: Theme.text
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.fontBody
                         font.weight: Font.Medium
                     }
                 }
@@ -131,6 +131,6 @@ ColumnLayout {
         visible: Notifs.count > root.maxItems
         text: "y " + (Notifs.count - root.maxItems) + " más"
         color: Qt.rgba(1, 1, 1, 0.6)
-        font.pixelSize: 12
+        font.pixelSize: Theme.fontSmall
     }
 }

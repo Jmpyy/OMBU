@@ -27,14 +27,14 @@ Rectangle {
             visible: root.icon !== ""
             name: root.icon
             color: root.warn ? Theme.warn : Qt.rgba(1, 1, 1, 0.75)
-            font.pixelSize: 16
+            font.pixelSize: Theme.iconSm
         }
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: root.label
             color: root.warn ? Theme.warn : Qt.rgba(1, 1, 1, 0.78)
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
             font.weight: Font.DemiBold
         }
     }

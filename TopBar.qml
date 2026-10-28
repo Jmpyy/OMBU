@@ -421,7 +421,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             text: Focus.clock(Focus.remaining)
                             color: focusButton.tone
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.fontBody
                             font.weight: Font.Bold
                             font.family: Theme.comic ? Theme.displayFont : ""
                             font.features: {
@@ -433,7 +433,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: !Focus.running
                             name: "pause"
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.iconXs
                             color: Theme.textDim
                         }
                     }

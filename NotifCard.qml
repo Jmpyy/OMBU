@@ -285,7 +285,7 @@ Rectangle {
                     text: root.entry.appName
                     elide: Text.ElideRight
                     color: Theme.comic ? Theme.accent : Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.weight: Font.DemiBold
                 }
 
@@ -305,7 +305,7 @@ Rectangle {
                         anchors.centerIn: parent
                         text: root.badgeText
                         font.family: Theme.artFont || Qt.application.font.family
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         font.letterSpacing: 0.8
                         font.weight: Font.Bold
                         color: root.badgeTextColor
@@ -315,7 +315,7 @@ Rectangle {
                 Text {
                     text: root.ago(root.entry.time, Chrono.date)
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
             }
 
@@ -341,7 +341,7 @@ Rectangle {
                 maximumLineCount: root.entry.kind === "summary" ? 9 : 3
                 elide: Text.ElideRight
                 color: Qt.rgba(1, 1, 1, 0.72)
-                font.pixelSize: 13
+                font.pixelSize: Theme.fontBody
             }
 
             // Confirmación de un comando: carpeta, comando completo, aviso de riesgo y botones
@@ -359,7 +359,7 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         name: "folder_open"
                         color: Theme.textDim
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.iconXs
                     }
 
                     Text {
@@ -368,7 +368,7 @@ Rectangle {
                         text: root.cwdShort
                         elide: Text.ElideMiddle
                         color: Theme.textDim
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                     }
                 }
 
@@ -395,7 +395,7 @@ Rectangle {
                         elide: Text.ElideRight
                         color: Theme.text
                         font.family: "CaskaydiaCove Nerd Font Mono"
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         lineHeight: 1.15
                     }
                 }
@@ -416,7 +416,7 @@ Rectangle {
                         MIcon {
                             name: "warning"
                             color: Theme.warn
-                            font.pixelSize: 17
+                            font.pixelSize: Theme.iconSm
                         }
 
                         Text {
@@ -426,7 +426,7 @@ Rectangle {
                             text: "Comando delicado: revisalo en la consola. Desde acá solo podés denegarlo."
                             wrapMode: Text.Wrap
                             color: Theme.warn
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                         }
                     }
                 }
@@ -437,7 +437,7 @@ Rectangle {
                     text: "Encadena varias órdenes o redirige la salida: leelas completas."
                     wrapMode: Text.Wrap
                     color: Theme.textDim
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSmall
                 }
 
                 // Botones: lo principal arriba, lo destructivo en rojo, lo demás discreto
@@ -470,7 +470,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 text: btn.modelData.text
                                 color: btn.primary || (btn.danger && btnArea.containsMouse) ? Theme.accentText : (btn.danger ? Theme.danger : Theme.textDim)
-                                font.pixelSize: 13
+                                font.pixelSize: Theme.fontBody
                                 font.weight: Font.DemiBold
                             }
 
@@ -545,7 +545,7 @@ Rectangle {
                         MIcon {
                             anchors.verticalCenter: parent.verticalCenter
                             name: "open_in_new"
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.iconXs
                             color: goArea.containsMouse ? Theme.accentText : Theme.text
                         }
 
@@ -553,7 +553,7 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Ir a la app"
                             color: goArea.containsMouse ? Theme.accentText : Theme.text
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                             font.weight: Font.Medium
                         }
                     }
@@ -590,7 +590,7 @@ Rectangle {
                             anchors.centerIn: parent
                             text: pill.modelData.text
                             color: pillArea.containsMouse ? Theme.accentText : Theme.text
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                             font.weight: Font.Medium
                         }
 
@@ -629,7 +629,7 @@ Rectangle {
         MIcon {
             anchors.centerIn: parent
             name: "close"
-            font.pixelSize: 14
+            font.pixelSize: Theme.iconXs
             color: closeArea.containsMouse ? Theme.accentText : Theme.textDim
         }
 

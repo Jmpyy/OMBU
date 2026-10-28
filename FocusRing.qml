@@ -57,7 +57,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.title
             color: root.active ? Theme.accent : Theme.textDim
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
             font.weight: Font.DemiBold
         }
 

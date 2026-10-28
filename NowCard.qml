@@ -46,7 +46,7 @@ ComicCard {
                 anchors.centerIn: parent
                 name: root.next ? Facu.kindIcon(Facu.kindOf(root.next) || "evento") : "event_available"
                 color: root.next ? Facu.kindColor(Facu.kindOf(root.next) || "evento") : Theme.textDim
-                font.pixelSize: 20
+                font.pixelSize: Theme.iconMd
             }
         }
 
@@ -59,7 +59,7 @@ ComicCard {
                 text: root.next ? root.next.title : (Agenda.googleLoading ? "Cargando agenda…" : "Nada en la agenda")
                 elide: Text.ElideRight
                 color: Theme.text
-                font.pixelSize: 15
+                font.pixelSize: Theme.fontEmphasis
                 font.weight: Font.DemiBold
             }
 
@@ -68,7 +68,7 @@ ComicCard {
                 text: root.next ? Chrono.capitalize(Agenda.parseDay(root.next.day).toLocaleDateString(Chrono.locale, "dddd d/M")) + (root.next.time ? " · " + root.next.time : "") : "Buen momento para adelantar algo"
                 elide: Text.ElideRight
                 color: Theme.textDim
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSmall
             }
         }
 
@@ -91,7 +91,7 @@ ComicCard {
 
         MIcon {
             name: Focus.phase === "estudio" ? "target" : "coffee"
-            font.pixelSize: 16
+            font.pixelSize: Theme.iconSm
             color: Focus.phase === "estudio" ? "#6f9bf0" : Theme.textDim
         }
 
@@ -100,13 +100,13 @@ ComicCard {
             text: (Focus.phase === "estudio" ? "Bloque de " + Focus.mode : "Descanso") + (Focus.running ? "" : " · en pausa")
             elide: Text.ElideRight
             color: Theme.text
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
         }
 
         Text {
             text: Math.floor(root.focusLeft / 60) + ":" + String(root.focusLeft % 60).padStart(2, "0")
             color: Theme.textDim
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
             font.family: "monospace"
         }
     }

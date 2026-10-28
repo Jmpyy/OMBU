@@ -27,7 +27,7 @@ ColumnLayout {
         Text {
             text: root.title
             color: Theme.textDim
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontCaption
             font.weight: Font.DemiBold
             font.letterSpacing: 0.8
         }
@@ -39,7 +39,7 @@ ColumnLayout {
         Text {
             text: Math.round(root.volume * 100) + "%"
             color: root.muted ? Theme.textDim : Theme.text
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
             font.weight: Font.Medium
         }
     }
@@ -80,7 +80,7 @@ ColumnLayout {
                 text: root.node ? root.node.description : "Sin dispositivo"
                 elide: Text.ElideRight
                 color: Theme.text
-                font.pixelSize: Theme.fontSize
+                font.pixelSize: Theme.fontBody
             }
 
             MixerSlider {
@@ -153,7 +153,7 @@ ColumnLayout {
                     MIcon {
                         name: item.isDefault ? "radio_button_checked" : "radio_button_unchecked"
                         color: item.isDefault ? Theme.accent : Theme.textDim
-                        font.pixelSize: 17
+                        font.pixelSize: Theme.iconSm
                     }
 
                     Text {
@@ -161,7 +161,7 @@ ColumnLayout {
                         text: item.modelData.description
                         elide: Text.ElideRight
                         color: item.isDefault ? Theme.text : Theme.textDim
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                     }
                 }
 

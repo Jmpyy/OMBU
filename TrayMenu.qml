@@ -53,14 +53,14 @@ DropPopup {
                 MIcon {
                     name: "arrow_back"
                     color: Theme.textDim
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.iconMd
                 }
 
                 Text {
                     Layout.fillWidth: true
                     text: "Atrás"
                     color: Theme.textDim
-                    font.pixelSize: Theme.fontSize
+                    font.pixelSize: Theme.fontBody
                 }
             }
 
@@ -111,7 +111,7 @@ DropPopup {
                             visible: row.modelData.buttonType !== 0
                             name: row.modelData.checkState === Qt.Checked ? "check" : ""
                             color: Theme.accent
-                            font.pixelSize: 18
+                            font.pixelSize: Theme.iconMd
                         }
 
                         Image {
@@ -127,7 +127,7 @@ DropPopup {
                             Layout.fillWidth: true
                             text: row.modelData.text
                             color: row.modelData.enabled ? Theme.text : Theme.textDim
-                            font.pixelSize: Theme.fontSize
+                            font.pixelSize: Theme.fontBody
                             elide: Text.ElideRight
                         }
 
@@ -135,7 +135,7 @@ DropPopup {
                             visible: row.modelData.hasChildren
                             name: "chevron_right"
                             color: Theme.textDim
-                            font.pixelSize: 18
+                            font.pixelSize: Theme.iconMd
                         }
                     }
 

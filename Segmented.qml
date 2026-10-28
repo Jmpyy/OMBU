@@ -53,7 +53,7 @@ Rectangle {
                     anchors.centerIn: parent
                     text: seg.modelData.name
                     color: root.index === seg.index ? Theme.accent : (area.containsMouse ? Theme.text : Theme.textDim)
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSmall
                     font.weight: Font.DemiBold
                 }
 

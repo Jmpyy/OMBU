@@ -61,8 +61,20 @@ Singleton {
     readonly property int saverFontSize: 16
     readonly property int saverRewakeSeconds: 20
 
-    // Tipografía
-    readonly property int fontSize: 13
+    // Tipografía: una escala por rol, como la de macOS. Lo de 26 px o más (relojes, cifras e íconos
+    // protagonistas) lleva su propio tamaño y no usa la escala.
+    readonly property int fontTiny: 10      // insignias, contadores, stickers
+    readonly property int fontCaption: 11   // metadatos: horas, rutas, pistas
+    readonly property int fontSmall: 12     // texto secundario de las filas
+    readonly property int fontBody: 13      // texto normal
+    readonly property int fontEmphasis: 15  // nombres y títulos de fila
+    readonly property int fontTitle: 17     // títulos de menú y de sección
+    readonly property int fontHeading: 22   // encabezados grandes
+    // Íconos (Material Symbols)
+    readonly property int iconXs: 14
+    readonly property int iconSm: 16
+    readonly property int iconMd: 18        // el de MIcon por defecto
+    readonly property int iconLg: 24
     readonly property string iconFont: "Material Symbols Rounded"
 
     // Animación: una escala por rol, para que todo se mueva con el mismo ritmo. Las coreografías (las

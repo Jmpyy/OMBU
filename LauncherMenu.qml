@@ -526,7 +526,7 @@ PanelWindow {
                 MIcon {
                     name: "search"
                     color: Theme.textDim
-                    font.pixelSize: 24
+                    font.pixelSize: Theme.iconLg
                 }
 
                 TextInput {
@@ -536,7 +536,7 @@ PanelWindow {
                     color: Theme.text
                     selectionColor: Theme.accent
                     selectedTextColor: Theme.accentText
-                    font.pixelSize: 22
+                    font.pixelSize: Theme.fontHeading
                     font.weight: Font.Light
                     clip: true
                     focus: true
@@ -597,7 +597,7 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Buscar en ombu"
                         color: Theme.textDim
-                        font.pixelSize: 22
+                        font.pixelSize: Theme.fontHeading
                         font.weight: Font.Light
                     }
                 }
@@ -607,7 +607,7 @@ PanelWindow {
                     visible: !win.searching
                     text: "= cuentas   / archivos   ? web"
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.family: "monospace"
                 }
             }
@@ -626,7 +626,7 @@ PanelWindow {
                 Layout.topMargin: 10
                 text: "FAVORITAS Y MÁS USADAS"
                 color: Theme.textDim
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontTiny
                 font.weight: Font.Bold
                 font.letterSpacing: 1
             }
@@ -701,7 +701,7 @@ PanelWindow {
                             text: tile.modelData.name
                             elide: Text.ElideRight
                             color: Theme.text
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontCaption
                         }
                     }
 
@@ -730,7 +730,7 @@ PanelWindow {
                 horizontalAlignment: Text.AlignHCenter
                 text: "Sin resultados para “" + input.text + "”"
                 color: Theme.textDim
-                font.pixelSize: 14
+                font.pixelSize: Theme.fontBody
             }
 
             RowLayout {
@@ -762,7 +762,7 @@ PanelWindow {
                         bottomPadding: 4
                         text: section.toUpperCase()
                         color: Theme.textDim
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontTiny
                         font.weight: Font.Bold
                         font.letterSpacing: 1
                     }
@@ -814,7 +814,7 @@ PanelWindow {
                                     visible: !rowImage.visible
                                     name: item.modelData.icon ?? "apps"
                                     color: item.armed ? Theme.danger : (item.current && Theme.comic ? Theme.accentText : Theme.accent)
-                                    font.pixelSize: 19
+                                    font.pixelSize: Theme.iconMd
                                 }
                             }
 
@@ -832,14 +832,14 @@ PanelWindow {
                                 text: item.modelData.kind === "app" ? (item.modelData.sub ?? "") : ""
                                 elide: Text.ElideRight
                                 color: item.fgDim
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontCaption
                             }
 
                             MIcon {
                                 visible: item.modelData.kind === "app" && Launch.isFavorite(item.modelData.id)
                                 name: "push_pin"
                                 color: item.current && Theme.comic ? Theme.accentText : Theme.accent
-                                font.pixelSize: 13
+                                font.pixelSize: Theme.iconXs
                             }
                         }
 
@@ -938,7 +938,7 @@ PanelWindow {
                             maximumLineCount: 3
                             elide: Text.ElideRight
                             color: Theme.textDim
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                         }
 
                         // Datos de la app: favorita y cuántas veces la abriste
@@ -955,7 +955,7 @@ PanelWindow {
                                 return (Launch.isFavorite(r.id) ? "Favorita · " : "") + (n > 0 ? "abierta " + n + (n === 1 ? " vez" : " veces") : "sin abrir desde ombu");
                             }
                             color: Theme.textDim
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontCaption
                         }
 
                         Item {
@@ -1007,7 +1007,7 @@ PanelWindow {
                                             anchors.centerIn: parent
                                             text: parent.parent.modelData[0]
                                             color: Theme.text
-                                            font.pixelSize: 10
+                                            font.pixelSize: Theme.fontTiny
                                             font.family: "monospace"
                                         }
                                     }
@@ -1017,7 +1017,7 @@ PanelWindow {
                                         text: parent.modelData[1]
                                         elide: Text.ElideRight
                                         color: Theme.textDim
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.fontCaption
                                     }
                                 }
                             }
@@ -1061,7 +1061,7 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     name: win.current?.icon ?? "description"
                     color: Theme.accent
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.iconMd
                 }
 
                 Text {
@@ -1070,7 +1070,7 @@ PanelWindow {
                     text: win.current?.name ?? ""
                     elide: Text.ElideMiddle
                     color: Theme.text
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.fontBody
                     font.weight: Font.DemiBold
                 }
 
@@ -1078,7 +1078,7 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Ctrl+Y cierra"
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
             }
 
@@ -1139,7 +1139,7 @@ PanelWindow {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: win.previewKind === "none" ? "El archivo ya no existe" : (win.previewLines[0] ?? "")
                         color: Theme.textDim
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.fontBody
                     }
 
                     Text {
@@ -1147,7 +1147,7 @@ PanelWindow {
                         visible: win.previewKind === "other" && (win.previewLines[1] ?? "") !== ""
                         text: Math.round(parseInt(win.previewLines[1] ?? "0") / 1024) + " KB"
                         color: Theme.textDim
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                     }
                 }
             }

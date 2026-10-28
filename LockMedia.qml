@@ -32,7 +32,7 @@ Rectangle {
         Text {
             text: "REPRODUCIENDO AHORA"
             color: Qt.rgba(1, 1, 1, 0.5)
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontCaption
             font.weight: Font.DemiBold
             font.letterSpacing: 0.8
         }
@@ -103,7 +103,7 @@ Rectangle {
                     text: root.player?.trackTitle || root.player?.identity || ""
                     elide: Text.ElideRight
                     color: Theme.text
-                    font.pixelSize: 15
+                    font.pixelSize: Theme.fontEmphasis
                     font.weight: Font.DemiBold
                 }
 
@@ -113,7 +113,7 @@ Rectangle {
                     text: root.player?.trackArtist ?? ""
                     elide: Text.ElideRight
                     color: Theme.textDim
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.fontBody
                 }
 
                 Text {
@@ -121,7 +121,7 @@ Rectangle {
                     text: root.player?.identity ?? ""
                     elide: Text.ElideRight
                     color: Qt.rgba(1, 1, 1, 0.4)
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
             }
         }
@@ -140,7 +140,7 @@ Rectangle {
                 MIcon {
                     anchors.centerIn: parent
                     name: "skip_previous"
-                    font.pixelSize: 24
+                    font.pixelSize: Theme.iconLg
                 }
 
                 HoverHandler {
@@ -182,7 +182,7 @@ Rectangle {
                 MIcon {
                     anchors.centerIn: parent
                     name: "skip_next"
-                    font.pixelSize: 24
+                    font.pixelSize: Theme.iconLg
                 }
 
                 HoverHandler {

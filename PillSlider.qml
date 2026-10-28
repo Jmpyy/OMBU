@@ -70,7 +70,7 @@ Item {
                 x: 9
                 anchors.verticalCenter: parent.verticalCenter
                 name: slider.icon
-                font.pixelSize: 18
+                font.pixelSize: Theme.iconMd
                 color: slider.muted ? Theme.danger : parent.tone
             }
 

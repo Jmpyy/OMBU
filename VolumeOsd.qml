@@ -82,7 +82,7 @@ PanelWindow {
 
             MIcon {
                 name: Osd.icon
-                font.pixelSize: 22
+                font.pixelSize: Theme.iconLg
                 color: Osd.showMuted ? Theme.danger : (Theme.comic ? Theme.accent : Theme.text)
             }
 
@@ -108,7 +108,7 @@ PanelWindow {
                     elide: Text.ElideRight
                     text: Media.player?.trackArtist ?? ""
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
             }
 

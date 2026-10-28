@@ -7,7 +7,7 @@ Text {
     text: name
     color: Theme.text
     font.family: Theme.iconFont
-    font.pixelSize: 18
+    font.pixelSize: Theme.iconMd
     horizontalAlignment: Text.AlignHCenter
     verticalAlignment: Text.AlignVCenter
 }

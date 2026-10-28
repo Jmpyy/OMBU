@@ -154,7 +154,7 @@ PanelWindow {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: Theme.comic ? "ENERGÍA" : "Energía"
                 color: Theme.comic ? Theme.accent : Theme.textDim
-                font.pixelSize: Theme.comic ? 18 : Theme.fontSize
+                font.pixelSize: Theme.comic ? 18 : Theme.fontBody
                 font.weight: Font.DemiBold
                 font.family: Theme.comic ? Theme.displayFont : ""
             }
@@ -207,7 +207,7 @@ PanelWindow {
                                 Layout.alignment: Qt.AlignHCenter
                                 text: tile.isArmed ? "Tocá de nuevo" : tile.modelData.label
                                 color: tile.isArmed ? Theme.accentText : Theme.text
-                                font.pixelSize: Theme.comic ? 15 : Theme.fontSize
+                                font.pixelSize: Theme.comic ? 15 : Theme.fontBody
                                 font.weight: Font.Medium
                                 font.family: Theme.comic ? Theme.displayFont : ""
                             }

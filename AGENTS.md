@@ -57,6 +57,7 @@ bin/               scripts: capturas (shot.sh: editor, OCR), portapapeles, explo
 - Ventanas layer-shell de **tamaño fijo**: redimensionar cada cuadro causa temblor. Los popups esperan al primer cuadro (`ready`) antes de animar.
 - Rendimiento: timers a 12 fps en el salvapantallas y el bloqueo; el blur se cachea (`layer.enabled`).
 - **Animación:** usá la escala de `Theme`, por rol: `animQuick` (100, hover y clic), `animFast` (150, bordes, opacidad, indicadores), `animNormal` (200, movimiento y tamaño, menús) y `animSlow` (320, progreso y fundidos grandes), con `Theme.ease` (OutCubic). Solo las coreografías (sacudidas, pulsos en bucle, despedida, escalonados) llevan tiempos propios.
+- **Tipografía:** usá la escala de `Theme`, por rol: `fontTiny` 10, `fontCaption` 11, `fontSmall` 12, `fontBody` 13, `fontEmphasis` 15, `fontTitle` 17, `fontHeading` 22; íconos `iconXs` 14, `iconSm` 16, `iconMd` 18, `iconLg` 24. Solo lo de 26 px o más (relojes, cifras, íconos protagonistas) lleva tamaño propio.
 - Estilo de escritorio, no de celular: esquinas suaves (`Theme.controlRadius`, `cardRadius`), sliders de 30 px, el acento lleno solo en la acción principal. Nada de píldoras gigantes ni botones táctiles. `Theme.outline` es el filo de la barra y de los menús que cuelgan de ella; las tarjetas centradas usan `Theme.border`.
 - Textos de la interfaz en español.
 

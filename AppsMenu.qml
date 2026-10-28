@@ -98,7 +98,7 @@ DropPopup {
             Text {
                 text: root.windows.length
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
                 font.weight: Font.DemiBold
             }
         }
@@ -108,7 +108,7 @@ DropPopup {
             Layout.fillWidth: true
             text: "No hay apps minimizadas ni en segundo plano."
             color: Theme.textDim
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
         }
 
         Flickable {
@@ -170,7 +170,7 @@ DropPopup {
                                     visible: rowIcon.source == ""
                                     name: "apps"
                                     color: Theme.textDim
-                                    font.pixelSize: 24
+                                    font.pixelSize: Theme.iconLg
                                 }
                             }
 
@@ -183,7 +183,7 @@ DropPopup {
                                     text: row.modelData.title
                                     elide: Text.ElideRight
                                     color: row.minimized ? Theme.textDim : Theme.text
-                                    font.pixelSize: Theme.fontSize
+                                    font.pixelSize: Theme.fontBody
                                 }
 
                                 Text {
@@ -191,7 +191,7 @@ DropPopup {
                                     text: (row.entry ? row.entry.name : row.appId) + "  ·  " + root.placeLabel(row.modelData)
                                     elide: Text.ElideRight
                                     color: row.minimized ? Theme.accent : Theme.textDim
-                                    font.pixelSize: 11
+                                    font.pixelSize: Theme.fontCaption
                                 }
                             }
 
@@ -206,7 +206,7 @@ DropPopup {
                                 MIcon {
                                     anchors.centerIn: parent
                                     name: "minimize"
-                                    font.pixelSize: 16
+                                    font.pixelSize: Theme.iconSm
                                     color: minHover.hovered ? Theme.text : Theme.textDim
                                 }
 
@@ -230,7 +230,7 @@ DropPopup {
                                 MIcon {
                                     anchors.centerIn: parent
                                     name: "close"
-                                    font.pixelSize: 16
+                                    font.pixelSize: Theme.iconSm
                                     color: closeHover.hovered ? Theme.accentText : Theme.textDim
                                 }
 
@@ -281,7 +281,7 @@ DropPopup {
                 Text {
                     text: "EN SEGUNDO PLANO"
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.weight: Font.DemiBold
                     font.letterSpacing: 0.8
                 }
@@ -293,7 +293,7 @@ DropPopup {
                 Text {
                     text: Apps.trayItems.length + Apps.backgroundOnly.length
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.weight: Font.DemiBold
                 }
             }
@@ -343,7 +343,7 @@ DropPopup {
                                 text: DesktopEntries.heuristicLookup(trayRow.modelData.id)?.name || trayRow.modelData.title || trayRow.modelData.tooltipTitle || trayRow.modelData.id
                                 elide: Text.ElideRight
                                 color: Theme.text
-                                font.pixelSize: Theme.fontSize
+                                font.pixelSize: Theme.fontBody
                             }
 
                             Text {
@@ -351,7 +351,7 @@ DropPopup {
                                 text: "En la bandeja"
                                 elide: Text.ElideRight
                                 color: Theme.textDim
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontCaption
                             }
                         }
 
@@ -366,7 +366,7 @@ DropPopup {
                             MIcon {
                                 anchors.centerIn: parent
                                 name: "more_horiz"
-                                font.pixelSize: 18
+                                font.pixelSize: Theme.iconMd
                                 color: trayMoreHover.hovered ? Theme.accentText : Theme.textDim
                             }
 
@@ -458,7 +458,7 @@ DropPopup {
                                 visible: bgIcon.source == ""
                                 name: "apps"
                                 color: Theme.textDim
-                                font.pixelSize: 24
+                                font.pixelSize: Theme.iconLg
                             }
                         }
 
@@ -471,7 +471,7 @@ DropPopup {
                                 text: bgRow.modelData.name
                                 elide: Text.ElideRight
                                 color: Theme.text
-                                font.pixelSize: Theme.fontSize
+                                font.pixelSize: Theme.fontBody
                             }
 
                             Text {
@@ -479,7 +479,7 @@ DropPopup {
                                 text: bgRow.armed ? "Tocá la ✕ de nuevo para cerrarla" : "Sin ventana  ·  PID " + bgRow.modelData.main
                                 elide: Text.ElideRight
                                 color: bgRow.armed ? Theme.danger : Theme.textDim
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontCaption
                             }
                         }
 
@@ -493,7 +493,7 @@ DropPopup {
                             MIcon {
                                 anchors.centerIn: parent
                                 name: "close"
-                                font.pixelSize: 16
+                                font.pixelSize: Theme.iconSm
                                 color: bgRow.armed || bgCloseHover.hovered ? Theme.accentText : Theme.textDim
                             }
 

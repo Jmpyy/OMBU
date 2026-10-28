@@ -151,7 +151,7 @@ PanelWindow {
                 MIcon {
                     name: "keyboard"
                     color: Theme.textDim
-                    font.pixelSize: 24
+                    font.pixelSize: Theme.iconLg
                 }
 
                 TextInput {
@@ -161,7 +161,7 @@ PanelWindow {
                     color: Theme.text
                     selectionColor: Theme.accent
                     selectedTextColor: Theme.accentText
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.fontTitle
                     clip: true
                     focus: true
 
@@ -174,14 +174,14 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Buscar un atajo…"
                         color: Theme.textDim
-                        font.pixelSize: 18
+                        font.pixelSize: Theme.fontTitle
                     }
                 }
 
                 Text {
                     text: "Esc para cerrar"
                     color: Theme.textDim
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSmall
                 }
             }
 
@@ -199,7 +199,7 @@ PanelWindow {
                 horizontalAlignment: Text.AlignHCenter
                 text: input.text.trim() !== "" ? "Sin resultados para “" + input.text + "”" : "No hay atajos con descripción"
                 color: Theme.textDim
-                font.pixelSize: 14
+                font.pixelSize: Theme.fontBody
             }
 
             ListView {
@@ -229,7 +229,7 @@ PanelWindow {
                         anchors.bottomMargin: 5
                         text: row.isHeader ? row.modelData.title.toUpperCase() : ""
                         color: Theme.accent
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontCaption
                         font.weight: Font.DemiBold
                         font.letterSpacing: 0.8
                     }
@@ -257,7 +257,7 @@ PanelWindow {
                                 text: row.isHeader ? "" : row.modelData.text
                                 elide: Text.ElideRight
                                 color: Theme.text
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.fontBody
                             }
 
                             Repeater {
@@ -276,7 +276,7 @@ PanelWindow {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "o"
                                         color: Theme.textDim
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.fontCaption
                                     }
 
                                     Repeater {
@@ -300,7 +300,7 @@ PanelWindow {
                                                 anchors.centerIn: parent
                                                 text: chip.modelData
                                                 color: Theme.text
-                                                font.pixelSize: 12
+                                                font.pixelSize: Theme.fontSmall
                                                 font.weight: Font.DemiBold
                                             }
                                         }

@@ -100,7 +100,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Goodbye.label
             color: Theme.textDim
-            font.pixelSize: 15
+            font.pixelSize: Theme.fontEmphasis
         }
     }
 }

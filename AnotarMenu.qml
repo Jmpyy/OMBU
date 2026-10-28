@@ -138,7 +138,7 @@ PanelWindow {
 
                 MIcon {
                     name: "edit_note"
-                    font.pixelSize: 20
+                    font.pixelSize: Theme.iconMd
                     color: Theme.accent
                 }
 
@@ -158,7 +158,7 @@ PanelWindow {
                 Text {
                     text: "Enter guarda · Esc cierra"
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
             }
 
@@ -181,7 +181,7 @@ PanelWindow {
                     color: Theme.text
                     selectionColor: Theme.accent
                     selectedTextColor: Theme.accentText
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.fontEmphasis
                     clip: true
                     onTextChanged: {
                         win.error = "";
@@ -196,7 +196,7 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "parcial eda jueves 18hs · tp2 testing 15/11 · repasar punteros eda"
                         color: Theme.textDim
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.fontBody
                     }
                 }
             }
@@ -245,7 +245,7 @@ PanelWindow {
                             text: (win.p?.isNote ? win.p?.detail : win.p?.title) || "…"
                             elide: Text.ElideRight
                             color: Theme.text
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.fontBody
                             font.weight: Font.DemiBold
                         }
                     }
@@ -256,14 +256,14 @@ PanelWindow {
 
                         MIcon {
                             name: win.p?.isNote ? "folder" : (win.p?.needsDate ? "help" : "calendar_month")
-                            font.pixelSize: 15
+                            font.pixelSize: Theme.iconSm
                             color: win.p?.needsDate ? Theme.warn : Theme.textDim
                         }
 
                         Text {
                             text: win.p?.isNote ? (win.p?.subject ? "Notas de " + win.p.subject.name + " · ~/Universidad/" + win.p.subject.dir + "/notas.md" : "Notas generales") : (win.p?.needsDate ? "¿Qué día? Sumá «jueves», «mañana» o «15/11»" : win.p?.when ?? "")
                             color: win.p?.needsDate ? Theme.warn : Theme.text
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                         }
                     }
 
@@ -273,14 +273,14 @@ PanelWindow {
 
                         MIcon {
                             name: "notifications"
-                            font.pixelSize: 15
+                            font.pixelSize: Theme.iconSm
                             color: Theme.textDim
                         }
 
                         Text {
                             text: "Te avisa " + Facu.remindersText(win.p?.reminders ?? []) + (Agenda.apiConnected ? " · también en el celular" : "")
                             color: Theme.textDim
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                         }
                     }
                 }
@@ -307,7 +307,7 @@ PanelWindow {
                         MIcon {
                             anchors.verticalCenter: parent.verticalCenter
                             name: win.family ? "check_box" : "check_box_outline_blank"
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.iconSm
                             color: win.family ? Theme.accent : Theme.textDim
                         }
 
@@ -315,14 +315,14 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Avisar también a mamá"
                             color: win.family ? Theme.accent : Theme.text
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                         }
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Tab"
                             color: Theme.textDim
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontTiny
                         }
                     }
 
@@ -341,7 +341,7 @@ PanelWindow {
                     text: win.error
                     color: Theme.danger
                     elide: Text.ElideRight
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSmall
                 }
 
                 Rectangle {
@@ -358,7 +358,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: Facu.saving ? "Guardando…" : (win.p?.isNote ? "Guardar nota" : "Agendar")
                         color: win.canSave ? Theme.accentText : Theme.textDim
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.fontBody
                         font.weight: Font.DemiBold
                     }
 

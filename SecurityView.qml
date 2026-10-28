@@ -45,7 +45,7 @@ ColumnLayout {
             visible: Seguridad.firewall === null
             text: "Revisando…"
             color: Theme.textDim
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
         }
 
         Repeater {
@@ -93,7 +93,7 @@ ColumnLayout {
                     MIcon {
                         anchors.centerIn: parent
                         name: parent.parent.modelData.icon
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.iconSm
                         color: parent.parent.lc
                     }
                 }
@@ -107,7 +107,7 @@ ColumnLayout {
                         text: parent.parent.modelData.text
                         elide: Text.ElideRight
                         color: Theme.text
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         font.weight: Font.DemiBold
                     }
 
@@ -116,13 +116,13 @@ ColumnLayout {
                         text: parent.parent.modelData.hint
                         elide: Text.ElideRight
                         color: Theme.textDim
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontCaption
                     }
                 }
 
                 MIcon {
                     name: parent.modelData.level === "ok" ? "check_circle" : (parent.modelData.level === "info" ? "info" : "error")
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.iconSm
                     color: parent.lc
                 }
             }
@@ -142,7 +142,7 @@ ColumnLayout {
             text: Seguridad.updates.error ?? ""
             wrapMode: Text.Wrap
             color: Theme.warn
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
         }
 
         Text {
@@ -150,7 +150,7 @@ ColumnLayout {
             Layout.fillWidth: true
             text: (Seguridad.updates.repo ?? []).length + " de los repositorios" + ((Seguridad.updates.aur ?? []).length > 0 ? " y " + Seguridad.updates.aur.length + " de AUR" : "")
             color: Theme.text
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
         }
 
         Repeater {
@@ -167,7 +167,7 @@ ColumnLayout {
                     text: modelData.name
                     elide: Text.ElideRight
                     color: Theme.text
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.family: "monospace"
                 }
 
@@ -176,7 +176,7 @@ ColumnLayout {
                     elide: Text.ElideLeft
                     Layout.maximumWidth: 190
                     color: Theme.textDim
-                    font.pixelSize: 10
+                    font.pixelSize: Theme.fontTiny
                     font.family: "monospace"
                 }
             }
@@ -186,7 +186,7 @@ ColumnLayout {
             visible: Seguridad.pending > 5
             text: "y " + (Seguridad.pending - 5) + " más"
             color: Theme.textDim
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontCaption
         }
 
         // Noticias de Arch: las nuevas desde la última actualización pueden pedir algo a mano
@@ -195,7 +195,7 @@ ColumnLayout {
             Layout.topMargin: 4
             text: "NOTICIAS DE ARCH"
             color: Theme.textDim
-            font.pixelSize: 10
+            font.pixelSize: Theme.fontTiny
             font.weight: Font.Bold
             font.letterSpacing: 1
         }
@@ -223,7 +223,7 @@ ColumnLayout {
                     text: newsRow.modelData.title
                     elide: Text.ElideRight
                     color: newsRow.modelData.unread ? Theme.text : Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.weight: newsRow.modelData.unread ? Font.DemiBold : Font.Normal
                     font.underline: newsHover.hovered
 
@@ -245,7 +245,7 @@ ColumnLayout {
             text: "Las marcadas salieron después de tu última actualización: leelas antes de actualizar."
             wrapMode: Text.Wrap
             color: Theme.warn
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontCaption
         }
 
         RowLayout {
@@ -257,7 +257,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 text: Seguridad.checking ? "Revisando…" : (Seguridad.updates.at ? "Revisado " + root.ago(Seguridad.updates.at) : "")
                 color: Theme.textDim
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontTiny
             }
 
             Rectangle {
@@ -272,7 +272,7 @@ ColumnLayout {
                     anchors.centerIn: parent
                     text: "Revisar"
                     color: Theme.text
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
 
                 HoverHandler {
@@ -300,7 +300,7 @@ ColumnLayout {
                     anchors.centerIn: parent
                     text: "Actualizar en la terminal"
                     color: Theme.accentText
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.weight: Font.DemiBold
                 }
 
@@ -326,7 +326,7 @@ ColumnLayout {
             text: "«Red»: acepta conexiones de otras máquinas (si el firewall lo deja). «Local»: solo de esta PC."
             wrapMode: Text.Wrap
             color: Theme.textDim
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontCaption
         }
 
         Repeater {
@@ -344,7 +344,7 @@ ColumnLayout {
                     Layout.preferredWidth: 72
                     text: portRow.modelData.proto + " " + portRow.modelData.port
                     color: Theme.text
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.family: "monospace"
                 }
 
@@ -357,7 +357,7 @@ ColumnLayout {
                         text: portRow.modelData.program !== "" ? portRow.modelData.program : "del sistema"
                         elide: Text.ElideRight
                         color: Theme.text
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontCaption
                         font.weight: Font.DemiBold
                     }
 
@@ -367,7 +367,7 @@ ColumnLayout {
                         text: portRow.modelData.what
                         elide: Text.ElideRight
                         color: Theme.textDim
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontTiny
                     }
                 }
 
@@ -384,7 +384,7 @@ ColumnLayout {
                         anchors.centerIn: parent
                         text: portRow.modelData.exposed ? "Red" : "Local"
                         color: parent.sc
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontTiny
                         font.weight: Font.DemiBold
                     }
                 }
@@ -395,7 +395,7 @@ ColumnLayout {
             visible: Seguridad.ports.length > 8
             text: "y " + (Seguridad.ports.length - 8) + " más (ss -tulnp en la terminal)"
             color: Theme.textDim
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontCaption
         }
 
         Text {
@@ -404,7 +404,7 @@ ColumnLayout {
             text: "Conexiones salientes (no esperan que nadie entre): " + Seguridad.outgoing.map(o => o.program).join(", ")
             wrapMode: Text.Wrap
             color: Theme.textDim
-            font.pixelSize: 10
+            font.pixelSize: Theme.fontTiny
         }
     }
 
@@ -435,7 +435,7 @@ ColumnLayout {
                         text: failRow.modelData.unit + (failRow.modelData.scope === "user" ? " (usuario)" : "")
                         elide: Text.ElideRight
                         color: Theme.text
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontCaption
                         font.family: "monospace"
                     }
 
@@ -444,7 +444,7 @@ ColumnLayout {
                         text: failRow.modelData.desc
                         elide: Text.ElideRight
                         color: Theme.textDim
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontTiny
                     }
                 }
 
@@ -460,7 +460,7 @@ ColumnLayout {
                         anchors.centerIn: parent
                         text: "Ver log"
                         color: Theme.text
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontTiny
                     }
 
                     HoverHandler {
@@ -520,21 +520,21 @@ ColumnLayout {
                         text: procRow.modelData.label
                         elide: Text.ElideRight
                         color: Theme.text
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         font.weight: Font.DemiBold
                     }
 
                     Text {
                         text: procRow.modelData.count + (procRow.modelData.count === 1 ? " proceso" : " procesos") + " · " + (root.procSort === "cpu" ? root.gb(procRow.modelData.mem) : procRow.modelData.cpu + " %")
                         color: Theme.textDim
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontTiny
                     }
                 }
 
                 Text {
                     text: root.procSort === "cpu" ? procRow.modelData.cpu + " %" : root.gb(procRow.modelData.mem)
                     color: Theme.text
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSmall
                     font.family: "monospace"
                 }
 
@@ -550,7 +550,7 @@ ColumnLayout {
                         visible: !procRow.asking
                         anchors.centerIn: parent
                         name: "close"
-                        font.pixelSize: 15
+                        font.pixelSize: Theme.iconSm
                         color: Theme.textDim
                     }
 
@@ -561,7 +561,7 @@ ColumnLayout {
                         anchors.centerIn: parent
                         text: "¿Cerrar?"
                         color: Theme.danger
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontCaption
                         font.weight: Font.DemiBold
                     }
 
@@ -588,7 +588,7 @@ ColumnLayout {
             visible: Seguridad.message !== ""
             text: Seguridad.message
             color: Theme.accent
-            font.pixelSize: 11
+            font.pixelSize: Theme.fontCaption
         }
     }
 }

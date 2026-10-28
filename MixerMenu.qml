@@ -89,7 +89,7 @@ DropPopup {
             Text {
                 text: "APLICACIONES"
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
                 font.weight: Font.DemiBold
                 font.letterSpacing: 0.8
             }
@@ -99,7 +99,7 @@ DropPopup {
                 Layout.fillWidth: true
                 text: "Ninguna app está usando audio ahora."
                 color: Theme.textDim
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSmall
             }
 
             Repeater {
@@ -146,7 +146,7 @@ DropPopup {
                             MIcon {
                                 anchors.centerIn: parent
                                 name: "mic"
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.iconXs
                                 color: Theme.accentText
                             }
                         }
@@ -164,13 +164,13 @@ DropPopup {
                                 text: root.appName(app.node) + (app.isMic ? " (micrófono)" : "")
                                 elide: Text.ElideRight
                                 color: Theme.text
-                                font.pixelSize: 12
+                                font.pixelSize: Theme.fontSmall
                             }
 
                             Text {
                                 text: Math.round(app.volume * 100) + "%"
                                 color: app.muted ? Theme.textDim : Theme.text
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontCaption
                             }
                         }
 
@@ -197,7 +197,7 @@ DropPopup {
                             anchors.centerIn: parent
                             name: app.muted ? (app.isMic ? "mic_off" : "volume_off") : (app.isMic ? "mic" : "volume_up")
                             color: app.muted ? Theme.danger : Theme.textDim
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.iconSm
                         }
 
                         HoverHandler {

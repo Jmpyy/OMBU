@@ -26,7 +26,7 @@ RowLayout {
         text: root.showDay ? Chrono.capitalize(Agenda.parseDay(root.modelData.day).toLocaleDateString(Chrono.locale, "ddd d MMM")) + (root.modelData.time ? " " + root.modelData.time : "") : root.modelData.time
         elide: Text.ElideRight
         color: Theme.textDim
-        font.pixelSize: 12
+        font.pixelSize: Theme.fontSmall
         font.family: root.showDay ? Qt.application.font.family : "monospace"
     }
 
@@ -35,6 +35,6 @@ RowLayout {
         text: root.modelData.title
         elide: Text.ElideRight
         color: Theme.text
-        font.pixelSize: 13
+        font.pixelSize: Theme.fontBody
     }
 }

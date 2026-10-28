@@ -75,7 +75,7 @@ DropPopup {
                 MIcon {
                     anchors.centerIn: parent
                     name: tile.icon
-                    font.pixelSize: 19
+                    font.pixelSize: Theme.iconMd
                     color: tile.on ? Theme.accentText : Theme.text
                 }
             }
@@ -98,7 +98,7 @@ DropPopup {
                 text: tile.subtitle
                 elide: Text.ElideRight
                 color: tile.on ? Theme.accent : Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
             }
         }
 

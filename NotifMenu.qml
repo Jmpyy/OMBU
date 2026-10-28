@@ -56,7 +56,7 @@ DropPopup {
             Text {
                 text: "NOTIFICACIONES"
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
                 font.weight: Font.DemiBold
                 font.letterSpacing: 0.8
             }
@@ -64,7 +64,7 @@ DropPopup {
             Text {
                 text: Notifs.count
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
                 font.weight: Font.DemiBold
             }
 
@@ -88,14 +88,14 @@ DropPopup {
                     MIcon {
                         anchors.verticalCenter: parent.verticalCenter
                         name: Notifs.dnd ? "notifications_off" : "notifications_active"
-                        font.pixelSize: 15
+                        font.pixelSize: Theme.iconSm
                         color: Notifs.dnd ? Theme.accentText : Theme.textDim
                     }
 
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "No molestar"
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         font.weight: Font.Medium
                         color: Notifs.dnd ? Theme.accentText : Theme.text
                     }
@@ -122,7 +122,7 @@ DropPopup {
 
                     anchors.centerIn: parent
                     text: "Limpiar"
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSmall
                     font.weight: Font.Medium
                     color: clearHover.hovered ? Theme.accentText : Theme.text
                 }
@@ -144,7 +144,7 @@ DropPopup {
             horizontalAlignment: Text.AlignHCenter
             text: Notifs.dnd ? "Sin notificaciones. No molestar está activado." : "Sin notificaciones."
             color: Theme.textDim
-            font.pixelSize: 13
+            font.pixelSize: Theme.fontBody
         }
 
         Flickable {
@@ -182,7 +182,7 @@ DropPopup {
                             Text {
                                 text: group.modelData.app.toUpperCase()
                                 color: Theme.textDim
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontTiny
                                 font.weight: Font.Bold
                                 font.letterSpacing: 0.8
                             }
@@ -191,7 +191,7 @@ DropPopup {
                                 visible: group.more > 0
                                 text: group.modelData.items.length
                                 color: Theme.textDim
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontTiny
                             }
 
                             Item {
@@ -202,7 +202,7 @@ DropPopup {
                                 visible: group.more > 0
                                 text: group.open ? "Mostrar menos" : ""
                                 color: Theme.textDim
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontCaption
                                 font.underline: lessHover.hovered
 
                                 HoverHandler {
@@ -218,7 +218,7 @@ DropPopup {
                             Text {
                                 text: "Borrar"
                                 color: groupClear.hovered ? Theme.danger : Theme.textDim
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontCaption
 
                                 HoverHandler {
                                     id: groupClear
@@ -280,7 +280,7 @@ DropPopup {
                             visible: group.more > 0 && !group.open
                             text: group.more === 1 ? "1 más de " + group.modelData.app : group.more + " más de " + group.modelData.app
                             color: Theme.accent
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontCaption
                             font.weight: Font.DemiBold
 
                             HoverHandler {

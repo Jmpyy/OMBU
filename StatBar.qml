@@ -22,7 +22,7 @@ ColumnLayout {
         Text {
             text: root.label
             color: Theme.text
-            font.pixelSize: 13
+            font.pixelSize: Theme.fontBody
             font.weight: Font.Medium
         }
 
@@ -34,13 +34,13 @@ ColumnLayout {
             visible: root.detail !== ""
             text: root.detail
             color: Theme.textDim
-            font.pixelSize: 12
+            font.pixelSize: Theme.fontSmall
         }
 
         Text {
             text: root.value
             color: Theme.text
-            font.pixelSize: 13
+            font.pixelSize: Theme.fontBody
             font.weight: Font.DemiBold
         }
     }

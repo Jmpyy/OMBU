@@ -242,7 +242,7 @@ PanelWindow {
                                 Text {
                                     text: Chrono.capitalize(Chrono.date.toLocaleDateString(Chrono.locale, "dddd d 'de' MMMM"))
                                     color: Theme.textDim
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.fontBody
                                 }
                             }
 
@@ -275,14 +275,14 @@ PanelWindow {
                                     Layout.alignment: Qt.AlignRight
                                     text: Estacion.weather?.desc ?? ""
                                     color: Theme.text
-                                    font.pixelSize: 12
+                                    font.pixelSize: Theme.fontSmall
                                 }
 
                                 Text {
                                     Layout.alignment: Qt.AlignRight
                                     text: (Estacion.weather?.min ?? 0) + "° / " + (Estacion.weather?.max ?? 0) + "°"
                                     color: Theme.textDim
-                                    font.pixelSize: 11
+                                    font.pixelSize: Theme.fontCaption
                                 }
 
                                 Text {
@@ -290,7 +290,7 @@ PanelWindow {
                                     Layout.alignment: Qt.AlignRight
                                     text: "Lluvia " + (Estacion.weather?.rain ?? 0) + " %"
                                     color: Theme.warn
-                                    font.pixelSize: 11
+                                    font.pixelSize: Theme.fontCaption
                                     font.weight: Font.DemiBold
                                 }
                             }
@@ -317,7 +317,7 @@ PanelWindow {
 
                                 MIcon {
                                     name: "edit_note"
-                                    font.pixelSize: 18
+                                    font.pixelSize: Theme.iconMd
                                     color: Theme.accent
                                 }
 
@@ -325,7 +325,7 @@ PanelWindow {
                                     Layout.fillWidth: true
                                     text: "Anotar parcial, entrega o nota…"
                                     color: Theme.textDim
-                                    font.pixelSize: 13
+                                    font.pixelSize: Theme.fontBody
                                 }
 
                                 Rectangle {
@@ -340,7 +340,7 @@ PanelWindow {
                                         anchors.centerIn: parent
                                         text: "Super Alt N"
                                         color: Theme.textDim
-                                        font.pixelSize: 10
+                                        font.pixelSize: Theme.fontTiny
                                     }
                                 }
                             }
@@ -372,7 +372,7 @@ PanelWindow {
                             Text {
                                 text: "HOY"
                                 color: Theme.textDim
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontTiny
                                 font.weight: Font.Bold
                                 font.letterSpacing: 1
                             }
@@ -381,7 +381,7 @@ PanelWindow {
                                 visible: summary.todays.length === 0
                                 text: Agenda.googleLoading ? "Cargando agenda…" : "Nada agendado para hoy"
                                 color: Theme.textDim
-                                font.pixelSize: 12
+                                font.pixelSize: Theme.fontSmall
                             }
 
                             Repeater {
@@ -397,7 +397,7 @@ PanelWindow {
                                 Layout.topMargin: 4
                                 text: "PRÓXIMOS DÍAS"
                                 color: Theme.textDim
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontTiny
                                 font.weight: Font.Bold
                                 font.letterSpacing: 1
                             }
@@ -438,7 +438,7 @@ PanelWindow {
                                     Text {
                                         text: "estudiado hoy"
                                         color: Theme.textDim
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.fontCaption
                                     }
                                 }
 
@@ -458,7 +458,7 @@ PanelWindow {
                                     Text {
                                         text: Focus.streak === 1 ? "día de racha" : "días de racha"
                                         color: Theme.textDim
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.fontCaption
                                     }
                                 }
                             }
@@ -524,7 +524,7 @@ PanelWindow {
                                             anchors.horizontalCenter: parent.horizontalCenter
                                             text: modelData.letter
                                             color: modelData.today ? Theme.text : Theme.textDim
-                                            font.pixelSize: 10
+                                            font.pixelSize: Theme.fontTiny
                                             font.weight: modelData.today ? Font.Bold : Font.Normal
                                         }
                                     }
@@ -553,19 +553,19 @@ PanelWindow {
                                         text: modelData.sub.name
                                         elide: Text.ElideRight
                                         color: Theme.text
-                                        font.pixelSize: 13
+                                        font.pixelSize: Theme.fontBody
                                     }
 
                                     Text {
                                         text: Subs.whenText(modelData.days)
                                         color: modelData.days <= 1 ? Theme.warn : Theme.textDim
-                                        font.pixelSize: 12
+                                        font.pixelSize: Theme.fontSmall
                                     }
 
                                     Text {
                                         text: Subs.money(modelData.sub.amount, modelData.sub.currency)
                                         color: Theme.text
-                                        font.pixelSize: 13
+                                        font.pixelSize: Theme.fontBody
                                         font.weight: Font.DemiBold
                                     }
                                 }
@@ -595,7 +595,7 @@ PanelWindow {
                                         Text {
                                             text: modelData.name
                                             color: Theme.text
-                                            font.pixelSize: 13
+                                            font.pixelSize: Theme.fontBody
                                             font.weight: Font.DemiBold
                                         }
 
@@ -603,7 +603,7 @@ PanelWindow {
                                             visible: modelData.dirty > 0
                                             text: "● " + modelData.dirty + " sin guardar"
                                             color: Theme.warn
-                                            font.pixelSize: 11
+                                            font.pixelSize: Theme.fontCaption
                                         }
 
                                         Item {
@@ -613,7 +613,7 @@ PanelWindow {
                                         Text {
                                             text: win.ago(modelData.when) === "ahora" ? "ahora" : "hace " + win.ago(modelData.when)
                                             color: Theme.textDim
-                                            font.pixelSize: 11
+                                            font.pixelSize: Theme.fontCaption
                                         }
                                     }
 
@@ -622,7 +622,7 @@ PanelWindow {
                                         text: modelData.subject
                                         elide: Text.ElideRight
                                         color: Theme.textDim
-                                        font.pixelSize: 12
+                                        font.pixelSize: Theme.fontSmall
                                     }
                                 }
                             }
@@ -647,7 +647,7 @@ PanelWindow {
                                     Text {
                                         text: modelData.date.slice(8) + "/" + modelData.date.slice(5, 7)
                                         color: Theme.textDim
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.fontCaption
                                     }
 
                                     Text {
@@ -655,7 +655,7 @@ PanelWindow {
                                         text: modelData.text
                                         elide: Text.ElideRight
                                         color: Theme.text
-                                        font.pixelSize: 13
+                                        font.pixelSize: Theme.fontBody
                                     }
                                 }
                             }
@@ -664,7 +664,7 @@ PanelWindow {
                                 visible: Focus.ideas.length > 3
                                 text: "y " + (Focus.ideas.length - 3) + " más…"
                                 color: Theme.textDim
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontCaption
                             }
                         }
 
@@ -713,7 +713,7 @@ PanelWindow {
                                         Text {
                                             text: modelData.name
                                             color: Theme.textDim
-                                            font.pixelSize: 11
+                                            font.pixelSize: Theme.fontCaption
                                         }
                                     }
                                 }
@@ -728,7 +728,7 @@ PanelWindow {
                                 text: usd && Estacion.dolar?.blue ? usd.sub.name + " (" + Subs.money(usd.sub.amount, "USD") + ") ≈ " + Estacion.money(usd.sub.amount * Estacion.dolar.blue.venta) + " al blue" : ""
                                 elide: Text.ElideRight
                                 color: Theme.textDim
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontCaption
                             }
                         }
 
@@ -763,7 +763,7 @@ PanelWindow {
                             visible: stats.d.cpu === undefined
                             text: "Midiendo…"
                             color: Theme.textDim
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.fontBody
                         }
 
                         ComicCard {

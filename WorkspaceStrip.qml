@@ -95,7 +95,7 @@ Row {
                     visible: ws.active && ws.wsId < 0
                     name: "sports_esports"
                     color: Theme.accentText
-                    font.pixelSize: 15
+                    font.pixelSize: Theme.iconSm
                 }
 
                 Text {
@@ -114,7 +114,7 @@ Row {
                     visible: ws.occupied && appIcon.source == ""
                     name: "apps"
                     color: ws.active ? Theme.accentText : Theme.textDim
-                    font.pixelSize: 15
+                    font.pixelSize: Theme.iconSm
                 }
 
                 Image {

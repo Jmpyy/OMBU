@@ -59,7 +59,7 @@ Rectangle {
                 anchors.centerIn: parent
                 name: root.icon
                 color: root.iconColor
-                font.pixelSize: 17
+                font.pixelSize: Theme.iconSm
             }
         }
 

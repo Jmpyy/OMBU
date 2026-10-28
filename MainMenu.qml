@@ -269,7 +269,7 @@ DropPopup {
                     text: Estacion.displayName.charAt(0).toUpperCase()
                     color: Theme.accent
                     font.family: Theme.comic && Theme.displayFont ? Theme.displayFont : Qt.application.font.family
-                    font.pixelSize: 17
+                    font.pixelSize: Theme.fontTitle
                     font.weight: Font.Bold
                 }
             }
@@ -281,7 +281,7 @@ DropPopup {
                 Text {
                     text: Estacion.displayName
                     color: Theme.text
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.fontBody
                     font.weight: Font.DemiBold
                 }
 
@@ -290,7 +290,7 @@ DropPopup {
                     text: "CachyOS · " + (root.uptime > 0 ? "encendida hace " + root.uptimeText(root.uptime) : "ombu")
                     elide: Text.ElideRight
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
             }
         }
@@ -350,7 +350,7 @@ DropPopup {
                                 visible: !entry.modelData.swatch
                                 anchors.centerIn: parent
                                 name: entry.modelData.icon ?? ""
-                                font.pixelSize: 17
+                                font.pixelSize: Theme.iconSm
                                 color: entry.isArmed || (entry.danger && entry.current) ? Theme.danger : (entry.modelData.kind === "back" ? Theme.textDim : Theme.text)
                             }
 
@@ -381,7 +381,7 @@ DropPopup {
                             text: entry.isArmed ? "Clic otra vez para " + entry.modelData.name.toLowerCase() : entry.modelData.name + (entry.danger ? "…" : "")
                             elide: Text.ElideRight
                             color: entry.isArmed ? Theme.danger : (entry.modelData.kind === "back" ? Theme.textDim : Theme.text)
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.fontBody
                             font.weight: entry.isArmed || entry.modelData.kind === "back" ? Font.DemiBold : Font.Normal
                         }
 
@@ -398,7 +398,7 @@ DropPopup {
                                 anchors.centerIn: parent
                                 text: entry.modelData.badge ?? ""
                                 color: Theme.warn
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontTiny
                                 font.weight: Font.DemiBold
                             }
                         }
@@ -407,20 +407,20 @@ DropPopup {
                             visible: !entry.isArmed && (entry.modelData.hint ?? "") !== ""
                             text: entry.modelData.hint ?? ""
                             color: Theme.textDim
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontCaption
                         }
 
                         MIcon {
                             visible: entry.modelData.checked === true
                             name: "check"
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.iconSm
                             color: Theme.accent
                         }
 
                         MIcon {
                             visible: !!entry.modelData.page
                             name: "chevron_right"
-                            font.pixelSize: 17
+                            font.pixelSize: Theme.iconSm
                             color: Theme.textDim
                         }
                     }

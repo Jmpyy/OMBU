@@ -161,20 +161,20 @@ PanelWindow {
                 MIcon {
                     name: "wallpaper"
                     color: Theme.accent
-                    font.pixelSize: 22
+                    font.pixelSize: Theme.iconLg
                 }
 
                 Text {
                     text: "Fondos de pantalla"
                     color: Theme.text
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.fontEmphasis
                     font.weight: Font.DemiBold
                 }
 
                 Text {
                     text: win.items.length + (win.items.length === 1 ? " imagen" : " imágenes")
                     color: Theme.textDim
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSmall
                 }
 
                 Item {
@@ -196,7 +196,7 @@ PanelWindow {
 
                         MIcon {
                             name: "search"
-                            font.pixelSize: 17
+                            font.pixelSize: Theme.iconSm
                             color: Theme.textDim
                         }
 
@@ -207,7 +207,7 @@ PanelWindow {
                             color: Theme.text
                             selectionColor: Theme.accent
                             selectedTextColor: Theme.accentText
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.fontBody
                             clip: true
                             focus: true
 
@@ -241,7 +241,7 @@ PanelWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Buscar…"
                                 color: Theme.textDim
-                                font.pixelSize: 13
+                                font.pixelSize: Theme.fontBody
                             }
                         }
                     }
@@ -280,7 +280,7 @@ PanelWindow {
                             MIcon {
                                 anchors.verticalCenter: parent.verticalCenter
                                 name: action.modelData.icon
-                                font.pixelSize: 16
+                                font.pixelSize: Theme.iconSm
                                 color: Theme.text
                             }
 
@@ -288,7 +288,7 @@ PanelWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: action.modelData.label
                                 color: Theme.text
-                                font.pixelSize: 12
+                                font.pixelSize: Theme.fontSmall
                                 font.weight: Font.Medium
                             }
                         }
@@ -343,7 +343,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             text: win.baseName(win.currentPath)
                             color: "#f4f4fa"
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.fontBody
                             font.weight: Font.DemiBold
                         }
 
@@ -352,7 +352,7 @@ PanelWindow {
                             visible: win.currentPath === Walls.current
                             text: "· en uso"
                             color: Theme.accent
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                             font.weight: Font.DemiBold
                         }
                     }
@@ -423,7 +423,7 @@ PanelWindow {
                             MIcon {
                                 anchors.centerIn: parent
                                 name: "check"
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.iconXs
                                 color: Theme.accentText
                             }
                         }
@@ -460,7 +460,7 @@ PanelWindow {
                     Layout.alignment: Qt.AlignHCenter
                     text: win.query !== "" ? "Ningún fondo se llama «" + input.text + "»" : "Todavía no hay fondos"
                     color: Theme.text
-                    font.pixelSize: 15
+                    font.pixelSize: Theme.fontEmphasis
                     font.weight: Font.DemiBold
                 }
 
@@ -469,7 +469,7 @@ PanelWindow {
                     visible: win.query === ""
                     text: "Poné tus imágenes (jpg, png o webp) en ~/Imágenes/Fondos y aparecen acá"
                     color: Theme.textDim
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.fontBody
                 }
             }
 
@@ -478,7 +478,7 @@ PanelWindow {
                 Layout.leftMargin: 6
                 text: "Flechas para moverte (se ve en el escritorio)  ·  Enter aplica  ·  Esc cierra  ·  Escribí para filtrar"
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
             }
         }
     }

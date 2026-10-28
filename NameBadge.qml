@@ -59,7 +59,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "HELLO"
                         color: "#ffffff"
-                        font.pixelSize: 18
+                        font.pixelSize: Theme.fontTitle
                         font.weight: Font.Black
                         font.letterSpacing: 3
                     }
@@ -68,7 +68,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "my name is"
                         color: "#ffffff"
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontTiny
                         font.weight: Font.DemiBold
                         font.letterSpacing: 0.5
                     }
@@ -118,7 +118,7 @@ Item {
                             text: "!"
                             color: "#ffffff"
                             font.family: Theme.artFont || Qt.application.font.family
-                            font.pixelSize: 15
+                            font.pixelSize: Theme.fontEmphasis
                             font.weight: Font.Bold
                         }
                     }
@@ -130,7 +130,7 @@ Item {
                     anchors.margins: 5
                     text: "friendly neighborhood"
                     color: Qt.rgba(0, 0, 0, 0.3)
-                    font.pixelSize: 9
+                    font.pixelSize: Theme.fontTiny
                     font.italic: true
                 }
             }

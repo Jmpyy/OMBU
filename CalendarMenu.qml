@@ -185,7 +185,7 @@ DropPopup {
 
                     anchors.centerIn: parent
                     name: "sync"
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.iconMd
                     color: Agenda.googleError !== "" ? Theme.danger : Theme.textDim
 
                     RotationAnimator on rotation {
@@ -216,7 +216,7 @@ DropPopup {
                 MIcon {
                     anchors.centerIn: parent
                     name: "event_note"
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.iconMd
                     color: Agenda.googleOn ? Agenda.googleColor : Theme.textDim
                 }
 
@@ -252,7 +252,7 @@ DropPopup {
                     Layout.fillWidth: true
                     text: Agenda.apiConnected ? "Google Calendar conectado" : (googleBox.icalOn ? "Google Calendar conectado (solo lectura)" : "Conectar Google Calendar")
                     color: Agenda.googleOn ? Agenda.googleColor : Theme.text
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.fontBody
                     font.weight: Font.DemiBold
                 }
 
@@ -262,7 +262,7 @@ DropPopup {
                     text: Agenda.apiError !== "" ? Agenda.apiError : Agenda.googleError
                     wrapMode: Text.Wrap
                     color: Theme.danger
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
 
                 Text {
@@ -271,7 +271,7 @@ DropPopup {
                     text: "Lo que anotes puede ir a Google y verse en tu celular. Los eventos de Google se actualizan cada 5 minutos."
                     wrapMode: Text.Wrap
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
 
                 // Qué calendarios de Google se muestran (por ejemplo, ocultar el de la familia)
@@ -280,7 +280,7 @@ DropPopup {
                     visible: Agenda.apiConnected && Agenda.calendars.length > 1
                     text: "CALENDARIOS"
                     color: Theme.textDim
-                    font.pixelSize: 10
+                    font.pixelSize: Theme.fontTiny
                     font.weight: Font.DemiBold
                     font.letterSpacing: 0.8
                 }
@@ -291,7 +291,7 @@ DropPopup {
                     text: "El interruptor muestra u oculta el calendario. La campana lo deja en el Resumen y en los avisos; apagada, solo se ve acá."
                     wrapMode: Text.Wrap
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
 
                 Repeater {
@@ -326,7 +326,7 @@ DropPopup {
                                 text: calRow.modelData.name
                                 elide: Text.ElideRight
                                 color: calRow.shown ? Theme.text : Theme.textDim
-                                font.pixelSize: 12
+                                font.pixelSize: Theme.fontSmall
                             }
 
                             // Campana: ¿sale en el Resumen y avisa?
@@ -345,7 +345,7 @@ DropPopup {
                                     anchors.centerIn: parent
                                     name: bell.on ? "notifications_active" : "notifications_off"
                                     color: bell.on ? Theme.accent : Theme.textDim
-                                    font.pixelSize: 16
+                                    font.pixelSize: Theme.iconSm
                                 }
 
                                 HoverHandler {
@@ -403,7 +403,7 @@ DropPopup {
                     text: "Se abre el navegador para que des permiso. Después podés anotar eventos desde ombu y verlos en el celular."
                     wrapMode: Text.Wrap
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
 
                 Rectangle {
@@ -419,7 +419,7 @@ DropPopup {
                         anchors.centerIn: parent
                         text: Agenda.apiAuthing ? "Esperando el permiso en el navegador…" : "Conectar con Google"
                         color: Agenda.apiAuthing ? Theme.textDim : Theme.accentText
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         font.weight: Font.DemiBold
                     }
 
@@ -438,7 +438,7 @@ DropPopup {
                     text: "Para leer y escribir en tu Google Calendar hace falta crear unas credenciales en la consola de Google (pasos en docs/google-calendar.md) y guardar el archivo como ~/.local/share/ombu/google-client.json."
                     wrapMode: Text.Wrap
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
 
                 Rectangle {
@@ -456,7 +456,7 @@ DropPopup {
                         anchors.centerIn: parent
                         text: "Desconectar"
                         color: Theme.danger
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         font.weight: Font.DemiBold
                     }
 
@@ -478,7 +478,7 @@ DropPopup {
                     text: "O, solo para ver: pegá la «dirección secreta en formato iCal» de tu calendario y Enter."
                     wrapMode: Text.Wrap
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
 
                 Rectangle {
@@ -498,7 +498,7 @@ DropPopup {
                         color: Theme.text
                         selectionColor: Theme.accent
                         selectedTextColor: Theme.accentText
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         clip: true
                         onAccepted: {
                             Agenda.setUrl(text);
@@ -510,7 +510,7 @@ DropPopup {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "https://calendar.google.com/…/basic.ics"
                             color: Theme.textDim
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                         }
                     }
                 }
@@ -530,7 +530,7 @@ DropPopup {
                         anchors.centerIn: parent
                         text: "Desconectar"
                         color: Theme.danger
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         font.weight: Font.DemiBold
                     }
 
@@ -633,7 +633,7 @@ DropPopup {
                 horizontalAlignment: Text.AlignHCenter
                 text: "Sem"
                 color: Theme.track
-                font.pixelSize: 10
+                font.pixelSize: Theme.fontTiny
                 font.weight: Font.Medium
             }
 
@@ -646,7 +646,7 @@ DropPopup {
 
                     horizontalAlignment: Text.AlignHCenter
                     text: Chrono.capitalize(model.shortName).replace(".", "")
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.weight: Font.Medium
                     // Sábado y domingo
                     // Fines de semana un poco más apagados, como en macOS (el acento queda para hoy y los feriados)
@@ -682,7 +682,7 @@ DropPopup {
                             return root.isoWeek(new Date(g.getFullYear(), g.getMonth(), g.getDate() + index * 7 + 3));
                         }
                         color: Theme.track
-                        font.pixelSize: 10
+                        font.pixelSize: Theme.fontTiny
                         font.weight: Font.Medium
                     }
                 }
@@ -796,7 +796,7 @@ DropPopup {
             Layout.fillWidth: true
             text: root.dayLabel(root.selected)
             color: Theme.text
-            font.pixelSize: 13
+            font.pixelSize: Theme.fontBody
             font.weight: Font.DemiBold
         }
 
@@ -821,7 +821,7 @@ DropPopup {
                     Layout.fillWidth: true
                     text: "Estudiaste " + Focus.minutesText(Agenda.studyMinutes(root.selected) * 60)
                     color: Theme.textDim
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSmall
                 }
             }
 
@@ -875,7 +875,7 @@ DropPopup {
                                     visible: item.modelData.done === true
                                     anchors.centerIn: parent
                                     name: "check"
-                                    font.pixelSize: 12
+                                    font.pixelSize: Theme.iconXs
                                     color: Theme.accentText
                                 }
 
@@ -892,7 +892,7 @@ DropPopup {
                             visible: item.modelData.time !== ""
                             text: item.modelData.time
                             color: Theme.textDim
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                             font.weight: Font.Medium
                         }
 
@@ -901,7 +901,7 @@ DropPopup {
                             text: item.modelData.title
                             elide: Text.ElideRight
                             color: item.modelData.done ? Theme.textDim : Theme.text
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.fontBody
                             font.strikeout: item.modelData.done === true
                         }
 
@@ -909,7 +909,7 @@ DropPopup {
                         MIcon {
                             visible: item.modelData.meet !== undefined && item.modelData.meet !== ""
                             name: "videocam"
-                            font.pixelSize: 17
+                            font.pixelSize: Theme.iconSm
                             color: Agenda.googleColor
 
                             TapHandler {
@@ -924,7 +924,7 @@ DropPopup {
                         MIcon {
                             visible: (item.modelData.kind === "local" || item.modelData.mine === true) && itemHover.hovered
                             name: "close"
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.iconSm
                             color: Theme.textDim
 
                             TapHandler {
@@ -942,7 +942,7 @@ DropPopup {
                 visible: Agenda.itemsFor(root.selected).length > 5
                 text: "+" + (Agenda.itemsFor(root.selected).length - 5) + " más"
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
                 Layout.leftMargin: 4
             }
 
@@ -950,7 +950,7 @@ DropPopup {
                 visible: Agenda.itemsFor(root.selected).length === 0 && Agenda.studyMinutes(root.selected) < 5
                 text: "Nada anotado"
                 color: Theme.textDim
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSmall
                 Layout.leftMargin: 4
             }
         }
@@ -970,7 +970,7 @@ DropPopup {
 
                 MIcon {
                     name: "add"
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.iconMd
                     color: Theme.textDim
                 }
 
@@ -981,7 +981,7 @@ DropPopup {
                     color: Theme.text
                     selectionColor: Theme.accent
                     selectedTextColor: Theme.accentText
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.fontBody
                     clip: true
                     onAccepted: root.submitEvent()
 
@@ -990,7 +990,7 @@ DropPopup {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Anotar algo para este día"
                         color: Theme.textDim
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.fontBody
                     }
                 }
 
@@ -1005,7 +1005,7 @@ DropPopup {
                     MIcon {
                         anchors.centerIn: parent
                         name: Agenda.createInGoogle ? "cloud" : "cloud_off"
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.iconSm
                         color: Agenda.createInGoogle ? Agenda.googleColor : Theme.textDim
                     }
 
@@ -1034,7 +1034,7 @@ DropPopup {
                         color: Theme.text
                         selectionColor: Theme.accent
                         selectedTextColor: Theme.accentText
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.fontSmall
                         maximumLength: 5
                         clip: true
                         onAccepted: root.submitEvent()
@@ -1044,7 +1044,7 @@ DropPopup {
                             anchors.centerIn: parent
                             text: "hh:mm"
                             color: Theme.textDim
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                         }
                     }
                 }
@@ -1063,7 +1063,7 @@ DropPopup {
             Text {
                 text: "PRÓXIMOS"
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
                 font.weight: Font.DemiBold
                 font.letterSpacing: 0.8
             }
@@ -1107,7 +1107,7 @@ DropPopup {
                             Layout.preferredWidth: 100
                             text: root.whenLabel(next.modelData.day) + (next.modelData.time !== "" ? " " + next.modelData.time : "")
                             color: Theme.textDim
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                             elide: Text.ElideRight
                         }
 
@@ -1116,7 +1116,7 @@ DropPopup {
                             text: next.modelData.title
                             elide: Text.ElideRight
                             color: Theme.text
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.fontBody
                         }
                     }
                 }

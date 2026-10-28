@@ -62,7 +62,7 @@ Row {
                 anchors.centerIn: parent
                 name: button.modelData.icon
                 color: button.isArmed ? Theme.accentText : Qt.rgba(1, 1, 1, 0.85)
-                font.pixelSize: 22
+                font.pixelSize: Theme.iconLg
             }
 
             // Nombre de la acción (o aviso de confirmación) sobre el botón
@@ -73,7 +73,7 @@ Row {
                 opacity: buttonHover.hovered || button.isArmed ? 1 : 0
                 text: button.isArmed ? "Tocá de nuevo" : button.modelData.label
                 color: button.isArmed && button.isDanger ? Theme.danger : Qt.rgba(1, 1, 1, 0.8)
-                font.pixelSize: 12
+                font.pixelSize: Theme.fontSmall
                 font.weight: Font.Medium
 
                 Behavior on opacity {

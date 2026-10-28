@@ -22,7 +22,7 @@ ComicCard {
         text: "Sin entregas ni parciales a la vista."
         wrapMode: Text.Wrap
         color: Theme.textDim
-        font.pixelSize: 12
+        font.pixelSize: Theme.fontSmall
     }
 
     Repeater {
@@ -40,7 +40,7 @@ ComicCard {
             MIcon {
                 name: Facu.kindIcon(row.modelData.kind)
                 color: Facu.kindColor(row.modelData.kind)
-                font.pixelSize: 18
+                font.pixelSize: Theme.iconMd
             }
 
             ColumnLayout {
@@ -52,14 +52,14 @@ ComicCard {
                     text: row.modelData.title
                     elide: Text.ElideRight
                     color: Theme.text
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.fontBody
                     font.weight: Font.Medium
                 }
 
                 Text {
                     text: Chrono.capitalize(Agenda.parseDay(row.modelData.day).toLocaleDateString(Chrono.locale, "ddd d/M")) + (row.modelData.time ? " · " + row.modelData.time : "")
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
             }
 
@@ -78,7 +78,7 @@ ComicCard {
                     anchors.centerIn: parent
                     text: Facu.leftText(row.modelData.daysLeft)
                     color: row.modelData.daysLeft <= 7 ? row.uc : Theme.text
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.weight: Font.DemiBold
                 }
             }
@@ -89,7 +89,7 @@ ComicCard {
         visible: Facu.deadlines.length > root.list.length
         text: "y " + (Facu.deadlines.length - root.list.length) + " más en los próximos 60 días"
         color: Theme.textDim
-        font.pixelSize: 11
+        font.pixelSize: Theme.fontCaption
     }
 
     // Materias: notas de cada una
@@ -121,7 +121,7 @@ ComicCard {
                     MIcon {
                         anchors.verticalCenter: parent.verticalCenter
                         name: "sticky_note_2"
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.iconXs
                         color: chip.modelData.notes > 0 ? (Themes.active.border2 ?? Theme.accent) : Theme.textDim
                     }
 
@@ -129,7 +129,7 @@ ComicCard {
                         anchors.verticalCenter: parent.verticalCenter
                         text: chip.modelData.name + (chip.modelData.notes > 0 ? " · " + chip.modelData.notes : "")
                         color: Theme.text
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontCaption
                     }
                 }
 

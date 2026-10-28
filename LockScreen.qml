@@ -101,7 +101,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             text: Chrono.capitalize(Chrono.date.toLocaleDateString(Chrono.locale, "dddd d 'de' MMMM"))
             color: Qt.rgba(1, 1, 1, 0.78)
-            font.pixelSize: 22
+            font.pixelSize: Theme.fontHeading
         }
 
         Item {
@@ -132,7 +132,7 @@ Item {
             Layout.topMargin: 14
             text: root.greeting + ", " + root.userName
             color: "#f4f4fa"
-            font.pixelSize: 18
+            font.pixelSize: Theme.fontTitle
             font.weight: Font.Medium
         }
 
@@ -186,7 +186,7 @@ Item {
                     MIcon {
                         name: "lock"
                         color: Theme.textDim
-                        font.pixelSize: 20
+                        font.pixelSize: Theme.iconMd
                     }
 
                     TextInput {
@@ -200,7 +200,7 @@ Item {
                         color: Theme.text
                         selectionColor: Theme.accent
                         selectedTextColor: Theme.accentText
-                        font.pixelSize: 17
+                        font.pixelSize: Theme.fontTitle
                         clip: true
                         focus: true
 
@@ -238,7 +238,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Contraseña"
                             color: Theme.textDim
-                            font.pixelSize: 17
+                            font.pixelSize: Theme.fontTitle
                         }
                     }
 
@@ -261,7 +261,7 @@ Item {
                             anchors.centerIn: parent
                             name: input.echoMode === TextInput.Password ? "visibility" : "visibility_off"
                             color: Theme.textDim
-                            font.pixelSize: 18
+                            font.pixelSize: Theme.iconMd
                         }
 
                         HoverHandler {
@@ -293,7 +293,7 @@ Item {
                             anchors.centerIn: parent
                             name: Auth.state === "checking" ? "hourglass_top" : "arrow_forward"
                             color: input.text.length > 0 ? Theme.accentText : Theme.textDim
-                            font.pixelSize: 20
+                            font.pixelSize: Theme.iconMd
                         }
 
                         TapHandler {
@@ -319,7 +319,7 @@ Item {
                 visible: !Keyboard.caps || Auth.state === "failed" || Auth.state === "checking"
                 text: Auth.state === "checking" ? "Verificando…" : Auth.message
                 color: Auth.state === "failed" ? Theme.danger : Theme.textDim
-                font.pixelSize: 14
+                font.pixelSize: Theme.fontBody
             }
 
             LockChip {
@@ -380,7 +380,7 @@ Item {
         anchors.bottomMargin: 42
         text: "ombu"
         color: Qt.rgba(1, 1, 1, 0.4)
-        font.pixelSize: 15
+        font.pixelSize: Theme.fontEmphasis
         font.weight: Font.DemiBold
         font.letterSpacing: 3
     }

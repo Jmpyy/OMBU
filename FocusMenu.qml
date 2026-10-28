@@ -38,7 +38,7 @@ DropPopup {
             anchors.centerIn: parent
             text: pill.text
             color: pill.filled ? Theme.accentText : (pill.selected ? Theme.text : (pill.danger ? Theme.danger : Theme.textDim))
-            font.pixelSize: 13
+            font.pixelSize: Theme.fontBody
             font.weight: Font.DemiBold
         }
 
@@ -131,7 +131,7 @@ DropPopup {
             Text {
                 text: "ENTORNO DE ESTUDIO"
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
                 font.weight: Font.DemiBold
                 font.letterSpacing: 0.8
             }
@@ -190,7 +190,7 @@ DropPopup {
                             MIcon {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 name: toolTile.modelData.icon
-                                font.pixelSize: 22
+                                font.pixelSize: Theme.iconLg
                                 color: Theme.text
                             }
 
@@ -198,7 +198,7 @@ DropPopup {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: toolTile.modelData.name
                                 color: Theme.textDim
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.fontCaption
                                 font.weight: Font.DemiBold
                             }
                         }
@@ -231,7 +231,7 @@ DropPopup {
                         Layout.fillWidth: true
                         text: "Abrir mi entorno al empezar"
                         color: Theme.text
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.fontBody
                     }
 
                     Rectangle {
@@ -309,7 +309,7 @@ DropPopup {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: modelData.value
                             color: Theme.text
-                            font.pixelSize: 15
+                            font.pixelSize: Theme.fontEmphasis
                             font.weight: Font.DemiBold
                         }
 
@@ -317,7 +317,7 @@ DropPopup {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: modelData.caption
                             color: Theme.textDim
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.fontCaption
                         }
                     }
                 }
@@ -361,7 +361,7 @@ DropPopup {
                 Text {
                     text: "ÚLTIMOS 7 DÍAS"
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                     font.weight: Font.DemiBold
                     font.letterSpacing: 0.8
                 }
@@ -373,7 +373,7 @@ DropPopup {
                 Text {
                     text: weekBox.days.total > 0 ? Focus.minutesText(weekBox.days.total * 60) : "Sin datos"
                     color: Theme.textDim
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.fontCaption
                 }
             }
 
@@ -410,7 +410,7 @@ DropPopup {
                             anchors.bottom: parent.bottom
                             text: bar.modelData.label
                             color: bar.modelData.today ? Theme.text : Theme.textDim
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.fontTiny
                             font.weight: bar.modelData.today ? Font.DemiBold : Font.Normal
                         }
                     }
@@ -436,7 +436,7 @@ DropPopup {
                 MIcon {
                     name: Focus.blocking ? "block" : "lock_open"
                     color: Theme.accent
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.iconMd
                 }
 
                 Text {
@@ -444,7 +444,7 @@ DropPopup {
                     text: Focus.blocking ? "Juegos y redes bloqueados mientras estudiás" : "Bloqueo pausado"
                     wrapMode: Text.Wrap
                     color: Theme.text
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.fontSmall
                 }
 
                 Pill {
@@ -473,7 +473,7 @@ DropPopup {
                 MIcon {
                     name: "lightbulb"
                     color: Theme.textDim
-                    font.pixelSize: 17
+                    font.pixelSize: Theme.iconSm
                 }
 
                 TextInput {
@@ -483,7 +483,7 @@ DropPopup {
                     color: Theme.text
                     selectionColor: Theme.accent
                     selectedTextColor: Theme.accentText
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.fontBody
                     clip: true
                     onAccepted: {
                         Focus.saveIdea(text);
@@ -498,7 +498,7 @@ DropPopup {
                         anchors.verticalCenter: parent.verticalCenter
                         text: savedNote.opacity > 0 ? "✓ Guardada en tus ideas" : "Anotar una idea y seguir (Enter)"
                         color: savedNote.opacity > 0 ? Theme.accent : Theme.textDim
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.fontBody
                         font.weight: savedNote.opacity > 0 ? Font.DemiBold : Font.Normal
                     }
                 }
@@ -517,7 +517,7 @@ DropPopup {
                         anchors.centerIn: parent
                         text: Focus.ideas.length + (root.showIdeas ? " ▴" : " ▾")
                         color: root.showIdeas ? Theme.accent : Theme.textDim
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontCaption
                         font.weight: Font.DemiBold
                     }
 
@@ -598,14 +598,14 @@ DropPopup {
                                 maximumLineCount: 3
                                 elide: Text.ElideRight
                                 color: Theme.text
-                                font.pixelSize: 13
+                                font.pixelSize: Theme.fontBody
                             }
 
                             Text {
                                 visible: ideaRow.modelData.date !== ""
                                 text: ideaRow.modelData.date.slice(8, 10) + "/" + ideaRow.modelData.date.slice(5, 7) + " " + ideaRow.modelData.time
                                 color: Theme.textDim
-                                font.pixelSize: 10
+                                font.pixelSize: Theme.fontTiny
                             }
                         }
 
@@ -614,7 +614,7 @@ DropPopup {
                             Layout.topMargin: 2
                             opacity: rowHover.hovered ? 1 : 0
                             name: "close"
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.iconSm
                             color: Theme.textDim
 
                             TapHandler {

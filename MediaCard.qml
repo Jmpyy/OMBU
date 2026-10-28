@@ -79,7 +79,7 @@ Rectangle {
                 visible: !art.visible
                 name: "music_note"
                 color: Theme.textDim
-                font.pixelSize: 22
+                font.pixelSize: Theme.iconLg
             }
 
             HoverHandler {
@@ -108,7 +108,7 @@ Rectangle {
                 text: root.player?.trackTitle || root.player?.identity || ""
                 elide: Text.ElideRight
                 color: Theme.text
-                font.pixelSize: 13
+                font.pixelSize: Theme.fontBody
                 font.weight: Font.DemiBold
             }
 
@@ -118,7 +118,7 @@ Rectangle {
                 text: (root.player?.trackArtist || "") + (Media.count > 1 ? ((root.player?.trackArtist ? " · " : "") + (root.player?.identity ?? "")) : (root.player?.trackArtist ? "" : (root.player?.identity ?? "")))
                 elide: Text.ElideRight
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
             }
         }
 
@@ -136,7 +136,7 @@ Rectangle {
                 anchors.centerIn: parent
                 text: (Media.index + 1) + "/" + Media.count
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
                 font.weight: Font.DemiBold
             }
 

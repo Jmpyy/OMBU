@@ -197,7 +197,7 @@ PanelWindow {
                 MIcon {
                     name: "content_paste"
                     color: Theme.textDim
-                    font.pixelSize: 24
+                    font.pixelSize: Theme.iconLg
                 }
 
                 TextInput {
@@ -207,7 +207,7 @@ PanelWindow {
                     color: Theme.text
                     selectionColor: Theme.accent
                     selectedTextColor: Theme.accentText
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.fontTitle
                     clip: true
                     focus: true
 
@@ -239,7 +239,7 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Buscar en el portapapeles…"
                         color: Theme.textDim
-                        font.pixelSize: 18
+                        font.pixelSize: Theme.fontTitle
                     }
                 }
 
@@ -260,7 +260,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             name: Clip.paused ? "play_arrow" : "pause"
                             color: Clip.paused ? Theme.warn : Theme.textDim
-                            font.pixelSize: 19
+                            font.pixelSize: Theme.iconMd
                         }
 
                         Text {
@@ -268,7 +268,7 @@ PanelWindow {
                             visible: Clip.paused
                             text: "En pausa"
                             color: Theme.warn
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                             font.weight: Font.DemiBold
                         }
                     }
@@ -300,7 +300,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             name: "delete_sweep"
                             color: win.clearArmed ? Theme.accentText : Theme.textDim
-                            font.pixelSize: 19
+                            font.pixelSize: Theme.iconMd
                         }
 
                         Text {
@@ -308,7 +308,7 @@ PanelWindow {
                             visible: win.clearArmed
                             text: "Tocá de nuevo"
                             color: Theme.accentText
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSmall
                             font.weight: Font.DemiBold
                         }
                     }
@@ -346,7 +346,7 @@ PanelWindow {
                 horizontalAlignment: Text.AlignHCenter
                 text: input.text.trim() !== "" ? "Sin resultados para “" + input.text + "”" : "Todavía no copiaste nada"
                 color: Theme.textDim
-                font.pixelSize: 14
+                font.pixelSize: Theme.fontBody
             }
 
             ListView {
@@ -384,7 +384,7 @@ PanelWindow {
                         anchors.bottomMargin: 4
                         text: item.isHeader ? item.modelData.title.toUpperCase() : ""
                         color: Theme.textDim
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.fontCaption
                         font.weight: Font.DemiBold
                         font.letterSpacing: 0.8
                     }
@@ -441,7 +441,7 @@ PanelWindow {
                                     anchors.centerIn: parent
                                     name: item.modelData.kind === "pin" ? "push_pin" : "notes"
                                     color: item.modelData.kind === "pin" ? Theme.accent : Theme.textDim
-                                    font.pixelSize: 22
+                                    font.pixelSize: Theme.iconLg
                                 }
                             }
 
@@ -453,7 +453,7 @@ PanelWindow {
                                 maximumLineCount: 2
                                 elide: Text.ElideRight
                                 color: Theme.text
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.fontBody
                             }
 
                             // Acciones al pasar el mouse o con la fila seleccionada
@@ -472,7 +472,7 @@ PanelWindow {
                                         anchors.centerIn: parent
                                         name: "push_pin"
                                         color: item.modelData.kind === "pin" ? Theme.accent : Theme.textDim
-                                        font.pixelSize: 17
+                                        font.pixelSize: Theme.iconSm
                                     }
 
                                     HoverHandler {
@@ -497,7 +497,7 @@ PanelWindow {
                                         anchors.centerIn: parent
                                         name: "close"
                                         color: delHover.hovered ? Theme.accentText : Theme.textDim
-                                        font.pixelSize: 17
+                                        font.pixelSize: Theme.iconSm
                                     }
 
                                     HoverHandler {
@@ -536,7 +536,7 @@ PanelWindow {
                 Layout.bottomMargin: 4
                 text: "Enter pega  ·  Shift+Enter copia  ·  Ctrl+P fija  ·  Ctrl+Supr borra"
                 color: Theme.textDim
-                font.pixelSize: 11
+                font.pixelSize: Theme.fontCaption
             }
         }
     }
