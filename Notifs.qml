@@ -10,8 +10,32 @@ import Quickshell.Services.Notifications
 Singleton {
     id: root
 
-    // No molestar: no hay avisos emergentes (las críticas igual se muestran)
+    // No molestar: no hay avisos emergentes. Pasan igual los críticos (las confirmaciones de los agentes
+    // lo son) y los marcados x-ombu-urgent (parciales, entregas, pagos de hoy, el propio modo foco).
     property bool dnd: false
+
+    // El bloque de estudio del modo foco lo activa y, al pausar, parar o pasar al descanso, lo apaga; pero
+    // solo si lo había activado él: si ya estaba prendido a mano, o lo apagás en medio del bloque, se respeta
+    readonly property bool studyBlock: Focus.mode === "estudio" && Focus.running && Focus.phase === "estudio"
+    property bool dndByFocus: false
+
+    function syncFocus(): void {
+        if (studyBlock && !dnd && !dndByFocus) {
+            dnd = true;
+            dndByFocus = true;
+        } else if (!studyBlock && dndByFocus) {
+            dnd = false;
+        }
+    }
+
+    onStudyBlockChanged: syncFocus()
+    onDndChanged: if (!dnd)
+        dndByFocus = false
+    Component.onCompleted: syncFocus()
+
+    function breaksDnd(entry): bool {
+        return !dnd || entry.critical || entry.urgent;
+    }
 
     // Historial, de la más nueva a la más vieja. Cada elemento es un Entry.
     property var history: []
@@ -49,6 +73,8 @@ Singleton {
         property string appIcon: ""
         property string desktopEntry: ""
         property bool critical: false
+        // Pasa aunque esté No molestar (x-ombu-urgent)
+        property bool urgent: false
         // Confirmación de un comando de un agente (ver bin/agent-confirm.py)
         property string kind: ""
         property bool risky: false
@@ -130,6 +156,7 @@ Singleton {
         entry.image = n.image || (rule && rule.cover ? NotifRules.coverFor(n) : "");
         entry.critical = n.urgency === NotificationUrgency.Critical;
         entry.kind = String(h["x-ombu-kind"] ?? "");
+        entry.urgent = Number(h["x-ombu-urgent"] ?? 0) === 1;
         entry.risky = Number(h["x-ombu-risky"] ?? 0) === 1;
         entry.compound = Number(h["x-ombu-compound"] ?? 0) === 1;
         entry.cwd = String(h["x-ombu-cwd"] ?? "");
@@ -168,7 +195,7 @@ Singleton {
         entry.time = new Date();
         history = [entry, ...history.filter(e => e !== entry)];
         // Lo que ya estás mirando (Sung a la vista al cambiar de tema) se actualiza sin aparecer
-        if ((dnd && !entry.critical) || NotifRules.shouldDrop(entry.n))
+        if (!breaksDnd(entry) || NotifRules.shouldDrop(entry.n))
             return;
         if (!toasts.includes(entry))
             toasts = [entry, ...toasts];
@@ -205,7 +232,7 @@ Singleton {
 
         // Las que sobreviven a una recarga del shell (lastGeneration) ya se vieron: solo van al
         // historial. Antes reaparecían como nuevas cada vez que se recargaba.
-        if ((!dnd || entry.critical) && !n.lastGeneration) {
+        if (breaksDnd(entry) && !n.lastGeneration) {
             toasts = [entry, ...toasts];
             entry.shown = true;
             // Máximo 5 avisos a la vez; los más viejos se van (siguen en el historial)

@@ -321,7 +321,8 @@ Singleton {
     }
 
     function notify(title: string, body: string): void {
-        Quickshell.execDetached(["notify-send", "-a", "Modo foco", "-t", "7000", title, body]);
+        // Sus propios avisos (descanso, volver a estudiar) pasan aunque el bloque haya activado No molestar
+        Quickshell.execDetached(["notify-send", "-a", "Modo foco", "-t", "7000", "-h", "int:x-ombu-urgent:1", title, body]);
     }
 
     function chime(): void {

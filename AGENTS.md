@@ -153,6 +153,7 @@ Solo lo vigente y sus trampas. El porqué de cada cambio y lo que hubo antes est
 - `Notifs.qml` es el servidor (tiene que ser el único). Todo aviso se va solo salvo `kind === "confirm"`: 6 s por defecto, 30 si es crítico; el hover pausa, pero `hardLimit` lo cierra igual. Los que sobreviven a una recarga van solo al historial. Un aviso reemplazado (`replaces_id`) no pasa por `onNotification`: `Notifs.replaced()` lo recopia. `NotificationAction.invoke()` ya cierra la notificación: no llames a `dismiss()` después.
 - Botones: `invokeAction` y además `Notifs.focusApp` si la acción es «ir a la app» (las apps de Electron reciben la acción y no hacen nada). `NotifRules.qml` traduce botones, descarta lo que ya estás viendo, reescribe los avisos de Claude Code en primera persona (`speak`) con su logo `~/.local/share/ombu/icons/claude.svg` (**marca de otra empresa: no va al repo**) y le pone la portada a los de Sung.
 - El historial (`NotifMenu`) se agrupa por app.
+- **No molestar y modo foco:** el bloque de estudio lo activa (`Notifs.dndByFocus`) y al pausar, parar o pasar al descanso lo apaga, solo si lo había activado él. Con No molestar pasan los críticos (las confirmaciones de los agentes lo son) y los que traen `x-ombu-urgent:1`: recordatorios `facu:parcial|recuperatorio|final|entrega`, pagos `sub:` del día y los avisos de `Focus.notify`. Para sumar otro: mandarlo con `-h int:x-ombu-urgent:1`.
 
 ### Música
 

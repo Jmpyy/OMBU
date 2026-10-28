@@ -451,7 +451,10 @@ Singleton {
                         body = (m < 2880 ? "Mañana" : "En " + Math.round(m / 1440) + " días") + " a las " + it.time;
                     else if (m > 0)
                         body = "Empieza en " + m + " min (" + it.time + ")";
-                    Quickshell.execDetached(["notify-send", "-a", "Agenda", "-i", "appointment-soon", it.title, body]);
+                    // Parciales, finales y entregas, y los pagos del día, pasan aunque esté No molestar
+                    const tag = it.tag ?? "";
+                    const urgent = /^facu:(parcial|recuperatorio|final|entrega)/.test(tag) || (tag.startsWith("sub:") && m < 1440);
+                    Quickshell.execDetached(["notify-send", "-a", "Agenda", "-i", "appointment-soon", "-h", "int:x-ombu-urgent:" + (urgent ? 1 : 0), it.title, body]);
                 }
             }
         }

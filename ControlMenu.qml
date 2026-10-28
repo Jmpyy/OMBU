@@ -171,7 +171,7 @@ DropPopup {
                 Layout.preferredWidth: 1
                 icon: Notifs.dnd ? "notifications_off" : "notifications_active"
                 title: "No molestar"
-                subtitle: Notifs.dnd ? "Activado" : "Apagado"
+                subtitle: Notifs.dnd ? (Notifs.dndByFocus ? "Por el modo foco" : "Activado") : "Apagado"
                 on: Notifs.dnd
                 onClicked: Notifs.dnd = !Notifs.dnd
             }
