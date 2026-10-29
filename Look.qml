@@ -94,6 +94,32 @@ Singleton {
 
     property bool dolphinActive: false
     property string activeClass: ""
+    property string activeAddr: ""
+    // Si cada ventana de Dolphin es la principal (true) o un diálogo (false), por dirección: no cambia, así
+    // que bin/look-dolphin.sh check corre una vez por ventana y no cada vez que gana el foco (con el foco
+    // siguiendo al mouse, eso era a cada rato)
+    property var mainCache: ({})
+    property string pendingAddr: ""
+
+    // La vista queda armada (shell.qml) mientras Dolphin está activo y 2 minutos más: si se armara y
+    // destruyera con cada cambio de foco, pasar el mouse sobre Dolphin la reconstruiría (~430 ms) cada vez
+    property bool warm: false
+
+    onDolphinActiveChanged: {
+        if (dolphinActive) {
+            warm = true;
+            cool.stop();
+        } else {
+            cool.restart();
+        }
+    }
+
+    Timer {
+        id: cool
+
+        interval: 120000
+        onTriggered: root.warm = false
+    }
     // Lo que Hyprland tiene puesto ahora (para no mandar el mismo cambio dos veces)
     property bool bound: false
     readonly property bool wantBound: dolphinActive && !open
@@ -135,12 +161,19 @@ Singleton {
             send("hl.unbind(\"Space\")");
     }
 
-    function check(cls: string, title: string): void {
-        activeClass = cls;
-        if (cls !== "org.kde.dolphin") {
+    // Hyprland avisa la clase (activewindow) y después la dirección (activewindowv2); acá ya están las dos
+    function check(): void {
+        if (activeClass !== "org.kde.dolphin" || activeAddr === "") {
             dolphinActive = false;
             return;
         }
+        const known = mainCache[activeAddr];
+        if (known !== undefined) {
+            dolphinActive = known;
+            return;
+        }
+        pendingAddr = activeAddr;
+        console.log("LOOK: mirando si la ventana", activeAddr, "es la principal de Dolphin");
         mainCheck.running = false;
         mainCheck.running = true;
     }
@@ -150,7 +183,14 @@ Singleton {
 
         command: [Quickshell.shellPath("bin/look-dolphin.sh"), "check"]
         stdout: StdioCollector {
-            onStreamFinished: root.dolphinActive = root.activeClass === "org.kde.dolphin" && text.trim() === "main"
+            onStreamFinished: {
+                // Si el foco ya se fue a otra ventana, la respuesta no sirve (el script mira la activa)
+                if (root.pendingAddr !== root.activeAddr)
+                    return;
+                const main = text.trim() === "main";
+                root.mainCache[root.pendingAddr] = main;
+                root.dolphinActive = root.activeClass === "org.kde.dolphin" && main;
+            }
         }
     }
 
@@ -170,10 +210,13 @@ Singleton {
             onStreamFinished: {
                 try {
                     const w = JSON.parse(text);
-                    root.check(w.class ?? "", w.title ?? "");
+                    root.activeClass = w.class ?? "";
+                    root.activeAddr = String(w.address ?? "").replace("0x", "");
                 } catch (e) {
-                    root.check("", "");
+                    root.activeClass = "";
+                    root.activeAddr = "";
                 }
+                root.check();
             }
         }
     }
@@ -183,14 +226,24 @@ Singleton {
 
         function onRawEvent(event): void {
             if (event.name === "activewindow") {
-                // «clase,título»: el título puede tener comas, la clase no
+                // «clase,título»: el título puede tener comas, la clase no. Una ventana que no es Dolphin
+                // se resuelve acá; Dolphin espera a activewindowv2, que trae la dirección
                 const d = event.data ?? "";
                 const i = d.indexOf(",");
-                root.check(i < 0 ? d : d.slice(0, i), i < 0 ? "" : d.slice(i + 1));
+                root.activeClass = i < 0 ? d : d.slice(0, i);
+                if (root.activeClass !== "org.kde.dolphin")
+                    root.dolphinActive = false;
+            } else if (event.name === "activewindowv2") {
+                root.activeAddr = event.data ?? "";
+                root.check();
             } else if (event.name === "windowtitle" && root.activeClass === "org.kde.dolphin" && !root.dolphinActive) {
-                // Dolphin recién abierto puede activarse antes de poner su título: se vuelve a mirar
-                // (solo en ese caso: la terminal cambia de título todo el tiempo)
-                current.running = true;
+                // Dolphin recién abierto puede activarse antes de poner su título (y quedar como «diálogo»):
+                // se olvida lo que se sabía de esa ventana y se vuelve a mirar. Solo en ese caso: la terminal
+                // cambia de título todo el tiempo
+                delete root.mainCache[root.activeAddr];
+                root.check();
+            } else if (event.name === "closewindow") {
+                delete root.mainCache[event.data ?? ""];
             } else if (event.name === "configreloaded") {
                 // Recargar la configuración de Hyprland borra los atajos puestos a mano
                 root.bound = false;

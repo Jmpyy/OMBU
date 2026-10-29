@@ -20,6 +20,8 @@ ShellRoot {
         Subs.list;
         // Nombrarlo arranca la vista rápida (pone el Espacio de Dolphin cuando hace falta)
         Look.start();
+        // Y el cajón de Dolphin (Super+E): saca del cajón las apps que se abren desde él
+        Files.start();
     }
 
     // Historial del portapapeles (lo usa Super+V, ver bin/clip.sh)
@@ -652,7 +654,7 @@ ShellRoot {
     }
 
     // Vista rápida a pantalla completa (Espacio en Dolphin, ver Look). Se arma mientras Dolphin está activo
-    // y no al tocar Espacio: crearla tardaba ~430 ms. Fuera de Dolphin no existe (la memoria vuelve)
+    // (y 2 minutos más, Look.warm) y no al tocar Espacio: crearla tardaba ~430 ms. Después se destruye
     Variants {
         model: Screens.list
 
@@ -662,7 +664,7 @@ ShellRoot {
             required property var modelData
             property bool shown: false
 
-            active: Look.open || shown || Look.dolphinActive
+            active: Look.open || shown || Look.warm
 
             QuickLook {
                 modelData: lookLoader.modelData
