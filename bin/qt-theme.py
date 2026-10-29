@@ -180,8 +180,8 @@ def starship_text(text, c, on_accent, logo):
     return re.sub(r"@([A-Z]+)@", lambda m: values.get(m.group(1), m.group(0)), text)
 
 
-def vesktop_css(text, c, on_accent, accent2):
-    """Discord: los @NOMBRE@ de la plantilla por los colores del tema"""
+def fill_template(text, c, on_accent, accent2):
+    """Los @NOMBRE@ de una plantilla (Vesktop, Zen, uosc) por los colores del tema"""
     values = {"BG": c["bg"], "SURFACE": c["surface"], "TRACK": c["track"], "TEXT": c["text"], "DIM": c["dim"],
               "ACCENT": c["accent"], "ACCENT2": accent2 or c["accent"], "DANGER": c["danger"], "WARN": c["warn"],
               "ON_ACCENT": on_accent}
@@ -314,7 +314,7 @@ def main():
     vesk = os.path.join(root, ".config/vesktop/settings")
     if os.path.isdir(vesk) or a.out:
         with open(os.path.join(EXTRAS, "vesktop", "ombu.theme.css"), encoding="utf-8") as f:
-            css = vesktop_css(f.read(), colors, on_accent, a.accent2)
+            css = fill_template(f.read(), colors, on_accent, a.accent2)
         qpath = os.path.join(vesk, "quickCss.css")
         try:
             with open(qpath, encoding="utf-8") as f:
@@ -328,14 +328,14 @@ def main():
     mpv = os.path.join(root, ".config/mpv")
     if os.path.isdir(mpv) or a.out:
         with open(os.path.join(EXTRAS, "mpv", "uosc.conf"), encoding="utf-8") as f:
-            uosc = re.sub(r"#([0-9a-fA-F]{6})\b", r"\1", vesktop_css(f.read(), colors, on_accent, a.accent2))
+            uosc = re.sub(r"#([0-9a-fA-F]{6})\b", r"\1", fill_template(f.read(), colors, on_accent, a.accent2))
         write(os.path.join(mpv, "script-opts", "uosc.conf"), uosc, backup=False)
 
     # Zen: lo lee al arrancar
     with open(os.path.join(EXTRAS, "zen", "userChrome.css"), encoding="utf-8") as f:
-        chrome_css = vesktop_css(f.read(), colors, on_accent, a.accent2)
+        chrome_css = fill_template(f.read(), colors, on_accent, a.accent2)
     with open(os.path.join(EXTRAS, "zen", "userContent.css"), encoding="utf-8") as f:
-        content_css = vesktop_css(f.read(), colors, on_accent, a.accent2)
+        content_css = fill_template(f.read(), colors, on_accent, a.accent2)
     write_zen(root, chrome_css, content_css, colors["accent"])
 
     # Logo de la barra: se escribe si el tema tiene uno y se borra si no (la barra vuelve al de CachyOS)

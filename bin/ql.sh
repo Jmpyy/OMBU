@@ -6,13 +6,22 @@
 #   dir     lo que tiene la carpeta
 #   other   el tipo MIME y el tamaño en bytes
 #   none    el archivo no existe
-# Uso: ql.sh RUTA
+# Con full (la vista rápida a pantalla completa, Look.qml) cambia lo que sale:
+#   pdf     la imagen de la página pedida en grande y la cantidad de páginas (solo con la página 1)
+#   video   la ruta (la reproduce Look.qml)
+#   audio   la ruta
+#   text    hasta 3000 líneas en vez de 60
+# Uso: ql.sh RUTA [full [PÁGINA]]
 f="${1:-}"
+full=0
+[ "${2:-}" = full ] && full=1
+page="${3:-1}"
+case "$page" in '' | *[!0-9]*) page=1 ;; esac
 [ -n "$f" ] && [ -e "$f" ] || { echo none; exit 0; }
 
 if [ -d "$f" ]; then
     echo dir
-    ls -1A -- "$f" 2>/dev/null | head -40
+    ls -1A -- "$f" 2>/dev/null | head -n $((full ? 400 : 40))
     exit 0
 fi
 
@@ -24,6 +33,20 @@ image/*)
     ;;
 application/pdf)
     out="${XDG_RUNTIME_DIR:-/tmp}/ombu-ql"
+    if [ $full = 1 ]; then
+        mkdir -p "$out"
+        rm -f "$out"/look-*.png
+        stamp=$(date +%s%N)
+        # Las páginas se cuentan solo al abrirlo (página 1): al pasar de página Look ya las sabe
+        pages=""
+        [ "$page" = 1 ] && pages=$(pdfinfo -- "$f" 2>/dev/null | awk '/^Pages:/{print $2}')
+        if pdftoppm -png -singlefile -scale-to 1800 -f "$page" -l "$page" -- "$f" "$out/look-$stamp" 2>/dev/null; then
+            echo pdf
+            echo "$out/look-$stamp.png"
+            echo "$pages"
+            exit 0
+        fi
+    fi
     mkdir -p "$out"
     rm -f "$out"/page-*.png
     stamp=$(date +%s%N)
@@ -36,9 +59,23 @@ application/pdf)
         stat -c '%s' -- "$f"
     fi
     ;;
+video/* | audio/*)
+    if [ $full = 1 ]; then
+        echo "${mime%%/*}"
+        echo "$f"
+    else
+        echo other
+        echo "$mime"
+        stat -c '%s' -- "$f" 2>/dev/null
+    fi
+    ;;
 text/* | application/json | application/xml | application/javascript | application/x-shellscript | application/x-subrip | inode/x-empty)
     echo text
-    head -c 8000 -- "$f" 2>/dev/null | head -n 60
+    if [ $full = 1 ]; then
+        head -c 200000 -- "$f" 2>/dev/null | head -n 3000
+    else
+        head -c 8000 -- "$f" 2>/dev/null | head -n 60
+    fi
     ;;
 *)
     echo other

@@ -18,6 +18,8 @@ ShellRoot {
         // Nombrarlo arranca la agenda: feriados, Google Calendar y los recordatorios con hora
         Agenda.check();
         Subs.list;
+        // Nombrarlo arranca la vista rápida (pone el Espacio de Dolphin cuando hace falta)
+        Look.start();
     }
 
     // Historial del portapapeles (lo usa Super+V, ver bin/clip.sh)
@@ -647,6 +649,46 @@ ShellRoot {
         }
 
         target: "launcher"
+    }
+
+    // Vista rápida a pantalla completa (Espacio en Dolphin, ver Look). Se arma mientras Dolphin está activo
+    // y no al tocar Espacio: crearla tardaba ~430 ms. Fuera de Dolphin no existe (la memoria vuelve)
+    Variants {
+        model: Screens.list
+
+        LazyLoader {
+            id: lookLoader
+
+            required property var modelData
+            property bool shown: false
+
+            active: Look.open || shown || Look.dolphinActive
+
+            QuickLook {
+                modelData: lookLoader.modelData
+                onVisibleChanged: lookLoader.shown = visible
+                Component.onCompleted: lookLoader.shown = visible
+            }
+        }
+    }
+
+    // qs -c ombu ipc call look file <ruta>  -> vista rápida de un archivo (Espacio en Dolphin)
+    // qs -c ombu ipc call look close
+    // qs -c ombu ipc call look status       -> abierta o cerrada, y si el Espacio de Dolphin está puesto
+    IpcHandler {
+        function file(path: string): void {
+            Look.show(path);
+        }
+
+        function close(): void {
+            Look.close();
+        }
+
+        function status(): string {
+            return (Look.open ? "abierta " + Look.kind + " " + Look.path : "cerrada") + (Look.bound ? " · Espacio puesto" : "");
+        }
+
+        target: "look"
     }
 
     // qs -c ombu ipc call clip toggle  -> abrir o cerrar el historial del portapapeles

@@ -4,8 +4,8 @@
    Medidas de Theme.qml: controles de radio 10, filas de 32 px, filas de menú de radio 7. */
 
 /* Barra lateral de lugares: tarjeta como el sidebar de Finder. KDE pinta sus filas sin pasarle el widget
-   al estilo, así que las reglas ::item no le llegan (ni radio ni márgenes): solo toma los colores de
-   selection-*; el padding de la tarjeta es lo que separa las filas del borde */
+   al estilo, así que las reglas ::item no le llegan (por eso no hay): de acá solo toma los colores de
+   selection-*; el radio de las filas lo pone Darkly y el padding de la tarjeta las separa del borde */
 KFilePlacesView, QListView#placesView {
     background: #1d1c26;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -18,19 +18,6 @@ KFilePlacesView, QListView#placesView {
 }
 KFilePlacesView > QWidget {
     background: transparent;
-}
-KFilePlacesView::item {
-    padding: 6px 8px;
-    margin: 0px 6px;
-    border-radius: 8px;
-    border: none;
-}
-KFilePlacesView::item:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-KFilePlacesView::item:selected {
-    background: #2b2a38;
-    color: #e8e8f0;
 }
 
 /* Barra de herramientas: ← →, la ruta, la vista, buscar y el menú */
