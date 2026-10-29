@@ -15,6 +15,7 @@ el del tema elegido; los tonos derivados (más claro, más oscuro) se calculan. 
                                           (sus páginas propias), más user.js (habilita el CSS
                                           y pone el acento). Zen lo lee al arrancar. No pisa archivos propios
   ~/.config/mpv/script-opts/uosc.conf   los colores de la interfaz de mpv (uosc), desde extras/mpv/uosc.conf
+  ~/.config/qView/qView.conf            el fondo del visor de imágenes (si qView ya creó su configuración)
   ~/.local/share/ombu/icons/bar-logo.svg  el logo de la barra (araña o reactor, en los colores del tema;
                                           sin --logo se borra y la barra usa el de CachyOS)
 y rehace las carpetas del tema de íconos Ombu en el color de Papirus que corresponda.
@@ -264,6 +265,27 @@ def gtk_css(colors, on_accent):
     )
 
 
+def set_ini(path, group, values):
+    """Pone claves en un grupo de un .conf de QSettings, línea por línea: el resto (como los @ByteArray(...)
+    que guarda qView) queda tal cual, cosa que un parser de INI no garantiza"""
+    with open(path, encoding="utf-8") as f:
+        lines = f.read().splitlines()
+    start = next((i for i, l in enumerate(lines) if l.strip() == "[%s]" % group), None)
+    if start is None:
+        lines += ["", "[%s]" % group]
+        start = len(lines) - 1
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("[")), len(lines))
+    for key, value in values.items():
+        at = next((i for i in range(start + 1, end) if lines[i].split("=", 1)[0] == key), None)
+        if at is None:
+            lines.insert(end, "%s=%s" % (key, value))
+            end += 1
+        else:
+            lines[at] = "%s=%s" % (key, value)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
+
 def write(path, content, backup):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if backup and os.path.exists(path) and not os.path.exists(path + ".pre-temas"):
@@ -330,6 +352,11 @@ def main():
         with open(os.path.join(EXTRAS, "mpv", "uosc.conf"), encoding="utf-8") as f:
             uosc = re.sub(r"#([0-9a-fA-F]{6})\b", r"\1", fill_template(f.read(), colors, on_accent, a.accent2))
         write(os.path.join(mpv, "script-opts", "uosc.conf"), uosc, backup=False)
+
+    # qView: el fondo alrededor de la imagen (traía un gris propio, #212121). Lo lee al abrir
+    qview = os.path.join(root, ".config/qView/qView.conf")
+    if os.path.exists(qview):
+        set_ini(qview, "options", {"bgcolorenabled": "true", "bgcolor": colors["bg"]})
 
     # Zen: lo lee al arrancar
     with open(os.path.join(EXTRAS, "zen", "userChrome.css"), encoding="utf-8") as f:

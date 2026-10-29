@@ -130,6 +130,20 @@ QMenu::right-arrow {
     margin-right: 6px;
 }
 
+/* Barra de menú (KeePassXC y otras apps que la muestran): el fondo de la ventana y filas grises */
+QMenuBar {
+    background: #14131a;
+    padding: 2px 6px;
+}
+QMenuBar::item {
+    background: transparent;
+    padding: 5px 10px;
+    border-radius: 7px;
+}
+QMenuBar::item:selected, QMenuBar::item:pressed {
+    background: #1d1c26;
+}
+
 QToolTip {
     background: #1d1c26;
     color: #e8e8f0;
